@@ -235,6 +235,122 @@
 
 @RenderSection("Scripts", required: false)
 
+    <!-- ===== CHATBOT SHOPEE STYLE ===== -->
+    <div id="chat-btn">💬</div>
+
+    <div id="chat-box">
+        <div id="chat-header">Chăm sóc khách hàng</div>
+        <div id="chat-body"></div>
+        <div id="chat-input">
+            <input id="chat-msg" placeholder="Nhập tin nhắn...">
+            <button onclick="sendChat()">Gửi</button>
+        </div>
+    </div>
+
+    <style>
+        #chat-btn{
+         position:fixed; bottom:20px; right:20px;
+         background:#ee4d2d; color:white;
+         padding:12px; border-radius:50%;
+         cursor:pointer; z-index:9999;
+        }
+
+        #chat-box{
+         position:fixed; bottom:80px; right:20px;
+         width:300px; height:380px;
+         background:white;
+         border-radius:12px;
+         display:none;
+         flex-direction:column;
+         box-shadow:0 5px 15px rgba(0,0,0,.3);
+         z-index:9999;
+        }
+
+        #chat-header{
+         background:#ee4d2d;
+         color:white;
+         padding:10px;
+         border-radius:12px 12px 0 0;
+         font-weight:bold;
+        }
+
+        #chat-body{
+         flex:1;
+         overflow:auto;
+         padding:10px;
+         font-size:14px;
+        }
+
+        #chat-input{
+         display:flex;
+         border-top:1px solid #ddd;
+        }
+
+        #chat-input input{
+         flex:1;
+         padding:8px;
+         border:none;
+        }
+
+        #chat-input button{
+         background:#ee4d2d;
+         color:white;
+         border:none;
+         padding:8px 12px;
+        }
+    </style>
+
+    <script>
+        const chatBox = document.getElementById("chat-box");
+
+        document.getElementById("chat-btn").onclick = () => {
+            chatBox.style.display = chatBox.style.display === "flex" ? "none" : "flex";
+        };
+
+        async function sendChat(){
+            let input = document.getElementById("chat-msg");
+            let msg = input.value;
+            if(!msg) return;
+
+            let body = document.getElementById("chat-body");
+            body.innerHTML += `<p><b>Bạn:</b> ${msg}</p>`;
+
+            let res = await fetch("/ChatBot/Reply",{
+                method:"POST",
+                headers:{ "Content-Type":"application/json"},
+                body: JSON.stringify(msg)
+            });
+
+            let reply = await res.text();
+            body.innerHTML += `<p><b>Bot:</b> ${reply}</p>`;
+            input.value="";
+            body.scrollTop = body.scrollHeight;
+        }
+    </script>
+    <!-- ===== END CHATBOT ===== -->
+    <script>
+        async function sendChat(){
+         let input = document.getElementById("chat-msg");
+         let msg = input.value.trim();
+         if(!msg) return;
+
+         let body = document.getElementById("chat-body");
+         body.innerHTML += `<div class="msg-user">${msg}</div>`;
+
+         input.value = "";
+
+         let res = await fetch("/ChatBot/Reply",{
+           method:"POST",
+           headers:{ "Content-Type":"application/json"},
+           body: JSON.stringify(msg)
+         });
+
+         let reply = await res.text();
+         body.innerHTML += `<div class="msg-bot">${reply}</div>`;
+
+         body.scrollTop = body.scrollHeight;
+        }
+    </script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

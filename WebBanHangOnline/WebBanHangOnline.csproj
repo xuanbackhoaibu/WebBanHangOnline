@@ -24,6 +24,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.11" />
         <PackageReference Include="Microsoft.jQuery.Unobtrusive.Validation" Version="4.0.0" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.8" />
+        <PackageReference Include="System.Net.Http.Json" Version="10.0.2" />
     </ItemGroup>
 
     <ItemGroup>
