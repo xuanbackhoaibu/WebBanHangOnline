@@ -54,37 +54,56 @@
                         </td>
 
                         <td class="text-center">
-                            <div class="d-inline-flex align-items-center quantity-box">
-                                <button type="button"
-                                        class="btn btn-outline-secondary btn-sm btn-minus">
+                            <form asp-action="Update"
+                                  method="post"
+                                  class="d-inline-flex align-items-center">
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden" name="id" value="@item.Id" />
+
+                                <button type="submit"
+                                        name="quantity"
+                                        value="@(item.Quantity - 1)"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        @(item.Quantity <= 1 ? "disabled" : "")>
                                     −
                                 </button>
 
-                                <input type="number"
-                                       class="form-control form-control-sm text-center quantity-input"
+                                <input type="text"
+                                       class="form-control form-control-sm text-center mx-1"
                                        value="@item.Quantity"
-                                       min="1"
-                                       data-id="@item.Id"
+                                       readonly
                                        style="width:60px" />
 
-                                <button type="button"
-                                        class="btn btn-outline-secondary btn-sm btn-plus">
+                                <button type="submit"
+                                        name="quantity"
+                                        value="@(item.Quantity + 1)"
+                                        class="btn btn-outline-secondary btn-sm">
                                     +
                                 </button>
-                            </div>
+                            </form>
                         </td>
+
 
                         <td class="fw-semibold text-danger sub-total">
                             @sub.ToString("N0") đ
                         </td>
 
                         <td>
-                            <a asp-action="Remove"
-                               asp-route-id="@item.Id"
-                               class="btn btn-sm btn-outline-danger">
-                                Xóa
-                            </a>
+                            <form asp-action="Remove"
+                                  asp-route-id="@item.Id"
+                                  method="post"
+                                  class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Xóa sản phẩm này?')">
+                                    Xóa
+                                </button>
+                            </form>
                         </td>
+
+
                     </tr>
                 }
                 </tbody>
