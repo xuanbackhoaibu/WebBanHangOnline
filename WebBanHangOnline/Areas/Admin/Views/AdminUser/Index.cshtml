@@ -1,0 +1,41 @@
+@model List<ApplicationUser>
+
+<h3 class="mb-3">👤 Quản lý người dùng</h3>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+    <tr>
+        <th>Email</th>
+        <th>Username</th>
+        <th>Trạng thái</th>
+        <th width="180">Thao tác</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var user in Model)
+    {
+        <tr>
+            <td>@user.Email</td>
+            <td>@user.UserName</td>
+            <td>
+                @if (user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
+                {
+                    <span class="badge bg-danger">Bị khóa</span>
+                }
+                else
+                {
+                    <span class="badge bg-success">Hoạt động</span>
+                }
+            </td>
+            <td>
+                <a asp-action="ToggleLock"
+                   asp-route-id="@user.Id"
+                   class="btn btn-sm btn-warning"
+                   onclick="return confirm('Xác nhận thay đổi trạng thái?')">
+                    🔒 / 🔓
+                </a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -4,7 +4,6 @@ namespace WebBanHangOnline.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        // Mở rộng sau nếu cần
-        // public string FullName { get; set; }
+        public string? FullName { get; set; }
     }
 }

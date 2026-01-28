@@ -1,0 +1,73 @@
+@model List<WebBanHangOnline.Models.ViewModels.UserViewModel>
+
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h4 class="mb-4">👤 Quản lý người dùng</h4>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Email</th>
+            <th>Tên đăng nhập</th>
+            <th>Vai trò</th>
+            <th>Trạng thái</th>
+            <th width="160">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.UserName</td>
+
+                <td>
+                    @if (user.IsAdmin)
+                    {
+                        <span class="badge bg-primary">Admin</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">User</span>
+                    }
+                </td>
+
+                <td>
+                    @if (user.IsLocked)
+                    {
+                        <span class="badge bg-danger">Bị khóa</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Hoạt động</span>
+                    }
+                </td>
+
+                <td>
+                    @if (!user.IsAdmin)
+                    {
+                        <form asp-action="ToggleLock" method="post">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button class="btn btn-sm @(user.IsLocked ? "btn-success" : "btn-warning")">
+                                @(user.IsLocked ? "🔓 Mở khóa" : "🔒 Khóa")
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-muted fst-italic">Không khả dụng</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

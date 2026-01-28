@@ -6,13 +6,14 @@ namespace WebBanHangOnline.Data
 {
     public static class DbInitializer
     {
-        public static async Task SeedAsync(IServiceProvider serviceProvider)
+        public static async Task SeedAsync(IServiceProvider services)
         {
-            using var scope = serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            // ============================
+            // LẤY SERVICE (KHÔNG TẠO SCOPE MỚI)
+            // ============================
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
 
             // ============================
             // 1️⃣ MIGRATE DATABASE
@@ -20,17 +21,24 @@ namespace WebBanHangOnline.Data
             await context.Database.MigrateAsync();
 
             // ============================
-            // 2️⃣ SEED ROLE ADMIN
+            // 2️⃣ SEED ROLES (ADMIN + USER)
             // ============================
-            if (!await roleManager.RoleExistsAsync("Admin"))
+            string[] roles = { "Admin", "User" };
+
+            foreach (var role in roles)
             {
-                await roleManager.CreateAsync(new IdentityRole("Admin"));
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
             }
 
             // ============================
-            // 3️⃣ SEED USER ADMIN
+            // 3️⃣ SEED ADMIN USER
             // ============================
             var adminEmail = "admin@shop.com";
+            var adminPassword = "Admin@123";
+
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
@@ -39,17 +47,23 @@ namespace WebBanHangOnline.Data
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    FullName = "Administrator"
                 };
 
-                await userManager.CreateAsync(adminUser, "Admin@123");
+                await userManager.CreateAsync(adminUser, adminPassword);
+            }
+
+            // GÁN ROLE ADMIN (PHÒNG TRƯỜNG HỢP CHƯA CÓ)
+            if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+            {
                 await userManager.AddToRoleAsync(adminUser, "Admin");
             }
 
             // ============================
-            // 4️⃣ SEED CATEGORY (QUAN TRỌNG)
+            // 4️⃣ SEED CATEGORY (WEB BÁN HÀNG)
             // ============================
-            if (!context.Categories.Any())
+            if (!await context.Categories.AnyAsync())
             {
                 context.Categories.AddRange(
                     new Category { Name = "Đồ Nam", IsActive = true },
