@@ -18,7 +18,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         }
 
         // ===============================
-        // DANH SÁCH USER
+        // 📄 DANH SÁCH USER
         // ===============================
         public async Task<IActionResult> Index()
         {
@@ -44,7 +44,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         }
 
         // ===============================
-        // KHÓA / MỞ USER
+        // 🔒 / 🔓 KHÓA USER
         // ===============================
         [HttpPost]
         public async Task<IActionResult> ToggleLock(string id)
@@ -67,7 +67,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         }
 
         // ===============================
-        // CẤP CLIENT
+        // ⭐ CẤP CLIENT
         // ===============================
         [HttpPost]
         public async Task<IActionResult> GrantClient(string id)
@@ -76,31 +76,41 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             if (user == null) return NotFound();
 
             if (await _userManager.IsInRoleAsync(user, "Admin"))
-            {
-                TempData["Error"] = "Không thể cấp Client cho Admin";
                 return RedirectToAction(nameof(Index));
-            }
 
             if (!await _userManager.IsInRoleAsync(user, "Client"))
-            {
                 await _userManager.AddToRoleAsync(user, "Client");
-            }
 
             return RedirectToAction(nameof(Index));
         }
 
         // ===============================
-        // XOÁ USER
+        // 🔁 THU HỒI CLIENT → USER
         // ===============================
         [HttpPost]
-        public async Task<IActionResult> DeleteUser(string id)
+        public async Task<IActionResult> RevokeClient(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            if (await _userManager.IsInRoleAsync(user, "Client"))
+                await _userManager.RemoveFromRoleAsync(user, "Client");
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ===============================
+        // ❌ XÓA USER
+        // ===============================
+        [HttpPost]
+        public async Task<IActionResult> Delete(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
             if (await _userManager.IsInRoleAsync(user, "Admin"))
             {
-                TempData["Error"] = "Không thể xoá Admin";
+                TempData["Error"] = "Không thể xóa Admin";
                 return RedirectToAction(nameof(Index));
             }
 
