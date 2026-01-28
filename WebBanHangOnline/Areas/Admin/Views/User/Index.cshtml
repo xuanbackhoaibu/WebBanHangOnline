@@ -1,6 +1,5 @@
 @model List<WebBanHangOnline.Models.ViewModels.UserViewModel>
 
-
 @{
     ViewData["Title"] = "Quản lý người dùng";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
@@ -17,10 +16,10 @@
     <thead class="table-light">
         <tr>
             <th>Email</th>
-            <th>Tên đăng nhập</th>
+            <th>UserName</th>
             <th>Vai trò</th>
             <th>Trạng thái</th>
-            <th width="160">Thao tác</th>
+            <th width="260">Thao tác</th>
         </tr>
     </thead>
     <tbody>
@@ -34,6 +33,10 @@
                     @if (user.IsAdmin)
                     {
                         <span class="badge bg-primary">Admin</span>
+                    }
+                    else if (user.IsClient)
+                    {
+                        <span class="badge bg-info">Client</span>
                     }
                     else
                     {
@@ -52,14 +55,31 @@
                     }
                 </td>
 
-                <td>
+                <td class="d-flex gap-2">
                     @if (!user.IsAdmin)
                     {
+                        <!-- KHÓA -->
                         <form asp-action="ToggleLock" method="post">
                             <input type="hidden" name="id" value="@user.Id" />
                             <button class="btn btn-sm @(user.IsLocked ? "btn-success" : "btn-warning")">
-                                @(user.IsLocked ? "🔓 Mở khóa" : "🔒 Khóa")
+                                @(user.IsLocked ? "🔓 Mở" : "🔒 Khóa")
                             </button>
+                        </form>
+
+                        <!-- CẤP CLIENT -->
+                        @if (!user.IsClient)
+                        {
+                            <form asp-action="GrantClient" method="post">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button class="btn btn-sm btn-info">⭐ Client</button>
+                            </form>
+                        }
+
+                        <!-- XOÁ -->
+                        <form asp-action="DeleteUser" method="post"
+                              onsubmit="return confirm('Xoá tài khoản này?')">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button class="btn btn-sm btn-danger">🗑 Xoá</button>
                         </form>
                     }
                     else

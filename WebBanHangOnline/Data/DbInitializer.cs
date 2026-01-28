@@ -21,9 +21,9 @@ namespace WebBanHangOnline.Data
             await context.Database.MigrateAsync();
 
             // ============================
-            // 2️⃣ SEED ROLES (ADMIN + USER)
+            // 2️⃣ SEED ROLES (ADMIN + USER + CLIEND)
             // ============================
-            string[] roles = { "Admin", "User" };
+            string[] roles = { "Admin", "User", "Client" };
 
             foreach (var role in roles)
             {
@@ -32,6 +32,7 @@ namespace WebBanHangOnline.Data
                     await roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
+
 
             // ============================
             // 3️⃣ SEED ADMIN USER
