@@ -55,10 +55,10 @@
                     }
                 </td>
 
-                <td class="d-flex gap-2">
+                <td class="d-flex gap-2 flex-wrap">
                     @if (!user.IsAdmin)
                     {
-                        <!-- KHÓA -->
+                        <!-- KHÓA / MỞ -->
                         <form asp-action="ToggleLock" method="post">
                             <input type="hidden" name="id" value="@user.Id" />
                             <button class="btn btn-sm @(user.IsLocked ? "btn-success" : "btn-warning")">
@@ -71,13 +71,21 @@
                         {
                             <form asp-action="GrantClient" method="post">
                                 <input type="hidden" name="id" value="@user.Id" />
-                                <button class="btn btn-sm btn-info">⭐ Client</button>
+                                <button class="btn btn-sm btn-info">⭐ Cấp Client</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <!-- THU HỒI CLIENT -->
+                            <form asp-action="RevokeClient" method="post">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button class="btn btn-sm btn-secondary">↩ Thu hồi Client</button>
                             </form>
                         }
 
-                        <!-- XOÁ -->
-                        <form asp-action="DeleteUser" method="post"
-                              onsubmit="return confirm('Xoá tài khoản này?')">
+                        <!-- XOÁ USER -->
+                        <form asp-action="Delete" method="post"
+                              onsubmit="return confirm('Bạn chắc chắn muốn xoá user này?')">
                             <input type="hidden" name="id" value="@user.Id" />
                             <button class="btn btn-sm btn-danger">🗑 Xoá</button>
                         </form>
@@ -87,6 +95,7 @@
                         <span class="text-muted fst-italic">Không khả dụng</span>
                     }
                 </td>
+
             </tr>
         }
     </tbody>
