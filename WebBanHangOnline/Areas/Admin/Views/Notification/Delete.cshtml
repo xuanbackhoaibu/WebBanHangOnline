@@ -1,0 +1,18 @@
+@model WebBanHangOnline.Models.Notification
+@{
+    ViewData["Title"] = "Xóa Thông báo";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<h4>Bạn có chắc muốn xóa thông báo này không?</h4>
+<div>
+    <strong>@Model.Title</strong>
+    <p>@Model.Content</p>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="NotificationId" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

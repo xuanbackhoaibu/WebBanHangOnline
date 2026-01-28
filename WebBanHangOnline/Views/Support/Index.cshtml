@@ -1,0 +1,63 @@
+@model List<WebBanHangOnline.Models.SupportFaq>
+
+@{
+    ViewData["Title"] = "Trung tâm hỗ trợ";
+}
+
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Trung tâm hỗ trợ</h3>
+
+    <div class="row text-center mb-4">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <i class="bi bi-question-circle fs-2"></i>
+                <h6 class="mt-2">Câu hỏi thường gặp</h6>
+                <p>Giải đáp nhanh các vấn đề phổ biến</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <a asp-action="Create" class="text-decoration-none">
+                <div class="card p-3">
+                    <i class="bi bi-chat-dots fs-2"></i>
+                    <h6 class="mt-2">Gửi yêu cầu</h6>
+                    <p>Liên hệ với bộ phận hỗ trợ</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a asp-action="Track" class="text-decoration-none">
+                <div class="card p-3">
+                    <i class="bi bi-search fs-2"></i>
+                    <h6 class="mt-2">Theo dõi yêu cầu</h6>
+                    <p>Kiểm tra trạng thái hỗ trợ</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <h5>Câu hỏi thường gặp</h5>
+
+    <div class="accordion mt-3" id="faqAccordion">
+        @foreach (var f in Model)
+        {
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#faq_@f.SupportFaqId">
+                        @f.Question
+                    </button>
+                </h2>
+                <div id="faq_@f.SupportFaqId"
+                     class="accordion-collapse collapse"
+                     data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        @f.Answer
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

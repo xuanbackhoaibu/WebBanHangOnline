@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h2>📑 Báo cáo doanh thu</h2>
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4">
+        <label>Từ ngày</label>
+        <input type="date" name="from" class="form-control" />
+    </div>
+    <div class="col-md-4">
+        <label>Đến ngày</label>
+        <input type="date" name="to" class="form-control" />
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary me-2">Lọc</button>
+        <a asp-action="ExportExcel" class="btn btn-success">Xuất Excel</a>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5>Tổng doanh thu</h5>
+                <h3>@String.Format("{0:N0} đ", ViewBag.TotalRevenue)</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5>Tổng đơn hàng</h5>
+                <h3>@ViewBag.TotalOrders</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a asp-action="TopProducts" class="btn btn-dark">
+    Xem Top sản phẩm bán chạy
+</a>

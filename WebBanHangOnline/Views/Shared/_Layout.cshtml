@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WebBanHangOnline</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebBanHangOnline.styles.css" asp-append-version="true" />
+</head>
+<body class="coutura-body">
+
+<!-- ================= TOP BAR ================= -->
+<div class="coutura-topbar">
+    <div class="container d-flex justify-content-between align-items-center small">
+
+        <div class="d-flex gap-3">
+            <span>Giao hàng toàn quốc</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-4">
+
+            <a asp-controller="Notification"
+               asp-action="Index"
+               class="text-decoration-none">
+                <i class="bi bi-bell"></i> Thông báo
+            </a>
+
+            <a asp-controller="Support"
+               asp-action="Index"
+               class="text-decoration-none">
+                <i class="bi bi-question-circle"></i> Hỗ trợ
+            </a>
+            <!-- Ngôn ngữ -->
+            <div class="dropdown">
+                <a class="dropdown-toggle text-decoration-none"
+                   href="javascript:void(0)"
+                   data-bs-toggle="dropdown">
+                    <i class="bi bi-globe"></i> Tiếng Việt
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="?lang=vi">🇻🇳 Tiếng Việt</a></li>
+                    <li><a class="dropdown-item" href="?lang=en">🇬🇧 English</a></li>
+                </ul>
+            </div>
+
+            <!-- LOGIN / USER -->
+            <ul class="nav align-items-center mb-0">
+                <partial name="_LoginPartial" />
+            </ul>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- ================= HEADER ================= -->
+<header class="coutura-header">
+    <div class="container d-flex align-items-center justify-content-between gap-4">
+
+        <!-- LOGO -->
+        <a asp-controller="Home"
+           asp-action="Index"
+           class="coutura-logo">
+            xuanbac<span>.</span>
+        </a>
+
+        <!-- SEARCH -->
+        <form asp-controller="Product"
+              asp-action="Index"
+              method="get"
+              class="coutura-search flex-grow-1">
+
+            <input type="text"
+                   name="keyword"
+                   class="form-control"
+                   placeholder="Tìm sản phẩm..." />
+
+            <button type="submit" class="btn btn-search">
+                <i class="bi bi-search"></i>
+            </button>
+        </form>
+
+        <!-- ICONS -->
+        <div class="header-icons d-flex align-items-center gap-3">
+
+            <a href="#" class="icon-btn">
+                <i class="bi bi-search"></i>
+            </a>
+
+            <a href="#" class="icon-btn">
+                <i class="bi bi-heart"></i>
+            </a>
+
+            <!-- CART -->
+            <a asp-controller="Cart"
+               asp-action="Index"
+               class="icon-btn position-relative">
+                <i class="bi bi-cart3"></i>
+                <span class="cart-badge">3</span>
+            </a>
+        </div>
+
+    </div>
+</header>
+
+<!-- ================= MENU ================= -->
+<nav class="coutura-menu">
+    <div class="container">
+        <ul class="nav py-2 align-items-center">
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Home"
+                   asp-action="Index">
+                    Trang chủ
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                   asp-controller="Product"
+                   asp-action="Index">
+                    Sản phẩm
+                </a>
+            </li>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <li class="nav-item">
+                    <a class="nav-link"
+                       asp-controller="Order"
+                       asp-action="MyOrders">
+                        Đơn hàng của tôi
+                    </a>
+                </li>
+            }
+
+            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+            {
+                <li class="nav-item dropdown ms-auto">
+                    <a class="nav-link dropdown-toggle admin-link"
+                       href="javascript:void(0)"
+                       data-bs-toggle="dropdown">
+                        Admin
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item"
+                               asp-area="Admin"
+                               asp-controller="Dashboard"
+                               asp-action="Index">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item"
+                               asp-area="Admin"
+                               asp-controller="Product"
+                               asp-action="Index">
+                                Quản lý sản phẩm
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item"
+                               asp-area="Admin"
+                               asp-controller="Order"
+                               asp-action="Index">
+                                Quản lý đơn hàng
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            }
+
+        </ul>
+    </div>
+</nav>
+
+<!-- ================= MAIN ================= -->
+<div class="container my-5">
+    <main role="main">
+        @RenderBody()
+    </main>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="coutura-footer">
+    <div class="container footer-grid">
+
+        <div>
+            <h5>couturamona.</h5>
+            <p>Thời trang cao cấp, phong cách tối giản, hiện đại.</p>
+        </div>
+
+        <div>
+            <h6>Thông tin</h6>
+            <ul>
+                <li>Trang chủ</li>
+                <li>Giới thiệu</li>
+                <li>Chính sách</li>
+                <li>Liên hệ</li>
+            </ul>
+        </div>
+
+        <div>
+            <h6>Hỗ trợ</h6>
+            <ul>
+                <li>Hỏi đáp</li>
+                <li>Giao hàng</li>
+                <li>Thanh toán</li>
+            </ul>
+        </div>
+
+        <div>
+            <h6>Đăng ký nhận tin</h6>
+            <input type="email" placeholder="Email của bạn">
+            <button>Gửi</button>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2025 - WebBanHangOnline | Coutura UI
+    </div>
+</footer>
+
+@RenderSection("Scripts", required: false)
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

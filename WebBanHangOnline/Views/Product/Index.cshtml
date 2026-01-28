@@ -1,0 +1,84 @@
+
+@model IEnumerable<WebBanHangOnline.Models.Product>
+@{
+    ViewData["Title"] = "Shop";
+}
+
+<div class="row">
+    <!-- FILTER -->
+    <div class="col-md-3">
+        <form method="get">
+            <h5>Danh mục</h5>
+            <select name="categoryId" class="form-select mb-2">
+                <option value="">Tất cả</option>
+                @foreach (var c in ViewBag.Categories)
+                {
+                    <option value="@c.CategoryId">@c.Name</option>
+                }
+            </select>
+
+            <h5>Giá</h5>
+            <input name="minPrice" class="form-control mb-1" placeholder="Từ" />
+            <input name="maxPrice" class="form-control mb-2" placeholder="Đến" />
+
+            <h5>Size</h5>
+            <select name="size" class="form-select mb-2">
+                <option value="">Tất cả</option>
+                <option>S</option><option>M</option><option>L</option><option>XL</option>
+            </select>
+
+            <h5>Màu</h5>
+            <select name="color" class="form-select mb-2">
+                <option value="">Tất cả</option>
+                <option>Đen</option><option>Trắng</option><option>Xanh</option>
+            </select>
+
+            <button class="btn btn-primary w-100">Lọc</button>
+        </form>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between mb-3">
+            <input name="keyword" formmethod="get" class="form-control w-50" placeholder="Tìm sản phẩm..." />
+            <select name="sort" class="form-select w-25">
+                <option value="">Sắp xếp</option>
+                <option value="price_asc">Giá ↑</option>
+                <option value="price_desc">Giá ↓</option>
+                <option value="newest">Mới nhất</option>
+            </select>
+        </div>
+
+        <div class="row">
+            @foreach (var p in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@p.Thumbnail" class="card-img-top" />
+                        <div class="card-body">
+                            <h6>@p.Name</h6>
+                            <strong>@p.Price.ToString("N0") đ</strong>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a asp-action="Details" asp-route-id="@p.ProductId" class="btn btn-sm btn-outline-primary">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- PAGINATION -->
+        <nav>
+            <ul class="pagination">
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(ViewBag.Page == i ? "active" : "")">
+                        <a class="page-link" href="?page=@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>

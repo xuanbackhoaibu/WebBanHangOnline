@@ -1,0 +1,49 @@
+@model List<WebBanHangOnline.Models.Notification>
+@{
+    ViewData["Title"] = "Thông báo";
+}
+
+<div class="container my-4">
+    <h3 class="mb-3">📢 Thông báo</h3>
+
+    <div class="mb-3">
+        <a asp-action="Index" asp-route-type="" class="btn btn-sm btn-outline-secondary me-1">Tất cả</a>
+        <a asp-action="Index" asp-route-type="flash" class="btn btn-sm btn-danger me-1">Flash Sale</a>
+        <a asp-action="Index" asp-route-type="promo" class="btn btn-sm btn-warning me-1">Ưu đãi</a>
+        <a asp-action="Index" asp-route-type="news" class="btn btn-sm btn-primary me-1">Tin tức</a>
+    </div>
+
+    <div class="row g-3">
+        @foreach (var note in Model)
+        {
+            var isNew = (DateTime.Now - note.CreatedAt).TotalHours < 24;
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <a asp-action="Details" asp-route-id="@note.NotificationId" class="text-decoration-none">
+                    <div class="notification-card shadow-sm rounded overflow-hidden position-relative @note.Type">
+                        @if(isNew)
+                        {
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">Mới</span>
+                        }
+                        <div class="card-header text-white fw-bold p-2">
+                            @note.Title
+                        </div>
+                        <div class="card-body p-2">
+                            <p class="mb-1 text-truncate" style="max-height: 40px;">@note.Content</p>
+                            <small class="text-muted">@note.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+.notification-card { background: #fff; border: 1px solid #eee; transition: .3s; cursor: pointer; }
+.notification-card:hover { transform: translateY(-4px); border-color: #ee4d2d; }
+.notification-card .card-header { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notification-card.flash .card-header { background-color: #ee4d2d; }
+.notification-card.promo .card-header { background-color: #f7c948; }
+.notification-card.news .card-header { background-color: #4da6ff; }
+.notification-card .card-body p { font-size: 14px; line-height: 1.2; }
+</style>

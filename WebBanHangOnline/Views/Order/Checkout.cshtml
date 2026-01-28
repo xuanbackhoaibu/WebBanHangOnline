@@ -1,0 +1,46 @@
+@model List<CartItem>
+
+<h2>📦 Xác nhận đơn hàng</h2>
+
+<form asp-action="PlaceOrder" method="post">
+    <div class="mb-3">
+        <label>Địa chỉ giao hàng</label>
+        <input name="address" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Số điện thoại</label>
+        <input name="phone" class="form-control" required />
+    </div>
+
+    <h4>Sản phẩm</h4>
+    <ul class="list-group mb-3">
+        @{
+            decimal total = 0;
+        }
+        @foreach (var item in Model)
+        {
+            var sub = item.ProductVariant.Product.Price * item.Quantity;
+            total += sub;
+
+            <li class="list-group-item d-flex justify-content-between">
+                <span>
+                    @item.ProductVariant.Product.Name
+                    ( @item.ProductVariant.Size / @item.ProductVariant.Color )
+                    x @item.Quantity
+                </span>
+                <strong>@sub.ToString("N0") đ</strong>
+            </li>
+        }
+    </ul>
+
+    <h4 class="text-end">
+        Tổng tiền: <strong>@total.ToString("N0") đ</strong>
+    </h4>
+
+    <div class="text-end">
+        <button class="btn btn-success btn-lg">
+            Đặt hàng
+        </button>
+    </div>
+</form>

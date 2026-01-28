@@ -1,0 +1,336 @@
+﻿@model List<WebBanHangOnline.Models.Product>
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+    <div class="hero-content">
+        <small>XUANBAC</small>
+        <h1>Autumn<br />& Winter 2026</h1>
+        <a href="#" class="btn-main">MUA NGAY</a>
+    </div>
+    <img src="/images/hero.jpg" class="hero-img" />
+</section>
+
+<!-- ================= WOMEN ================= -->
+<section class="section container">
+    <div class="row align-items-center">
+        <div class="col-lg-5">
+            <img src="/images/women-banner.jpg" class="img-fluid">
+        </div>
+        <div class="col-lg-7">
+            <h4 class="section-title"> THỜI TRANG NỮ </h4>
+            <div class="row g-4">
+                @foreach (var p in Model
+                              .Where(x => x.Category != null 
+                                          && x.Category.Name == "Đồ Nữ"
+                                          && x.IsActive)
+                              .Take(6))
+                {
+                    <div class="col-6 col-md-4">
+                        <div class="product-card">
+                            <span class="badge hot">HOT</span>
+                            <a asp-controller="Product"
+                               asp-action="Details"
+                               asp-route-id="@p.ProductId"
+                               asp-route-slug="@p.Slug">
+                                <img src="@p.Thumbnail" />
+                            </a>
+                            <h6>@p.Name</h6>
+                            <div class="price">@p.Price.ToString("N0") đ</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ================= SALE ================= -->
+<section class="sale-box">
+    <div class="sale-left">
+        <img src="/images/d.jpg">
+        <p>Mini backpack</p>
+    </div>
+    <div class="sale-center">
+        <h3>Khuyến mãi giới hạn</h3>
+        <h2>50% OFF</h2>
+    </div>
+    <div class="sale-right">
+        <img src="/images/c.jpg">
+    </div>
+</section>
+
+<!-- ================= MEN ================= -->
+<section class="section container">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h4 class="section-title">THỜI TRANG NAM </h4>
+            <div class="row g-4">
+                @foreach (var p in Model
+                              .Where(x => x.Category != null 
+                                          && x.Category.Name == "Đồ Nam"
+                                          && x.IsActive)
+                              .Take(6))
+                {
+                    <div class="col-6 col-md-4">
+                        <div class="product-card">
+                            <span class="badge sale">SALE</span>
+                            <a asp-controller="Product"
+                               asp-action="Details"
+                               asp-route-id="@p.ProductId"
+                               asp-route-slug="@p.Slug">
+                                <img src="@p.Thumbnail" />
+                            </a>
+                            <h6>@p.Name</h6>
+                            <div class="price">@p.Price.ToString("N0") đ</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <img src="/images/men-banner.jpg" class="img-fluid">
+        </div>
+    </div>
+</section>
+
+<!-- ================= BOYS ================= -->
+<section class="section container">
+    <div class="row align-items-center">
+        <div class="col-lg-5">
+            <img src="/images/boys-banner.jpg" class="img-fluid">
+        </div>
+        <div class="col-lg-7">
+            <h4 class="section-title">THỜI TRANG BÉ TRAI</h4>
+            <div class="row g-4">
+                @foreach (var p in Model
+                              .Where(x => x.Category != null 
+                                          && x.Category.Name == "Bé Trai"
+                                          && x.IsActive)
+                              .Take(6))
+                {
+                    <div class="col-6 col-md-4">
+                        <div class="product-card">
+                            <span class="badge hot">HOT</span>
+                            <a asp-controller="Product"
+                               asp-action="Details"
+                               asp-route-id="@p.ProductId"
+                               asp-route-slug="@p.Slug">
+                                <img src="@p.Thumbnail" />
+                            </a>
+                            <h6>@p.Name</h6>
+                            <div class="price">@p.Price.ToString("N0") đ</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= GIRLS ================= -->
+<section class="section container">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h4 class="section-title">THỜI TRANG BÉ GÁI</h4>
+            <div class="row g-4">
+                @foreach (var p in Model
+                              .Where(x => x.Category != null 
+                                          && x.Category.Name == "Bé Gái"
+                                          && x.IsActive)
+                              .Take(6))
+                {
+                    <div class="col-6 col-md-4">
+                        <div class="product-card">
+                            <span class="badge sale">SALE</span>
+                            <a asp-controller="Product"
+                               asp-action="Details"
+                               asp-route-id="@p.ProductId"
+                               asp-route-slug="@p.Slug">
+                                <img src="@p.Thumbnail" />
+                            </a>
+                            <h6>@p.Name</h6>
+                            <div class="price">@p.Price.ToString("N0") đ</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <img src="/images/girls-banner.jpg" class="img-fluid">
+        </div>
+    </div>
+</section>
+
+
+<!-- ================= TABS ================= -->
+<section class="tabs container">
+    <div class="tab-head">
+        <button class="tab-btn active" data-tab="popular">Phổ biến</button>
+        <button class="tab-btn" data-tab="hot">Bán chạy</button>
+        <button class="tab-btn" data-tab="sale">Khuyến mãi</button>
+    </div>
+
+    <div class="tab-body active" id="popular">
+        <div class="row g-4">
+            @foreach (var p in Model.Take(8))
+            {
+                <div class="col-6 col-md-3">
+                    <div class="product-card">
+                        <img src="@p.Thumbnail" />
+                        <h6>@p.Name</h6>
+                        <div class="price">@p.Price.ToString("N0") đ</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="tab-body" id="hot">
+        <div class="row g-4">
+            @foreach (var p in Model.Skip(4).Take(8))
+            {
+                <div class="col-6 col-md-3">
+                    <div class="product-card">
+                        <img src="@p.Thumbnail" />
+                        <h6>@p.Name</h6>
+                        <div class="price">@p.Price.ToString("N0") đ</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="tab-body" id="sale">
+        <div class="row g-4">
+            @foreach (var p in Model.Skip(8).Take(8))
+            {
+                <div class="col-6 col-md-3">
+                    <div class="product-card">
+                        <img src="@p.Thumbnail" />
+                        <h6>@p.Name</h6>
+                        <div class="price">@p.Price.ToString("N0") đ</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ================= BLOG ================= -->
+<section class="blog container">
+    <h4 class="text-center mb-4">Xu hướng thời trang</h4>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <img src="/images/blog1.jpg" class="img-fluid">
+            <h6>Beauty life style classic</h6>
+        </div>
+        <div class="col-md-4">
+            <img src="/images/blog2.jpg" class="img-fluid">
+            <h6>The need of life with vip style</h6>
+        </div>
+        <div class="col-md-4">
+            <img src="/images/blog3.jpg" class="img-fluid">
+            <h6>There is someone standing behind you</h6>
+        </div>
+    </div>
+</section>
+
+<style>
+body { background:#f7f7f7; }
+
+/* HERO */
+.hero {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 60px;
+    margin-top: 120px;   /* 🔥 thêm dòng này */
+}
+
+.hero-content { max-width:420px; }
+.hero-content h1 { font-size:42px; line-height:1.2; }
+.hero-img { width:520px; margin-left:auto; }
+
+
+/* SECTION */
+.section { margin:70px 0; }
+.section-title { font-weight:700; margin-bottom:20px; }
+
+/* PRODUCT */
+.product-card {
+    position:relative;
+    background:#fff;
+    padding:12px;
+    text-align:center;
+    border:1px solid #eee;
+    transition:.25s;
+}
+.product-card:hover { transform:translateY(-4px); border-color:#ff6b6b; }
+.product-card img { width:100%; height:220px; object-fit:cover; }
+.product-card h6 { font-size:14px; margin:10px 0 4px; }
+.price { color:#ff6b6b; font-weight:700; }
+
+/* BADGE */
+.badge {
+    position:absolute;
+    top:10px;
+    left:10px;
+    padding:4px 8px;
+    font-size:11px;
+    color:#fff;
+}
+.badge.hot { background:#ff6b6b; }
+.badge.sale { background:#ffb703; }
+
+/* SALE BOX */
+.sale-box {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:#fdecec;
+    padding:30px;
+}
+
+/* TABS */
+.tabs { margin:70px 0; }
+.tab-head { text-align:center; margin-bottom:20px; }
+.tab-head button {
+    border:none;
+    background:none;
+    font-weight:600;
+    margin:0 10px;
+    cursor:pointer;
+}
+.tab-head .active { color:#ff6b6b; }
+
+.tab-body { display:none; }
+.tab-body.active { display:block; }
+
+/* BLOG */
+.blog img { width:100%; }
+
+@@media (max-width: 991px) {
+    .hero { flex-direction:column; text-align:center; }
+    .hero-img { width:100%; margin:20px 0 0; }
+}
+
+
+</style>
+
+@section Scripts {
+<script>
+document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-body").forEach(b => b.classList.remove("active"));
+
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+});
+</script>
+}

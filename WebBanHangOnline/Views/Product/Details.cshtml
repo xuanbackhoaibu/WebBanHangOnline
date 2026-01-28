@@ -1,0 +1,201 @@
+@model WebBanHangOnline.Models.Product
+
+<div class="container mt-4">
+    <div class="row">
+
+        <!-- ================= LEFT: GALLERY ================= -->
+        <div class="col-md-5">
+
+            <!-- ẢNH LỚN -->
+            <div class="border rounded mb-3 p-2 text-center product-main-image">
+
+                <img id="mainImage"
+                     src="@(Model.Images.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail)"
+                     class="img-fluid main-image" />
+            </div>
+
+            <!-- ẢNH NHỎ -->
+            <div class="d-flex gap-2 overflow-auto">
+                @foreach (var img in Model.Images)
+                {
+                    <img src="@img.ImageUrl"
+                         class="img-thumbnail thumb-image"
+                         style="width:70px;height:70px;object-fit:cover;cursor:pointer"
+                         onmouseover="changeImage('@img.ImageUrl')" />
+                }
+            </div>
+
+        </div>
+
+        <!-- ================= RIGHT: INFO ================= -->
+        <div class="col-md-7">
+
+            <h3>@Model.Name</h3>
+
+            <p class="text-muted">@Model.Category?.Name</p>
+
+            <h4 class="text-danger mb-3">
+                @Model.Price.ToString("N0") ₫
+            </h4>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-success px-4">
+                    Thêm vào giỏ hàng
+                </button>
+
+                <button type="submit"
+                        formaction="/Checkout/BuyNow"
+                        class="btn btn-danger px-4">
+                    Mua ngay
+                </button>
+            </div>
+
+
+
+            @if (!Model.Variants.Any())
+            {
+                <p class="text-danger">Sản phẩm chưa có phân loại</p>
+            }
+            else
+            {
+                <form asp-controller="Cart" asp-action="Add" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- VariantId -->
+                    <input type="hidden" name="variantId" id="variantId" />
+
+
+                    <!-- SIZE -->
+                    <div class="mb-2">
+                        <label class="fw-bold">Size</label>
+                        <select id="sizeSelect" class="form-select" required>
+                            <option value="">-- Chọn size --</option>
+                            @foreach (var s in Model.Variants.Select(v => v.Size).Distinct())
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- COLOR -->
+                    <div class="mb-2">
+                        <label class="fw-bold">Màu</label>
+                        <select id="colorSelect" class="form-select" disabled required>
+                            <option value="">-- Chọn màu --</option>
+                        </select>
+                    </div>
+
+                    <!-- QUANTITY -->
+                    <div class="mb-3">
+                        <label class="fw-bold">Số lượng</label>
+                        <input type="number"
+                               name="quantity"
+                               value="1"
+                               min="1"
+                               class="form-control"
+                               required />
+                    </div>
+
+                    <button type="submit" class="btn btn-success px-4">
+                        Thêm vào giỏ hàng
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    <hr />
+    
+    <div class="product-description border rounded p-3 bg-light">
+        @Model.Description
+    </div>
+
+    <!-- ================= RELATED ================= -->
+    <h5>Sản phẩm liên quan</h5>
+    <div class="row">
+        @foreach (var r in ViewBag.Related)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="border p-2 text-center">
+                    <img src="@r.Thumbnail" class="img-fluid mb-2" style="height:150px;object-fit:contain" />
+                    <div>@r.Name</div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ====== GALLERY ======
+    function changeImage(src) {
+        document.getElementById("mainImage").src = src;
+    }
+    window.changeImage = changeImage;
+
+    // ====== VARIANT ======
+    const variants = @Html.Raw(
+                         System.Text.Json.JsonSerializer.Serialize(
+                             Model.Variants.Select(v => new {
+                                 Id = v.Id,
+                                 Size = v.Size,
+                                 Color = v.Color
+                             })
+                         )
+                     );
+
+    const sizeSelect = document.getElementById("sizeSelect");
+    const colorSelect = document.getElementById("colorSelect");
+    const variantInput = document.getElementById("variantId");
+
+    if (!sizeSelect || !colorSelect) return;
+
+    sizeSelect.addEventListener("change", function () {
+        const size = this.value;
+
+        colorSelect.innerHTML = '<option value="">-- Chọn màu --</option>';
+        colorSelect.disabled = true;
+        variantInput.value = "";
+
+        if (!size) return;
+
+        const colors = [...new Set(
+            variants
+                .filter(v => v.Size === size && v.Color && v.Color.trim() !== "")
+                .map(v => v.Color)
+        )];
+
+        if (colors.length === 0) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = "Không có màu cho size này";
+            colorSelect.appendChild(opt);
+            return;
+        }
+
+        colors.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.textContent = c;
+            colorSelect.appendChild(opt);
+        });
+
+        colorSelect.disabled = false;
+    });
+
+    colorSelect.addEventListener("change", function () {
+        const size = sizeSelect.value;
+        const color = this.value;
+
+        const variant = variants.find(v =>
+            v.Size === size && v.Color === color
+        );
+
+        variantInput.value = variant ? variant.Id : "";
+    });
+
+});
+</script>
+}

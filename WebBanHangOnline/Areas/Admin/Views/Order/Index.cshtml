@@ -1,0 +1,75 @@
+@model List<Order>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+<h2>📦 Quản lý đơn hàng</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Khách</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    @foreach (var o in Model)
+    {
+        <tr>
+            <td>#@o.Id</td>
+            <td>@o.User?.Email</td>
+            <td>@o.TotalAmount.ToString("N0") đ</td>
+            <td>@o.Status</td>
+
+            <td>
+                <!-- XEM CHI TIẾT -->
+                <a asp-area="Admin"
+                   asp-controller="Order"
+                   asp-action="Details"
+                   asp-route-id="@o.Id"
+                   class="btn btn-primary btn-sm">
+                    Xem
+                </a>
+
+                <!-- GIAO -->
+                <form asp-area="Admin"
+                      asp-controller="Order"
+                      asp-action="UpdateStatus"
+                      method="post"
+                      class="d-inline">
+                    <input type="hidden" name="id" value="@o.Id" />
+                    <input type="hidden" name="status" value="Shipping" />
+                    <button class="btn btn-warning btn-sm">Giao</button>
+                </form>
+
+                <!-- HOÀN THÀNH -->
+                <form asp-area="Admin"
+                      asp-controller="Order"
+                      asp-action="UpdateStatus"
+                      method="post"
+                      class="d-inline">
+                    <input type="hidden" name="id" value="@o.Id" />
+                    <input type="hidden" name="status" value="Completed" />
+                    <button class="btn btn-success btn-sm">✔</button>
+                </form>
+
+                <!-- HỦY -->
+                <form asp-area="Admin"
+                      asp-controller="Order"
+                      asp-action="UpdateStatus"
+                      method="post"
+                      class="d-inline">
+                    <input type="hidden" name="id" value="@o.Id" />
+                    <input type="hidden" name="status" value="Cancelled" />
+                    <button class="btn btn-danger btn-sm">✖</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

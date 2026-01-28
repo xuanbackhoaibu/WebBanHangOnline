@@ -1,0 +1,25 @@
+@model List<Order>
+
+<h2>📜 Đơn hàng của tôi</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Mã</th>
+        <th>Ngày</th>
+        <th>Tổng tiền</th>
+        <th>Trạng thái</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var o in Model)
+    {
+        <tr>
+            <td>#@o.Id</td>
+            <td>@o.OrderDate.ToString("dd/MM/yyyy")</td>
+            <td>@o.TotalAmount.ToString("N0") đ</td>
+            <td>@o.Status</td>
+        </tr>
+    }
+    </tbody>
+</table>

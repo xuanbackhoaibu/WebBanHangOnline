@@ -1,0 +1,187 @@
+@model WebBanHangOnline.Models.Product
+
+@{
+    ViewData["Title"] = "Sửa sản phẩm";
+    Layout = "_AdminLayout";
+}
+
+<h2>✏️ Sửa sản phẩm</h2>
+
+<form asp-area="Admin"
+      asp-controller="Product"
+      asp-action="Edit"
+      method="post"
+      enctype="multipart/form-data"
+      onsubmit="return confirmSubmit();">
+
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ProductId" />
+
+    <div class="text-danger mb-3" asp-validation-summary="ModelOnly"></div>
+
+    <div class="mb-3">
+        <label class="form-label">Tên sản phẩm</label>
+        <input asp-for="Name" class="form-control" />
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+
+    <!-- Slug (readonly để debug) -->
+    <div class="mb-3">
+        <label class="form-label">Slug (SEO)</label>
+        <input asp-for="Slug" class="form-control" readonly />
+    </div>
+
+    <!-- Danh mục -->
+    <div class="mb-3">
+        <label class="form-label">Danh mục</label>
+        <select asp-for="CategoryId" class="form-select">
+            @foreach (var c in ViewBag.Categories)
+            {
+                <option value="@c.CategoryId" selected="@(c.CategoryId == Model.CategoryId)">
+                    @c.Name
+                </option>
+            }
+        </select>
+        <span class="text-danger" asp-validation-for="CategoryId"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Giá</label>
+        <input asp-for="Price"
+               class="form-control"
+               type="number"
+               step="0.01"
+               min="0"
+               inputmode="decimal" />
+        <span class="text-danger" asp-validation-for="Price"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Mô tả</label>
+        <textarea asp-for="Description"
+                  class="form-control"
+                  rows="4"></textarea>
+    </div>
+
+    <div class="mb-3 form-check">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label class="form-check-label">Kích hoạt</label>
+    </div>
+
+    <hr />
+
+    <!-- Thumbnail hiện tại -->
+    @if (!string.IsNullOrEmpty(Model.Thumbnail) && Model.Thumbnail != "/images/no-image.png")
+    {
+        <div class="mb-3">
+            <label class="form-label">Ảnh đại diện hiện tại:</label>
+            <br />
+            <img src="@Model.Thumbnail"
+                 class="img-thumbnail"
+                 style="max-width:150px;" />
+        </div>
+    }
+
+    <!-- Upload thumbnail mới -->
+    <div class="mb-3">
+        <label class="form-label">Thay đổi ảnh đại diện</label>
+        <input type="file"
+               name="ThumbnailFile"
+               class="form-control"
+               accept="image/*"
+               onchange="previewThumb(this)" />
+        <img id="thumbPreview"
+             class="img-thumbnail mt-2 d-none"
+             style="max-width:150px;" />
+    </div>
+
+    <hr />
+
+    <!-- Ảnh phụ hiện tại -->
+    @if (Model.Images != null && Model.Images.Any())
+    {
+        <div class="mb-3">
+            <label class="form-label">
+                Ảnh phụ hiện tại (@Model.Images.Count() ảnh):
+            </label>
+
+            <div class="d-flex flex-wrap">
+                @foreach (var img in Model.Images)
+                {
+                    <div class="position-relative me-2 mb-2">
+                        <img src="@img.ImageUrl"
+                             class="img-thumbnail"
+                             style="max-width:100px;" />
+
+                        <input type="checkbox"
+                               name="DeleteImageIds"
+                               value="@img.Id"
+                               class="form-check-input position-absolute top-0 start-0"
+                               title="Tích để xoá ảnh này"
+                               onclick="confirmDeleteImage(this)" />
+                    </div>
+                }
+            </div>
+
+            <small class="text-muted">
+                Tích vào ảnh muốn xoá khi cập nhật
+            </small>
+        </div>
+    }
+
+    <!-- Upload ảnh phụ mới -->
+    <div class="mb-3">
+        <label class="form-label">Thêm ảnh phụ mới</label>
+        <input type="file"
+               name="ImageFiles"
+               class="form-control"
+               accept="image/*"
+               multiple />
+    </div>
+
+    <button id="btnSave"
+            type="submit"
+            class="btn btn-success">
+        💾 Cập nhật
+    </button>
+
+    <a asp-action="Index"
+       class="btn btn-secondary ms-2">
+        ← Quay lại
+    </a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function previewThumb(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.getElementById("thumbPreview");
+                    img.src = e.target.result;
+                    img.classList.remove("d-none");
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function confirmDeleteImage(checkbox) {
+            if (checkbox.checked) {
+                const ok = confirm("Bạn có chắc chắn muốn xoá ảnh này?");
+                if (!ok) checkbox.checked = false;
+            }
+        }
+
+        function confirmSubmit() {
+            const ok = confirm("Bạn có chắc chắn muốn cập nhật sản phẩm?");
+            if (ok) {
+                const btn = document.getElementById("btnSave");
+                btn.disabled = true;
+                btn.innerText = "Đang lưu...";
+            }
+            return ok;
+        }
+    </script>
+}

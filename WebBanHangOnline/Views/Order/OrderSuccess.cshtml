@@ -1,0 +1,36 @@
+@model Order
+
+<h2>🎉 Đặt hàng thành công!</h2>
+
+<p><strong>Mã đơn:</strong> #@Model.Id</p>
+<p><strong>Trạng thái:</strong> @Model.Status</p>
+
+<h4>Sản phẩm:</h4>
+<ul>
+    @foreach (var item in Model.OrderDetails)
+    {
+    <li>
+        @item.ProductVariant.Product.Name
+        x @item.Quantity
+        – @item.Price.ToString("N0") đ
+    </li>
+    }
+</ul>
+
+<h3>
+    Tổng tiền: @Model.TotalAmount.ToString("N0") đ
+</h3>
+
+<a asp-action="MyOrders" class="btn btn-primary">
+    Xem đơn hàng của tôi
+</a>
+
+@if (Model.Status == "Pending")
+{
+    <a asp-controller="Payment"
+       asp-action="VNPay"
+       asp-route-orderId="@Model.Id"
+       class="btn btn-danger btn-lg">
+        Thanh toán VNPay
+    </a>
+}

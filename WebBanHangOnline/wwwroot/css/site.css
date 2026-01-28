@@ -1,0 +1,412 @@
+/* ================= BOOTSTRAP MẶC ĐỊNH ================= */
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white,
+  0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+  background: #f5f5f5;
+}
+
+/* ================= SHOPEE STYLE ================= */
+:root {
+  --shopee-orange: #ee4d2d;
+  --shopee-orange-light: #ff7337;
+  --shopee-gray: #f5f5f5;
+}
+
+/* ===== TOP BAR (Shopee) ===== */
+.shopee-topbar {
+  background: linear-gradient(90deg,
+  var(--shopee-orange),
+  var(--shopee-orange-light));
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.shopee-topbar a:hover {
+  text-decoration: underline;
+}
+
+/* ===== HEADER (Shopee) ===== */
+.shopee-header {
+  background: var(--shopee-orange);
+  padding: 16px 0;
+}
+
+.shopee-logo {
+  font-size: 26px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+.shopee-logo:hover {
+  color: white;
+}
+
+/* ===== SEARCH BAR ===== */
+.shopee-search {
+  position: relative;
+}
+
+.shopee-search input {
+  height: 40px;
+  border-radius: 3px;
+  padding-right: 60px;
+}
+
+.btn-search {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  height: 32px;
+  width: 48px;
+  background: var(--shopee-orange-light);
+  color: white;
+  border: none;
+}
+
+.btn-search:hover {
+  background: #ff5f1f;
+}
+
+/* ===== CART ===== */
+.shopee-cart {
+  font-size: 28px;
+  color: white;
+  position: relative;
+  text-decoration: none;
+}
+
+.shopee-cart:hover {
+  color: white;
+}
+
+.shopee-cart .badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  font-size: 12px;
+}
+
+/* ===== PRODUCT CARD (Shopee) ===== */
+.product-item {
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  border: 1px solid #eee;
+}
+
+.product-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+}
+
+.product-img {
+  position: relative;
+}
+
+.product-img img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.discount {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #ff424e;
+  color: white;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.product-info {
+  padding: 10px;
+}
+
+.product-info h6 {
+  font-size: 14px;
+  height: 36px;
+  overflow: hidden;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.price .new {
+  color: var(--shopee-orange);
+  font-weight: bold;
+}
+
+.price .old {
+  font-size: 12px;
+  text-decoration: line-through;
+  color: gray;
+}
+
+.sold {
+  font-size: 12px;
+  color: var(--shopee-orange-light);
+  margin-top: 4px;
+}
+
+/* ================= COUTURA THEME ================= */
+
+/* ===== BODY ===== */
+.coutura-body {
+  background: #f7f7f7;
+  font-family: "Playfair Display", "Segoe UI", serif;
+}
+
+/* ===== TOPBAR ===== */
+.coutura-topbar {
+  background: #f3f3f3;
+  font-size: 13px;
+  color: #555;
+  position: relative;
+  z-index: 60;
+}
+
+.coutura-topbar a {
+  color: #555;
+}
+
+/* ===== HEADER ===== */
+.coutura-header {
+  background: #fff;
+  padding: 22px 0;
+  border-bottom: 1px solid #eee;
+  position: relative;
+  z-index: 40;
+}
+
+.coutura-logo {
+  font-size: 26px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #111;
+}
+
+.coutura-logo span {
+  color: #ff6b6b;
+}
+
+.coutura-search {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+.coutura-search input {
+  border: none;
+  padding: 10px 16px;
+}
+
+.coutura-search .btn-search {
+  background: none;
+  border: none;
+  padding: 0 18px;
+}
+
+.header-icons .icon-btn {
+  color: #333;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #ff6b6b;
+  color: #fff;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+/* ===== MENU ===== */
+.coutura-menu {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  position: relative;
+  z-index: 50;
+}
+
+.coutura-menu .nav-link {
+  color: #333;
+  font-weight: 500;
+}
+
+.coutura-menu .nav-link:hover {
+  color: #ff6b6b;
+}
+
+.admin-link {
+  color: #ff6b6b !important;
+  font-weight: 700;
+}
+
+/* ===== FOOTER ===== */
+.coutura-footer {
+  background: #fafafa;
+  padding: 60px 0 20px;
+  margin-top: 80px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.coutura-footer h5,
+.coutura-footer h6 {
+  font-weight: 700;
+}
+
+.coutura-footer ul {
+  list-style: none;
+  padding: 0;
+}
+
+.coutura-footer li {
+  margin: 8px 0;
+  color: #555;
+}
+
+.coutura-footer input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.coutura-footer button {
+  margin-top: 10px;
+  padding: 10px 16px;
+  border: none;
+  background: #ff6b6b;
+  color: #fff;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 13px;
+  color: #999;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 768px) {
+  .banner-img {
+    height: 160px;
+  }
+}
+
+@media (max-width: 992px) {
+  .col-lg-2-4 {
+    width: 33.3333%;
+  }
+}
+
+@media (max-width: 576px) {
+  .col-lg-2-4 {
+    width: 50%;
+  }
+
+  .shopee-info h6 {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 991px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+/* ================= FORCE CLICK FIX ================= */
+
+/* Đảm bảo header + menu luôn nằm trên cùng */
+/* ===== FIX Z-INDEX CHUẨN ===== */
+
+.coutura-topbar {
+  position: relative;
+  z-index: 1030;
+}
+
+.coutura-header {
+  position: relative;
+  z-index: 1020;
+}
+
+.coutura-menu {
+  position: relative;
+  z-index: 1010;
+}
+
+/* Dropdown phải nổi trên header */
+.dropdown-menu {
+  z-index: 2000;
+}
+
+
+.product-description {
+  line-height: 1.7;
+  font-size: 15px;
+  color: #333;
+}
+
+.product-description p {
+  margin-bottom: 10px;
+}
+
+.product-description ul {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.product-description li {
+  list-style: disc;
+  margin-bottom: 5px;
+}
+
+
+.product-description {
+  white-space: pre-line; /* GIỮ ENTER */
+  line-height: 1.7;
+  font-size: 15px;
+  color: #333;
+}
+

@@ -1,0 +1,106 @@
+@model List<WebBanHangOnline.Models.Product>
+
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    Layout = "_AdminLayout";
+}
+
+<h2>🧥 Quản lý sản phẩm</h2>
+
+<a asp-area="Admin"
+   asp-controller="Product"
+   asp-action="Create"
+   class="btn btn-primary mb-3">
+    + Thêm sản phẩm
+</a>
+
+<table class="table table-bordered align-middle">
+    <thead>
+        <tr>
+            <th>Ảnh</th>
+            <th>Tên</th>
+            <th>Giá</th>
+            <th>Phân loại</th>
+            <th width="240">Thao tác</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    @foreach (var p in Model)
+    {
+        <tr>
+            <!-- Thumbnail + ảnh phụ -->
+            <td style="width:220px;">
+                <img src="@(!string.IsNullOrEmpty(p.Thumbnail) ? p.Thumbnail : "/images/no-image.png")"
+                     alt="@p.Name"
+                     width="80"
+                     height="80"
+                     class="img-thumbnail mb-1" />
+
+                @if (p.Images != null && p.Images.Any())
+                {
+                    <div class="d-flex flex-wrap mt-1">
+                        @foreach (var img in p.Images)
+                        {
+                            <img src="@img.ImageUrl"
+                                 width="45"
+                                 height="45"
+                                 class="img-thumbnail me-1 mb-1" />
+                        }
+                    </div>
+                }
+                else
+                {
+                    <small class="text-muted">Không có ảnh phụ</small>
+                }
+            </td>
+
+            <td>
+                <strong>@p.Name</strong><br />
+                <small class="text-muted">Slug: @p.Slug</small>
+            </td>
+
+            <td>
+                @p.Price.ToString("N0") đ
+            </td>
+
+            <!-- QUẢN LÝ VARIANT -->
+            <td>
+                <a asp-area="Admin"
+                   asp-controller="ProductVariant"
+                   asp-action="Index"
+                   asp-route-productId="@p.ProductId"
+                   class="btn btn-secondary btn-sm">
+                    Size / Màu
+                </a>
+            </td>
+
+            <td>
+                <a asp-area="Admin"
+                   asp-controller="Product"
+                   asp-action="Edit"
+                   asp-route-id="@p.ProductId"
+                   class="btn btn-warning btn-sm">
+                    ✏️ Sửa
+                </a>
+                
+
+                <form asp-area="Admin"
+                      asp-controller="Product"
+                      asp-action="Delete"
+                      asp-route-id="@p.ProductId"
+                      method="post"
+                      class="d-inline"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
+
+                    @Html.AntiForgeryToken()
+
+                    <button class="btn btn-danger btn-sm">
+                        🗑 Xóa
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

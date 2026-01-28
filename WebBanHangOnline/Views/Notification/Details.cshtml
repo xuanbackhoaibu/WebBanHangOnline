@@ -1,0 +1,18 @@
+@model WebBanHangOnline.Models.Notification
+
+@{
+    ViewData["Title"] = "Chi tiết thông báo";
+}
+
+<h2>@Model.Title</h2>
+
+<hr />
+
+<div>
+    <p>@Model.Content</p>
+    <p>
+        <small>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+    </p>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

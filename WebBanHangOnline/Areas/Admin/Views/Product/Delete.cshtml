@@ -1,0 +1,103 @@
+@model WebBanHangOnline.Models.Product
+
+@{
+    ViewData["Title"] = "Xoá sản phẩm";
+    Layout = "_AdminLayout";
+}
+
+<h2 class="text-danger">❌ Xác nhận xoá sản phẩm</h2>
+
+<div class="alert alert-warning">
+    <strong>Cảnh báo:</strong> Hành động này <u>không thể hoàn tác</u>.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Tên sản phẩm</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">Slug</dt>
+    <dd class="col-sm-9 text-muted">@Model.Slug</dd>
+
+    <dt class="col-sm-3">Giá</dt>
+    <dd class="col-sm-9">@Model.Price.ToString("N0") đ</dd>
+
+    <dt class="col-sm-3">Danh mục</dt>
+    <dd class="col-sm-9">@Model.Category?.Name</dd>
+
+    <dt class="col-sm-3">Trạng thái</dt>
+    <dd class="col-sm-9">
+        @((Model.IsActive) ? "Kích hoạt" : "Không kích hoạt")
+    </dd>
+
+    <dt class="col-sm-3">Số ảnh phụ</dt>
+    <dd class="col-sm-9">
+        @(Model.Images?.Count() ?? 0)
+    </dd>
+
+    <dt class="col-sm-3">Số biến thể</dt>
+    <dd class="col-sm-9">
+        @(Model.Variants?.Count() ?? 0)
+    </dd>
+</dl>
+
+@if (!string.IsNullOrEmpty(Model.Thumbnail) && Model.Thumbnail != "/images/no-image.png")
+{
+    <div class="mb-3">
+        <label class="form-label">Ảnh đại diện:</label>
+        <br />
+        <img src="@Model.Thumbnail"
+             class="img-thumbnail"
+             style="max-width:150px;" />
+    </div>
+}
+
+@if (Model.Images != null && Model.Images.Any())
+{
+    <div class="mb-3">
+        <label class="form-label">Ảnh phụ:</label>
+        <div class="d-flex flex-wrap">
+            @foreach (var img in Model.Images)
+            {
+                <img src="@img.ImageUrl"
+                     class="img-thumbnail me-2 mb-2"
+                     style="max-width:100px;" />
+            }
+        </div>
+    </div>
+}
+
+<form asp-area="Admin"
+      asp-controller="Product"
+      asp-action="Delete"
+      method="post"
+      onsubmit="return confirmDelete();">
+
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ProductId" />
+
+    <button id="btnDelete"
+            type="submit"
+            class="btn btn-danger">
+        🗑️ Xoá vĩnh viễn
+    </button>
+
+    <a asp-area="Admin"
+       asp-controller="Product"
+       asp-action="Index"
+       class="btn btn-secondary ms-2">
+        Huỷ
+    </a>
+</form>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            const ok = confirm("Bạn có chắc chắn muốn xoá sản phẩm này không?");
+            if (ok) {
+                document.getElementById("btnDelete").disabled = true;
+                document.getElementById("btnDelete").innerText = "Đang xoá...";
+            }
+            return ok;
+        }
+    </script>
+}

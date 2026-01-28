@@ -1,0 +1,69 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-decoration-none"
+           href="javascript:void(0)"
+           role="button"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+            <i class="bi bi-person-circle"></i>
+            @User.Identity?.Name
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+                <a class="dropdown-item"
+                   asp-area="Identity"
+                   asp-page="/Account/Manage/Index">
+                    Tài khoản của tôi
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item"
+                   asp-controller="Order"
+                   asp-action="MyOrders">
+                    Đơn mua
+                </a>
+            </li>
+
+            <li><hr class="dropdown-divider" /></li>
+
+            <li>
+                <form asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      asp-route-returnUrl="@Url.Action("Index","Home")"
+                      method="post">
+                    <button type="submit"
+                            class="dropdown-item text-danger">
+                        Đăng xuất
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-decoration-none"
+           asp-area="Identity"
+           asp-page="/Account/Login">
+            Đăng nhập
+        </a>
+    </li>
+
+    <li class="nav-item text-muted">|</li>
+
+    <li class="nav-item">
+        <a class="nav-link text-decoration-none"
+           asp-area="Identity"
+           asp-page="/Account/Register">
+            Đăng ký
+        </a>
+    </li>
+}

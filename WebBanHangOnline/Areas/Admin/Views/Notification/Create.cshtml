@@ -1,0 +1,38 @@
+@model WebBanHangOnline.Models.Notification
+@{
+    ViewData["Title"] = "Thêm Thông báo";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label class="form-label">Tiêu đề</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nội dung</label>
+        <textarea asp-for="Content" class="form-control"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Loại</label>
+        <input asp-for="Type" class="form-control" placeholder="flash/promo/news"/>
+        <span asp-validation-for="Type" class="text-danger"></span>
+    </div>
+    <div class="form-check mb-3">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label asp-for="IsActive" class="form-check-label">Hiển thị</label>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Ưu tiên</label>
+        <input asp-for="Priority" type="number" class="form-control"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

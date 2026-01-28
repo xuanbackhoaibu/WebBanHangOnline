@@ -1,0 +1,33 @@
+@model WebBanHangOnline.Models.SupportFaq
+
+<h3>Sửa FAQ</h3>
+
+<form asp-action="EditFaq" method="post">
+
+    <input type="hidden" asp-for="SupportFaqId" />
+
+    <div class="mb-3">
+        <label class="form-label">Câu hỏi</label>
+        <input asp-for="Question" class="form-control" />
+        <span asp-validation-for="Question" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Trả lời</label>
+        <textarea asp-for="Answer" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Answer" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label class="form-check-label">Hiển thị</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Cập nhật
+    </button>
+
+    <a asp-action="Faq" class="btn btn-secondary ms-2">
+        Quay lại
+    </a>
+</form>

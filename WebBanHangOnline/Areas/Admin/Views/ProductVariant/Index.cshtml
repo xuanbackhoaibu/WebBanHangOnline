@@ -1,0 +1,45 @@
+@model WebBanHangOnline.Models.Product
+
+<h3>Phân loại sản phẩm: @Model.Name</h3>
+
+<form asp-action="Create" method="post" class="row g-2 mb-3">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="productId" value="@Model.ProductId" />
+
+    <div class="col-md-3">
+        <input name="size" class="form-control" placeholder="Size (S, M, L)" required />
+    </div>
+
+    <div class="col-md-3">
+        <input name="color" class="form-control" placeholder="Màu (Đen, Trắng…)" required />
+    </div>
+
+    <div class="col-md-3">
+        <input name="stock" type="number" class="form-control" min="0" placeholder="Tồn kho" required />
+    </div>
+
+    <div class="col-md-3">
+        <button class="btn btn-primary w-100">➕ Thêm phân loại</button>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Size</th>
+        <th>Màu</th>
+        <th>Tồn kho</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var v in Model.Variants)
+    {
+        <tr>
+            <td>@v.Size</td>
+            <td>@v.Color</td>
+            <td>@v.Stock</td>
+        </tr>
+    }
+    </tbody>
+</table>

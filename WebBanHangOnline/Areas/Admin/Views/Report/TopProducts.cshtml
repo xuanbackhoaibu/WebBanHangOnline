@@ -1,0 +1,23 @@
+@model dynamic
+
+<h2>🥇 Top 10 sản phẩm bán chạy</h2>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Sản phẩm</th>
+        <th>Số lượng bán</th>
+        <th>Doanh thu</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.ProductName</td>
+            <td>@item.Quantity</td>
+            <td>@String.Format("{0:N0} đ", item.Revenue)</td>
+        </tr>
+    }
+    </tbody>
+</table>

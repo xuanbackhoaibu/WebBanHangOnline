@@ -1,0 +1,68 @@
+@model List<WebBanHangOnline.Models.Notification>
+@{
+    ViewData["Title"] = "Quản lý Thông báo";
+}
+
+<div class="container my-4">
+    <h3>🛠 Quản lý Thông báo</h3>
+    <div class="mb-3">
+        <a asp-action="Create" class="btn btn-success">
+            ➕ Thêm thông báo mới
+        </a>
+    </div>
+
+    <table class="table table-hover table-striped shadow-sm bg-white rounded">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Tiêu đề</th>
+                <th>Loại</th>
+                <th>Ngày tạo</th>
+                <th>Hiển thị</th>
+                <th>Ưu tiên</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var n in Model)
+            {
+                <tr>
+                    <td>@n.NotificationId</td>
+                    <td>@n.Title</td>
+                    <td>@n.Type</td>
+                    <td>@n.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @if (n.IsActive)
+                        {
+                            <span class="badge bg-success">✔ Có</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">✖ Không</span>
+                        }
+                    </td>
+                    <td>@n.Priority</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a asp-action="Edit" asp-route-id="@n.NotificationId" class="btn btn-sm btn-primary">
+                                ✏ Sửa
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@n.NotificationId" class="btn btn-sm btn-danger">
+                                🗑 Xóa
+                            </a>
+                            <a asp-action="ToggleActive" asp-route-id="@n.NotificationId" class="btn btn-sm @(n.IsActive ? "btn-warning" : "btn-success")">
+                                @(n.IsActive ? "Tắt" : "Bật")
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts{
+    <script>
+        // Tương lai có thể thêm confirm popup trước khi xóa hoặc toggle
+    </script>
+}

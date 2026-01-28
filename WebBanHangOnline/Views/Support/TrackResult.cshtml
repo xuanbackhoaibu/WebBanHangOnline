@@ -1,0 +1,48 @@
+@model List<WebBanHangOnline.Models.SupportRequest>
+
+@{
+    ViewData["Title"] = "Kết quả hỗ trợ";
+}
+
+<div class="container mt-4">
+    <h3>Kết quả yêu cầu hỗ trợ</h3>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">
+            Không tìm thấy yêu cầu nào với email này.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered mt-3">
+            <thead>
+            <tr>
+                <th>Ngày gửi</th>
+                <th>Nội dung</th>
+                <th>Trạng thái</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var s in Model)
+            {
+                <tr>
+                    <td>@s.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@s.Message</td>
+                    <td>
+                        <span class="badge 
+                                @(s.Status == "New" ? "bg-warning" :
+                                s.Status == "InProgress" ? "bg-primary" : "bg-success")">
+                            @s.Status
+                        </span>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <a asp-action="Track" class="btn btn-secondary mt-2">
+        Tra cứu lại
+    </a>
+</div>

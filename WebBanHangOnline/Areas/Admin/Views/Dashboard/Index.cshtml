@@ -1,0 +1,62 @@
+@{
+    Layout = "_AdminLayout";
+}
+
+
+<h2>📊 ADMIN DASHBOARD</h2>
+
+<div class="row text-center">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white mb-3">
+            <div class="card-body">
+                <h5>Tổng đơn hàng</h5>
+                <h2>@ViewBag.TotalOrders</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-success text-white mb-3">
+            <div class="card-body">
+                <h5>Tổng doanh thu</h5>
+                <h2>@String.Format("{0:N0} đ", ViewBag.TotalRevenue)</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-dark text-white mb-3">
+            <div class="card-body">
+                <h5>Tổng người dùng</h5>
+                <h2>@ViewBag.TotalUsers</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<h4>📈 Doanh thu 7 ngày gần nhất</h4>
+<canvas id="revenueChart" height="100"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+    const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels));
+    const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartData));
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Doanh thu (VNĐ)',
+                data: data,
+                borderWidth: 3,
+                tension: 0.3
+            }]
+        }
+    });
+</script>
+}

@@ -1,0 +1,56 @@
+@model List<WebBanHangOnline.Models.SupportRequest>
+
+<h3>Yêu cầu hỗ trợ</h3>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Ngày</th>
+        <th>Họ tên</th>
+        <th>Email</th>
+        <th>Nội dung</th>
+        <th>Trạng thái</th>
+        <th width="220"></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr>
+            <td>@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@r.FullName</td>
+            <td>@r.Email</td>
+            <td>@r.Message</td>
+            <td>
+                <span class="badge 
+                        @(r.Status == "New" ? "bg-warning" :
+                        r.Status == "InProgress" ? "bg-primary" : "bg-success")">
+                    @r.Status
+                </span>
+            </td>
+            <td>
+                <a asp-action="UpdateStatus"
+                   asp-route-id="@r.SupportRequestId"
+                   asp-route-status="InProgress"
+                   class="btn btn-sm btn-info">
+                    Đang xử lý
+                </a>
+
+                <a asp-action="UpdateStatus"
+                   asp-route-id="@r.SupportRequestId"
+                   asp-route-status="Done"
+                   class="btn btn-sm btn-success">
+                    Hoàn thành
+                </a>
+
+                <a asp-action="DeleteRequest"
+                   asp-route-id="@r.SupportRequestId"
+                   class="btn btn-sm btn-danger"
+                   onclick="return confirm('Xoá yêu cầu này?')">
+                    Xoá
+                </a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

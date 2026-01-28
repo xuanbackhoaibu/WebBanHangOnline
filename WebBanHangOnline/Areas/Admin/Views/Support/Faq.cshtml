@@ -1,0 +1,62 @@
+@model List<WebBanHangOnline.Models.SupportFaq>
+
+@{
+    ViewData["Title"] = "FAQ";
+}
+
+<h3>Quản lý FAQ</h3>
+
+<a asp-action="CreateFaq" class="btn btn-primary mb-3">
+    + Thêm FAQ
+</a>
+
+@if (TempData["success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["success"]
+    </div>
+}
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>Câu hỏi</th>
+        <th>Hiển thị</th>
+        <th width="180"></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var f in Model)
+    {
+        <tr>
+            <td>@f.Question</td>
+            <td>
+                @if (f.IsActive)
+                {
+                    <span class="badge bg-success">ON</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">OFF</span>
+                }
+            </td>
+            <td>
+                <a asp-action="EditFaq" asp-route-id="@f.SupportFaqId" class="btn btn-sm btn-warning">
+                    Sửa
+                </a>
+
+                <a asp-action="ToggleFaq" asp-route-id="@f.SupportFaqId"
+                   class="btn btn-sm btn-info">
+                    Bật / Tắt
+                </a>
+
+                <a asp-action="DeleteFaq" asp-route-id="@f.SupportFaqId"
+                   class="btn btn-sm btn-danger"
+                   onclick="return confirm('Xoá FAQ này?')">
+                    Xoá
+                </a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
