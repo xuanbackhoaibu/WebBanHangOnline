@@ -18,340 +18,440 @@
 </head>
 <body class="coutura-body">
 
-<!-- ================= TOP BAR ================= -->
-<div class="coutura-topbar">
-    <div class="container d-flex justify-content-between align-items-center small">
+    <!-- ================= TOP BAR ================= -->
+    <div class="coutura-topbar">
+        <div class="container d-flex justify-content-between align-items-center small">
 
-        <div class="d-flex gap-3">
-            <span>Giao hàng toàn quốc</span>
-        </div>
+            <div class="d-flex gap-3">
+                <span>Giao hàng toàn quốc</span>
+            </div>
 
-        <div class="d-flex align-items-center gap-4">
+            <div class="d-flex align-items-center gap-4">
 
-            <a asp-controller="Notification"
-               asp-action="Index"
-               class="text-decoration-none">
-                <i class="bi bi-bell"></i> Thông báo
-            </a>
-
-            <a asp-controller="Support"
-               asp-action="Index"
-               class="text-decoration-none">
-                <i class="bi bi-question-circle"></i> Hỗ trợ
-            </a>
-            <!-- Ngôn ngữ -->
-            <div class="dropdown">
-                <a class="dropdown-toggle text-decoration-none"
-                   href="javascript:void(0)"
-                   data-bs-toggle="dropdown">
-                    <i class="bi bi-globe"></i> Tiếng Việt
+                <a asp-controller="Notification"
+                   asp-action="Index"
+                   class="text-decoration-none">
+                    <i class="bi bi-bell"></i> Thông báo
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="?lang=vi">🇻🇳 Tiếng Việt</a></li>
-                    <li><a class="dropdown-item" href="?lang=en">🇬🇧 English</a></li>
+
+                <a asp-controller="Support"
+                   asp-action="Index"
+                   class="text-decoration-none">
+                    <i class="bi bi-question-circle"></i> Hỗ trợ
+                </a>
+                <!-- Ngôn ngữ -->
+                <div class="dropdown">
+                    <a class="dropdown-toggle text-decoration-none"
+                       href="javascript:void(0)"
+                       data-bs-toggle="dropdown">
+                        <i class="bi bi-globe"></i> Tiếng Việt
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="?lang=vi">🇻🇳 Tiếng Việt</a></li>
+                        <li><a class="dropdown-item" href="?lang=en">🇬🇧 English</a></li>
+                    </ul>
+                </div>
+
+                <!-- LOGIN / USER -->
+                <ul class="nav align-items-center mb-0">
+                    <partial name="_LoginPartial" />
+                </ul>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= HEADER ================= -->
+    <header class="coutura-header">
+        <div class="container d-flex align-items-center justify-content-between gap-4">
+
+            <!-- LOGO -->
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="coutura-logo">
+                xuanbac<span>.</span>
+            </a>
+
+            <!-- SEARCH -->
+            <form asp-controller="Product"
+                  asp-action="Index"
+                  method="get"
+                  class="coutura-search flex-grow-1">
+
+                <input type="text"
+                       name="keyword"
+                       class="form-control"
+                       placeholder="Tìm sản phẩm..." />
+
+                <button type="submit" class="btn btn-search">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+
+            <!-- ICONS -->
+            <div class="header-icons d-flex align-items-center gap-3">
+
+                <a href="#" class="icon-btn">
+                    <i class="bi bi-search"></i>
+                </a>
+
+                <a href="#" class="icon-btn">
+                    <i class="bi bi-heart"></i>
+                </a>
+
+                <!-- CART -->
+                <a asp-controller="Cart"
+                   asp-action="Index"
+                   class="icon-btn position-relative">
+                    <i class="bi bi-cart3"></i>
+                    <span class="cart-badge">3</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MENU ================= -->
+    <nav class="coutura-menu">
+        <div class="container">
+            <ul class="nav py-2 align-items-center">
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       asp-controller="Home"
+                       asp-action="Index">
+                        Trang chủ
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       asp-controller="Product"
+                       asp-action="Index">
+                        Sản phẩm
+                    </a>
+                </li>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           asp-controller="Order"
+                           asp-action="MyOrders">
+                            Đơn hàng của tôi
+                        </a>
+                    </li>
+                }
+
+                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                {
+                    <li class="nav-item dropdown ms-auto">
+                        <a class="nav-link dropdown-toggle admin-link"
+                           href="javascript:void(0)"
+                           data-bs-toggle="dropdown">
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item"
+                                   asp-area="Admin"
+                                   asp-controller="Dashboard"
+                                   asp-action="Index">
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   asp-area="Admin"
+                                   asp-controller="Product"
+                                   asp-action="Index">
+                                    Quản lý sản phẩm
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item"
+                                   asp-area="Admin"
+                                   asp-controller="Order"
+                                   asp-action="Index">
+                                    Quản lý đơn hàng
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                }
+
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ================= MAIN ================= -->
+    <div class="container my-5">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="coutura-footer">
+        <div class="container footer-grid">
+
+            <div>
+                <h5>couturamona.</h5>
+                <p>Thời trang cao cấp, phong cách tối giản, hiện đại.</p>
+            </div>
+
+            <div>
+                <h6>Thông tin</h6>
+                <ul>
+                    <li>Trang chủ</li>
+                    <li>Giới thiệu</li>
+                    <li>Chính sách</li>
+                    <li>Liên hệ</li>
                 </ul>
             </div>
 
-            <!-- LOGIN / USER -->
-            <ul class="nav align-items-center mb-0">
-                <partial name="_LoginPartial" />
-            </ul>
+            <div>
+                <h6>Hỗ trợ</h6>
+                <ul>
+                    <li>Hỏi đáp</li>
+                    <li>Giao hàng</li>
+                    <li>Thanh toán</li>
+                </ul>
+            </div>
+
+            <div>
+                <h6>Đăng ký nhận tin</h6>
+                <input type="email" placeholder="Email của bạn">
+                <button>Gửi</button>
+            </div>
 
         </div>
 
-    </div>
-</div>
-
-<!-- ================= HEADER ================= -->
-<header class="coutura-header">
-    <div class="container d-flex align-items-center justify-content-between gap-4">
-
-        <!-- LOGO -->
-        <a asp-controller="Home"
-           asp-action="Index"
-           class="coutura-logo">
-            xuanbac<span>.</span>
-        </a>
-
-        <!-- SEARCH -->
-        <form asp-controller="Product"
-              asp-action="Index"
-              method="get"
-              class="coutura-search flex-grow-1">
-
-            <input type="text"
-                   name="keyword"
-                   class="form-control"
-                   placeholder="Tìm sản phẩm..." />
-
-            <button type="submit" class="btn btn-search">
-                <i class="bi bi-search"></i>
-            </button>
-        </form>
-
-        <!-- ICONS -->
-        <div class="header-icons d-flex align-items-center gap-3">
-
-            <a href="#" class="icon-btn">
-                <i class="bi bi-search"></i>
-            </a>
-
-            <a href="#" class="icon-btn">
-                <i class="bi bi-heart"></i>
-            </a>
-
-            <!-- CART -->
-            <a asp-controller="Cart"
-               asp-action="Index"
-               class="icon-btn position-relative">
-                <i class="bi bi-cart3"></i>
-                <span class="cart-badge">3</span>
-            </a>
+        <div class="footer-bottom">
+            © 2025 - WebBanHangOnline | Coutura UI
         </div>
+    </footer>
 
-    </div>
-</header>
+    @RenderSection("Scripts", required: false)
 
-<!-- ================= MENU ================= -->
-<nav class="coutura-menu">
-    <div class="container">
-        <ul class="nav py-2 align-items-center">
-
-            <li class="nav-item">
-                <a class="nav-link"
-                   asp-controller="Home"
-                   asp-action="Index">
-                    Trang chủ
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link"
-                   asp-controller="Product"
-                   asp-action="Index">
-                    Sản phẩm
-                </a>
-            </li>
-
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <li class="nav-item">
-                    <a class="nav-link"
-                       asp-controller="Order"
-                       asp-action="MyOrders">
-                        Đơn hàng của tôi
-                    </a>
-                </li>
-            }
-
-            @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
-            {
-                <li class="nav-item dropdown ms-auto">
-                    <a class="nav-link dropdown-toggle admin-link"
-                       href="javascript:void(0)"
-                       data-bs-toggle="dropdown">
-                        Admin
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item"
-                               asp-area="Admin"
-                               asp-controller="Dashboard"
-                               asp-action="Index">
-                                Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item"
-                               asp-area="Admin"
-                               asp-controller="Product"
-                               asp-action="Index">
-                                Quản lý sản phẩm
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item"
-                               asp-area="Admin"
-                               asp-controller="Order"
-                               asp-action="Index">
-                                Quản lý đơn hàng
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            }
-
-        </ul>
-    </div>
-</nav>
-
-<!-- ================= MAIN ================= -->
-<div class="container my-5">
-    <main role="main">
-        @RenderBody()
-    </main>
-</div>
-
-<!-- ================= FOOTER ================= -->
-<footer class="coutura-footer">
-    <div class="container footer-grid">
-
-        <div>
-            <h5>couturamona.</h5>
-            <p>Thời trang cao cấp, phong cách tối giản, hiện đại.</p>
-        </div>
-
-        <div>
-            <h6>Thông tin</h6>
-            <ul>
-                <li>Trang chủ</li>
-                <li>Giới thiệu</li>
-                <li>Chính sách</li>
-                <li>Liên hệ</li>
-            </ul>
-        </div>
-
-        <div>
-            <h6>Hỗ trợ</h6>
-            <ul>
-                <li>Hỏi đáp</li>
-                <li>Giao hàng</li>
-                <li>Thanh toán</li>
-            </ul>
-        </div>
-
-        <div>
-            <h6>Đăng ký nhận tin</h6>
-            <input type="email" placeholder="Email của bạn">
-            <button>Gửi</button>
-        </div>
-
-    </div>
-
-    <div class="footer-bottom">
-        © 2025 - WebBanHangOnline | Coutura UI
-    </div>
-</footer>
-
-@RenderSection("Scripts", required: false)
-
-    <!-- ===== CHATBOT SHOPEE STYLE ===== -->
+    <!-- ===== MODERN CHATBOX ===== -->
     <div id="chat-btn">💬</div>
 
     <div id="chat-box">
-        <div id="chat-header">Chăm sóc khách hàng</div>
+        <div id="chat-header">
+            Tư vấn nhanh
+            <span onclick="chatBox.style.display='none'">✖</span>
+        </div>
+
         <div id="chat-body"></div>
+
         <div id="chat-input">
-            <input id="chat-msg" placeholder="Nhập tin nhắn...">
-            <button onclick="sendChat()">Gửi</button>
+            <input id="chat-msg" placeholder="Nhập tin nhắn..." onkeydown="handleEnter(event)">
+            <button onclick="sendChat()">➤</button>
         </div>
     </div>
 
     <style>
-        #chat-btn{
-         position:fixed; bottom:20px; right:20px;
-         background:#ee4d2d; color:white;
-         padding:12px; border-radius:50%;
-         cursor:pointer; z-index:9999;
+        #chat-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.3);
+            cursor: pointer;
+            transition: .25s;
+            z-index: 9999;
         }
 
-        #chat-box{
-         position:fixed; bottom:80px; right:20px;
-         width:300px; height:380px;
-         background:white;
-         border-radius:12px;
-         display:none;
-         flex-direction:column;
-         box-shadow:0 5px 15px rgba(0,0,0,.3);
-         z-index:9999;
+            #chat-btn:hover {
+                transform: scale(1.08);
+            }
+
+        #chat-box {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 330px;
+            height: 440px;
+            background: #fff;
+            border-radius: 20px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0,0,0,.35);
+            animation: show .25s ease;
+            z-index: 9999;
         }
 
-        #chat-header{
-         background:#ee4d2d;
-         color:white;
-         padding:10px;
-         border-radius:12px 12px 0 0;
-         font-weight:bold;
+        @@keyframes show {
+            from {
+                transform: scale(.8);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
         }
 
-        #chat-body{
-         flex:1;
-         overflow:auto;
-         padding:10px;
-         font-size:14px;
+        #chat-header {
+            background: linear-gradient(135deg,#ff6b6b,#ff9f9f);
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
         }
 
-        #chat-input{
-         display:flex;
-         border-top:1px solid #ddd;
+        #chat-body {
+            flex: 1;
+            background: #f6f6f6;
+            padding: 12px;
+            overflow: auto;
         }
 
-        #chat-input input{
-         flex:1;
-         padding:8px;
-         border:none;
+        .chat-row {
+            display: flex;
+            margin: 4px 0;
         }
 
-        #chat-input button{
-         background:#ee4d2d;
-         color:white;
-         border:none;
-         padding:8px 12px;
+            .chat-row.user {
+                justify-content: flex-end;
+            }
+
+            .chat-row.bot {
+                justify-content: flex-start;
+            }
+
+        .msg-user {
+            max-width: 75%;
+            width: fit-content;
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 18px 18px 4px 18px;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
+
+        .msg-bot {
+            max-width: 75%;
+            width: fit-content;
+            background: white;
+            color: #333;
+            padding: 10px 14px;
+            border-radius: 18px 18px 18px 4px;
+            box-shadow: 0 3px 8px rgba(0,0,0,.1);
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        #chat-input {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+        }
+
+            #chat-input input {
+                flex: 1;
+                border: none;
+                outline: none;
+                padding: 10px;
+                background: #f1f1f1;
+                border-radius: 14px;
+            }
+
+            #chat-input button {
+                border: none;
+                margin-left: 6px;
+                background: #ff6b6b;
+                color: white;
+                padding: 10px 16px;
+                border-radius: 14px;
+            }
     </style>
 
     <script>
         const chatBox = document.getElementById("chat-box");
 
         document.getElementById("chat-btn").onclick = () => {
-            chatBox.style.display = chatBox.style.display === "flex" ? "none" : "flex";
+         chatBox.style.display = chatBox.style.display === "flex" ? "none" : "flex";
         };
 
-        async function sendChat(){
-            let input = document.getElementById("chat-msg");
-            let msg = input.value;
-            if(!msg) return;
+        // 👋 Auto welcome
+        window.onload = () => {
+         addBot("Xin chào @User.Identity?.Name, bạn muốn chúng tôi tư vấn gì?");
+        };
 
-            let body = document.getElementById("chat-body");
-            body.innerHTML += `<p><b>Bạn:</b> ${msg}</p>`;
-
-            let res = await fetch("/ChatBot/Reply",{
-                method:"POST",
-                headers:{ "Content-Type":"application/json"},
-                body: JSON.stringify(msg)
-            });
-
-            let reply = await res.text();
-            body.innerHTML += `<p><b>Bot:</b> ${reply}</p>`;
-            input.value="";
-            body.scrollTop = body.scrollHeight;
+        function chatBody(){
+         return document.getElementById("chat-body");
         }
-    </script>
-    <!-- ===== END CHATBOT ===== -->
-    <script>
+
+        function addUser(msg){
+         const row = document.createElement("div");
+         row.className = "chat-row user";
+
+         const bubble = document.createElement("div");
+         bubble.className = "msg-user";
+         bubble.textContent = msg;
+
+         row.appendChild(bubble);
+         chatBody().appendChild(row);
+        }
+
+        function addBot(msg){
+         const row = document.createElement("div");
+         row.className = "chat-row bot";
+
+         const bubble = document.createElement("div");
+         bubble.className = "msg-bot";
+         bubble.textContent = msg;
+
+         row.appendChild(bubble);
+         chatBody().appendChild(row);
+        }
+
+        function handleEnter(e){
+         if(e.key === "Enter"){
+           e.preventDefault();
+           sendChat();
+         }
+        }
+
         async function sendChat(){
          let input = document.getElementById("chat-msg");
          let msg = input.value.trim();
          if(!msg) return;
 
-         let body = document.getElementById("chat-body");
-         body.innerHTML += `<div class="msg-user">${msg}</div>`;
-
+         addUser(msg);
          input.value = "";
 
-         let res = await fetch("/ChatBot/Reply",{
+         let res = await fetch("/Chatbot/Send",{
            method:"POST",
            headers:{ "Content-Type":"application/json"},
-           body: JSON.stringify(msg)
+           body: JSON.stringify({ message: msg })
          });
 
-         let reply = await res.text();
-         body.innerHTML += `<div class="msg-bot">${reply}</div>`;
+         let data = await res.json();
+         addBot(data.reply);
 
-         body.scrollTop = body.scrollHeight;
+         chatBody().scrollTop = chatBody().scrollHeight;
         }
     </script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ===== END CHATBOX ===== -->
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
