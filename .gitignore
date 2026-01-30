@@ -3,4 +3,6 @@ bin/
 obj/
 /packages/
 riderModule.iml
+appsettings.json
+appsettings.Development.json
 /_ReSharper.Caches/
