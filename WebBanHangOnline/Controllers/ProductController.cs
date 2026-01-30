@@ -36,7 +36,41 @@ namespace WebBanHangOnline.Controllers
 
             // Search
             if (!string.IsNullOrWhiteSpace(keyword))
-                query = query.Where(p => p.Name.Contains(keyword));
+            {
+                keyword = keyword.Trim().ToLower();
+
+                // ===== ĐỒ NAM =====
+                if (keyword.Contains("nam"))
+                {
+                    query = query.Where(p =>
+                        EF.Functions.Like(p.Category.Name, "%Đồ Nam%"));
+                }
+                // ===== ĐỒ NỮ =====
+                else if (keyword.Contains("nữ") || keyword.Contains("nu"))
+                {
+                    query = query.Where(p =>
+                        EF.Functions.Like(p.Category.Name, "%Đồ Nữ%"));
+                }
+                // ===== BÉ TRAI =====
+                else if (keyword.Contains("bé trai") || keyword.Contains("be trai") || keyword.Contains("trai"))
+                {
+                    query = query.Where(p =>
+                        EF.Functions.Like(p.Category.Name, "%Bé trai%"));
+                }
+                // ===== BÉ GÁI =====
+                else if (keyword.Contains("bé gái") || keyword.Contains("be gai") || keyword.Contains("gái") || keyword.Contains("gai"))
+                {
+                    query = query.Where(p =>
+                        EF.Functions.Like(p.Category.Name, "%Bé Gái%"));
+                }
+                // ===== TÌM THEO TÊN SẢN PHẨM =====
+                else
+                {
+                    query = query.Where(p =>
+                        EF.Functions.Like(p.Name, $"%{keyword}%"));
+                }
+            }
+            
 
             // Filter Category
             if (categoryId.HasValue)
