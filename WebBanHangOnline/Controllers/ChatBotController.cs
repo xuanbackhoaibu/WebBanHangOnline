@@ -63,16 +63,19 @@ Câu hỏi khách hàng: " + question
             var json = JsonSerializer.Serialize(body);
 
             var response = await _http.PostAsync(
-                $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={apiKey}",
-                new StringContent(json, Encoding.UTF8, "application/json")
-            );
+   $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={apiKey}",
+   new StringContent(json, Encoding.UTF8, "application/json")
+);
+
 
             var result = await response.Content.ReadAsStringAsync();
-
+            Console.WriteLine(result);
             using var doc = JsonDocument.Parse(result);
 
             if (!doc.RootElement.TryGetProperty("candidates", out var candidates))
-                return "AI đang bận, bạn thử lại sau nhé 🙂";
+            {
+                return result; // tạm trả luôn lỗi để debug
+            }
 
             return candidates[0]
                 .GetProperty("content")
