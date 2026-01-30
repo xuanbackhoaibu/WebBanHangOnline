@@ -240,7 +240,7 @@
     <div id="chat-box">
         <div id="chat-header">
             Tư vấn nhanh
-            <span onclick="chatBox.style.display='none'">✖</span>
+            <span onclick="document.getElementById('chat-box').style.display='none'">✖</span>
         </div>
 
         <div id="chat-body"></div>
@@ -382,7 +382,21 @@
             }
     </style>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
+
+        /* ===== SIGNALR REALTIME ===== */
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", (user, msg) => {
+            addBot(msg);
+        });
+
+        connection.start().catch(err => console.error(err));
+        /* =========================== */
+
         const chatBox = document.getElementById("chat-box");
 
         document.getElementById("chat-btn").onclick = () => {
@@ -429,29 +443,20 @@
          }
         }
 
-        async function sendChat(){
-         let input = document.getElementById("chat-msg");
-         let msg = input.value.trim();
-         if(!msg) return;
+                function sendChat(){
+            let input = document.getElementById("chat-msg");
+            let msg = input.value.trim();
+            if(!msg) return;
 
-         addUser(msg);
-         input.value = "";
+            addUser(msg);
+            input.value = "";
 
-         let res = await fetch("/Chatbot/Send",{
-           method:"POST",
-           headers:{ "Content-Type":"application/json"},
-           body: JSON.stringify({ message: msg })
-         });
-
-         let data = await res.json();
-         addBot(data.reply);
-
-         chatBody().scrollTop = chatBody().scrollHeight;
+            connection.invoke("SendMessage", "user", msg);
         }
+
     </script>
     <!-- ===== END CHATBOX ===== -->
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

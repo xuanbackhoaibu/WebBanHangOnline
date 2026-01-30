@@ -28,7 +28,7 @@ namespace WebBanHangOnline.Controllers
 
             string reply = await AskGemini(req.message);
 
-            return Json(new { reply });
+            return Ok(reply);
         }
 
         async Task<string> AskGemini(string question)
@@ -56,7 +56,7 @@ Câu hỏi khách hàng: " + question
             }
         }
     }
-};
+            };
 
 
 
