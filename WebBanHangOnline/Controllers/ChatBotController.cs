@@ -28,7 +28,7 @@ namespace WebBanHangOnline.Controllers
 
             string reply = await AskGemini(req.message);
 
-            return Json(new { reply });
+            return Ok(reply);
         }
 
         async Task<string> AskGemini(string question)
@@ -56,14 +56,14 @@ Câu hỏi khách hàng: " + question
             }
         }
     }
-};
+            };
 
 
 
             var json = JsonSerializer.Serialize(body);
 
             var response = await _http.PostAsync(
-   $"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={apiKey}",
+   $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}",
    new StringContent(json, Encoding.UTF8, "application/json")
 );
 

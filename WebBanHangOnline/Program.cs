@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using WebBanHangOnline.Controllers;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Hubs;
 using WebBanHangOnline.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,8 +16,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-
+options.UseSqlServer(connectionString));
+builder.Services.AddSignalR();
+builder.Services.AddScoped<ChatBotController>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
@@ -124,5 +127,5 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     await DbInitializer.SeedAsync(services);
 }
-
+app.MapHub<ChatHub>("/chatHub");
 app.Run();
