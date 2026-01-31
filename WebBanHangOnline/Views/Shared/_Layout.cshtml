@@ -325,6 +325,7 @@
         .chat-row {
             display: flex;
             width: 100%;
+            margin-bottom: 8px;
         }
 
             .chat-row.bot {
@@ -337,17 +338,31 @@
 
         .msg-user,
         .msg-bot {
-            max-width: 75%;
-            width: fit-content; /* ⭐ ôm nội dung */
+            max-width: 260px;      /* FIX CHẮC CHẮN */
             display: inline-block;
-            background: white;
-            color: #333;
             padding: 8px 12px;
-            border-radius: 18px 18px 18px 4px;
+            border-radius: 18px;
             font-size: 14px;
-            white-space: pre-wrap;
-            word-break: break-word;
+
+            white-space: normal;
+            word-break: normal;
+            overflow-wrap: normal;
+            word-wrap: normal;
+
             line-height: 1.4;
+        }
+
+
+
+        .msg-bot {
+            background: white;
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .msg-user {
+            background: #ff6b6b;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
         }
 
 
@@ -381,6 +396,17 @@
                 padding: 10px 16px;
                 border-radius: 14px;
             }
+
+        .chat-row > div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg-time {
+            align-self: flex-end;
+            margin-right: 6px;
+        }
+
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
@@ -413,36 +439,40 @@
          return document.getElementById("chat-body");
         }
 
-                function addUser(msg){
+        function addUser(msg){
             const row = document.createElement("div");
             row.className = "chat-row user";
 
-            const bubble = document.createElement("div");
-            bubble.className = "msg-user";
-            bubble.innerHTML = `
-                ${msg}
-                <div class="msg-time">${nowTime()}</div>
-            `;
+            row.innerHTML = `
+        <div>
+            <div class="msg-user">${msg}</div>
+            <div class="msg-time">${nowTime()}</div>
+        </div>
+    `;
 
-            row.appendChild(bubble);
             chatBody().appendChild(row);
+            chatBody().scrollTop = chatBody().scrollHeight;
+
         }
 
 
-                function addBot(msg){
+
+        function addBot(msg){
             const row = document.createElement("div");
             row.className = "chat-row bot";
 
-            const bubble = document.createElement("div");
-            bubble.className = "msg-bot";
-            bubble.innerHTML = `
-                ${msg}
-                <div class="msg-time">${nowTime()}</div>
-            `;
+            row.innerHTML = `
+        <div>
+            <div class="msg-bot">${msg}</div>
+            <div class="msg-time">${nowTime()}</div>
+        </div>
+    `;
 
-            row.appendChild(bubble);
             chatBody().appendChild(row);
+            chatBody().scrollTop = chatBody().scrollHeight;
+
         }
+
 
 
         function handleEnter(e){
