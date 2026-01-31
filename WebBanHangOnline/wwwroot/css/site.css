@@ -410,3 +410,42 @@ body {
   color: #333;
 }
 
+/* ===== FIX CỨNG 3 THANH TRÊN ĐẦU (CHUẨN) ===== */
+
+.coutura-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 36px;           /* cố định chiều cao */
+  z-index: 1100;
+}
+
+.coutura-header {
+  position: fixed;
+  top: 36px;              /* ngay dưới topbar */
+  left: 0;
+  width: 100%;
+  height: 60px;           /* chiều cao thực tế header */
+  z-index: 1090;
+  background: white;
+}
+
+.coutura-menu {
+  position: fixed;
+  top: 96px;              /* = 36 + 60 */
+  left: 0;
+  width: 100%;
+  height: 44px;           /* chiều cao menu */
+  z-index: 1080;
+  background: white;
+}
+
+body {
+  padding-top: 140px;     /* = tổng 3 thanh */
+}
+
+.coutura-header,
+.coutura-menu {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
