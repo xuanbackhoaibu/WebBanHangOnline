@@ -13,14 +13,15 @@ namespace WebBanHangOnline.Hubs
             _bot = bot;
         }
 
-        public async Task SendMessage(string user, string message)
+        public async Task SendMessage(string message)
         {
             var result = await _bot.Send(new ChatRequest { message = message });
 
-            if (result is OkObjectResult ok)
+            if (result is JsonResult json)
             {
-                var reply = ok.Value.ToString();
-                await Clients.Caller.SendAsync("ReceiveMessage", user, reply);
+                var reply = json.Value?.ToString() ?? "Shop chưa hiểu câu hỏi 😊";
+
+                await Clients.Caller.SendAsync("ReceiveMessage", reply);
             }
         }
     }

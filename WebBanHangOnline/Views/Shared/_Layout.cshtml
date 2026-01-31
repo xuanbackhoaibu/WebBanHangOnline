@@ -321,40 +321,38 @@
 
         .chat-row {
             display: flex;
-            margin: 4px 0;
+            width: 100%;
         }
-
-            .chat-row.user {
-                justify-content: flex-end;
-            }
 
             .chat-row.bot {
                 justify-content: flex-start;
             }
 
-        .msg-user {
-            max-width: 75%;
-            width: fit-content;
-            background: #ff6b6b;
-            color: white;
-            padding: 10px 14px;
-            border-radius: 18px 18px 4px 18px;
-            font-size: 14px;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
+            .chat-row.user {
+                justify-content: flex-end;
+            }
 
+        .msg-user,
         .msg-bot {
             max-width: 75%;
-            width: fit-content;
+            width: fit-content; /* ⭐ ôm nội dung */
+            display: inline-block;
             background: white;
             color: #333;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border-radius: 18px 18px 18px 4px;
-            box-shadow: 0 3px 8px rgba(0,0,0,.1);
             font-size: 14px;
             white-space: pre-wrap;
             word-break: break-word;
+            line-height: 1.4;
+        }
+
+
+        .msg-time {
+            font-size: 11px;
+            opacity: .6;
+            margin-top: 4px;
+            text-align: right;
         }
 
         #chat-input {
@@ -412,29 +410,37 @@
          return document.getElementById("chat-body");
         }
 
-        function addUser(msg){
-         const row = document.createElement("div");
-         row.className = "chat-row user";
+                function addUser(msg){
+            const row = document.createElement("div");
+            row.className = "chat-row user";
 
-         const bubble = document.createElement("div");
-         bubble.className = "msg-user";
-         bubble.textContent = msg;
+            const bubble = document.createElement("div");
+            bubble.className = "msg-user";
+            bubble.innerHTML = `
+                ${msg}
+                <div class="msg-time">${nowTime()}</div>
+            `;
 
-         row.appendChild(bubble);
-         chatBody().appendChild(row);
+            row.appendChild(bubble);
+            chatBody().appendChild(row);
         }
 
-        function addBot(msg){
-         const row = document.createElement("div");
-         row.className = "chat-row bot";
 
-         const bubble = document.createElement("div");
-         bubble.className = "msg-bot";
-         bubble.textContent = msg;
+                function addBot(msg){
+            const row = document.createElement("div");
+            row.className = "chat-row bot";
 
-         row.appendChild(bubble);
-         chatBody().appendChild(row);
+            const bubble = document.createElement("div");
+            bubble.className = "msg-bot";
+            bubble.innerHTML = `
+                ${msg}
+                <div class="msg-time">${nowTime()}</div>
+            `;
+
+            row.appendChild(bubble);
+            chatBody().appendChild(row);
         }
+
 
         function handleEnter(e){
          if(e.key === "Enter"){
@@ -452,6 +458,12 @@
             input.value = "";
 
             connection.invoke("SendMessage", "user", msg);
+        }
+
+                function nowTime(){
+            const d = new Date();
+            return d.getHours().toString().padStart(2,'0') + ":" +
+                   d.getMinutes().toString().padStart(2,'0');
         }
 
     </script>

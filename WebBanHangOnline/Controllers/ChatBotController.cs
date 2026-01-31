@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Google.GenAI;
+﻿using Google.GenAI;
+using Google.GenAI.Types;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
 
@@ -34,12 +35,12 @@ namespace WebBanHangOnline.Controllers
         async Task<string> AskGemini(string question)
         {
 
-            string apiKey = _config["Gemini:ApiKey"];
+                string apiKey = _config["Gemini:ApiKey"];
 
-            var body = new
-            {
-                contents = new[]
-    {
+                var body = new
+                {
+                    contents = new[]
+        {
         new {
             parts = new[] {
                 new {
@@ -56,37 +57,36 @@ Câu hỏi khách hàng: " + question
             }
         }
     }
-            };
+};
 
+                var json = JsonSerializer.Serialize(body);
 
+                var response = await _http.PostAsync(
+                    $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}",
+                    new StringContent(json, Encoding.UTF8, "application/json")
+                );
 
-            var json = JsonSerializer.Serialize(body);
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+                using var doc = JsonDocument.Parse(result);
 
-            var response = await _http.PostAsync(
-   $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}",
-   new StringContent(json, Encoding.UTF8, "application/json")
-);
+                if (!doc.RootElement.TryGetProperty("candidates", out var candidates))
+                {
+                    return result; // tạm trả luôn lỗi để debug
+                }
 
+                return candidates[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
 
-            var result = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(result);
-            using var doc = JsonDocument.Parse(result);
-
-            if (!doc.RootElement.TryGetProperty("candidates", out var candidates))
-            {
-                return result; // tạm trả luôn lỗi để debug
-            }
-
-            return candidates[0]
-                .GetProperty("content")
-                .GetProperty("parts")[0]
-                .GetProperty("text")
-                .GetString();
         }
     }
 
-    public class ChatRequest
-    {
-        public string message { get; set; } = "";
+        public class ChatRequest
+        {
+            public string message { get; set; } = "";
+        }
     }
-}
+
