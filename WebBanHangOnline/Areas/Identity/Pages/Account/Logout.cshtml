@@ -1,0 +1,58 @@
+﻿@page
+@model LogoutModel
+@{
+    ViewData["Title"] = "Đăng xuất";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+
+                <div class="mb-3">
+                    <i class="bi bi-box-arrow-right text-danger fs-1"></i>
+                </div>
+
+                <h3 class="mb-3">
+                    @ViewData["Title"]
+                </h3>
+
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <p class="text-muted">
+                        Bạn có chắc chắn muốn đăng xuất khỏi hệ thống không?
+                    </p>
+
+                    <form asp-area="Identity"
+                          asp-page="/Account/Logout"
+                          asp-route-returnUrl="@Url.Content("~/")"
+                          method="post">
+
+                        <button type="submit"
+                                class="btn btn-danger w-100 mb-2">
+                            Đăng xuất
+                        </button>
+
+                        <a asp-controller="Home"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary w-100">
+                            Quay về trang chủ
+                        </a>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-success">
+                        Bạn đã đăng xuất thành công.
+                    </div>
+
+                    <a asp-page="./Login"
+                       class="btn btn-primary w-100">
+                        Đăng nhập lại
+                    </a>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>

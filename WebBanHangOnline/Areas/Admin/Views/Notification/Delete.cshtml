@@ -6,13 +6,27 @@
 <h2>@ViewData["Title"]</h2>
 
 <h4>Bạn có chắc muốn xóa thông báo này không?</h4>
-<div>
+
+<div class="mb-3">
     <strong>@Model.Title</strong>
     <p>@Model.Content</p>
 </div>
 
-<form asp-action="DeleteConfirmed" method="post">
-    <input type="hidden" asp-for="NotificationId" />
-    <button type="submit" class="btn btn-danger">Xóa</button>
-    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+<form asp-area="Admin"
+      asp-controller="Notification"
+      asp-action="Delete"
+      method="post">
+    
+    <input type="hidden" name="id" value="@Model.NotificationId" />
+
+    <button type="submit" class="btn btn-danger">
+        Xóa
+    </button>
+
+    <a asp-area="Admin"
+       asp-controller="Notification"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Hủy
+    </a>
 </form>

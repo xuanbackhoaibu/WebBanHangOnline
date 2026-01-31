@@ -1,0 +1,96 @@
+﻿@page
+@model RegisterModel
+
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow border-0" style="width: 100%; max-width: 420px;">
+        <div class="card-body p-4">
+
+            <!-- Tiêu đề -->
+            <h3 class="text-center fw-bold mb-2">Đăng ký tài khoản</h3>
+            <p class="text-center text-muted mb-4">
+                Tạo tài khoản mới tại <strong>Web Bán Hàng Online</strong>
+            </p>
+
+            <!-- Form register -->
+            <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Email -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Email"
+                           class="form-control"
+                           placeholder="email@example.com"
+                           autocomplete="username" />
+                    <label asp-for="Input.Email">Email</label>
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Password"
+                           class="form-control"
+                           placeholder="Mật khẩu"
+                           autocomplete="new-password" />
+                    <label asp-for="Input.Password">Mật khẩu</label>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-floating mb-4">
+                    <input asp-for="Input.ConfirmPassword"
+                           class="form-control"
+                           placeholder="Nhập lại mật khẩu"
+                           autocomplete="new-password" />
+                    <label asp-for="Input.ConfirmPassword">Xác nhận mật khẩu</label>
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <!-- Button -->
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    Đăng ký
+                </button>
+
+                <!-- Login link -->
+                <div class="text-center">
+                    <span class="small">Đã có tài khoản?</span>
+                    <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">
+                        Đăng nhập
+                    </a>
+                </div>
+            </form>
+
+            <!-- External register (nếu có) -->
+            @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+            {
+                <hr />
+                <div class="text-center">
+                    <p class="text-muted mb-2">Hoặc đăng ký bằng</p>
+
+                    <form asp-page="./ExternalLogin"
+                          asp-route-returnUrl="@Model.ReturnUrl"
+                          method="post">
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            <button type="submit"
+                                    class="btn btn-outline-secondary me-2 mb-2"
+                                    name="provider"
+                                    value="@provider.Name">
+                                @provider.DisplayName
+                            </button>
+                        }
+                    </form>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
