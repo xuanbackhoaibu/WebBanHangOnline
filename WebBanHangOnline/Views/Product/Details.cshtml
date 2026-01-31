@@ -37,21 +37,7 @@
             <h4 class="text-danger mb-3">
                 @Model.Price.ToString("N0") ₫
             </h4>
-
-            <div class="d-flex gap-2 mt-3">
-                <button type="submit" class="btn btn-success px-4">
-                    Thêm vào giỏ hàng
-                </button>
-
-                <button type="submit"
-                        formaction="/Checkout/BuyNow"
-                        class="btn btn-danger px-4">
-                    Mua ngay
-                </button>
-            </div>
-
-
-
+            
             @if (!Model.Variants.Any())
             {
                 <p class="text-danger">Sản phẩm chưa có phân loại</p>
