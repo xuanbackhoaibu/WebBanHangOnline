@@ -1,27 +1,45 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using WebBanHangOnline.Controllers;
+﻿using Microsoft.AspNetCore.SignalR;
+using WebBanHangOnline.Data;
 
 namespace WebBanHangOnline.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly ChatBotController _bot;
+        private readonly ApplicationDbContext _db;
 
-        public ChatHub(ChatBotController bot)
+        public ChatHub(ApplicationDbContext db)
         {
-            _bot = bot;
+            _db = db;
         }
 
         public async Task SendMessage(string user, string message)
         {
-            var result = await _bot.Send(new ChatRequest { message = message });
+            string reply;
 
-            if (result is OkObjectResult ok)
+            var msg = message.ToLower();
+
+            if (msg.Contains("áo"))
             {
-                var reply = ok.Value.ToString();
-                await Clients.Caller.SendAsync("ReceiveMessage", user, reply);
+                var products = _db.Products
+                                  .Where(p => p.Name.Contains("áo"))
+                                  .Take(3)
+                                  .ToList();
+
+                if (!products.Any())
+                    reply = "Hiện shop chưa có áo phù hợp 😢";
+                else
+                {
+                    reply = "Shop gợi ý cho bạn:\n";
+                    foreach (var p in products)
+                        reply += $"- {p.Name} ({p.Price:N0}đ)\n";
+                }
             }
+            else
+            {
+                reply = "Bạn muốn tìm sản phẩm gì nữa không ạ?";
+            }
+
+            await Clients.Caller.SendAsync("ReceiveMessage", user, reply);
         }
     }
 }
