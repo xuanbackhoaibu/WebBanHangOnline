@@ -1,7 +1,7 @@
 ﻿@page
 @model PersonalDataModel
 @{
-    ViewData["Title"] = "Personal Data";
+    ViewData["Title"] = "Dữ liệu cá nhân";
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
@@ -9,16 +9,36 @@
 
 <div class="row">
     <div class="col-md-6">
-        <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
-        <p>
-            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-        </p>
-        <form id="download-data" asp-page="DownloadPersonalData" method="post">
-            <button class="btn btn-primary" type="submit">Download</button>
+
+        <div class="alert alert-info">
+            <p>
+                Tài khoản của bạn có chứa các thông tin cá nhân đã cung cấp cho hệ thống.
+            </p>
+            <p class="mb-0">
+                Bạn có thể tải xuống hoặc yêu cầu xóa toàn bộ dữ liệu này.
+            </p>
+        </div>
+
+        <div class="alert alert-warning">
+            <strong>Cảnh báo:</strong> Việc xóa dữ liệu sẽ
+            <strong>xóa vĩnh viễn tài khoản</strong> và
+            <strong>không thể khôi phục</strong>.
+        </div>
+
+        @* Download *@
+        <form asp-page="DownloadPersonalData" method="post" class="mb-3">
+            <button type="submit" class="btn btn-primary">
+                📥 Tải dữ liệu cá nhân
+            </button>
         </form>
-        <p>
-            <a id="delete" asp-page="DeletePersonalData" class="btn btn-danger">Delete</a>
-        </p>
+
+        @* Delete *@
+        <a asp-page="DeletePersonalData"
+           class="btn btn-danger"
+           onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác!');">
+            ❌ Xóa tài khoản
+        </a>
+
     </div>
 </div>
 

@@ -1,31 +1,29 @@
-﻿@{
-    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) 
+@{
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout)
         && parentLayout != null)
     {
         Layout = parentLayout.ToString();
     }
     else
     {
-        Layout = "~/Views/Shared/_Layout.cshtml";
+        Layout = "/Views/Shared/_Layout.cshtml";
     }
 }
 
 <div class="container mt-4">
-
     <h3 class="mb-3">Quản lý tài khoản</h3>
 
     <div class="row">
-        <!-- LEFT MENU -->
+        <!-- MENU TRÁI -->
         <div class="col-md-3 mb-3">
             <partial name="_ManageNav" />
         </div>
 
-        <!-- CONTENT -->
+        <!-- NỘI DUNG -->
         <div class="col-md-9">
             @RenderBody()
         </div>
     </div>
-
 </div>
 
 @section Scripts {

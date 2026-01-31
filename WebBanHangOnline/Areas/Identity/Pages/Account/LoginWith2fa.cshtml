@@ -1,38 +1,80 @@
 ﻿@page
 @model LoginWith2faModel
 @{
-    ViewData["Title"] = "Two-factor authentication";
+    ViewData["Title"] = "Xác thực hai lớp (2FA)";
 }
 
-<h1>@ViewData["Title"]</h1>
-<hr />
-<p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
-<div class="row">
-    <div class="col-md-4">
-        <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-            <input asp-for="RememberMe" type="hidden" />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.TwoFactorCode" class="form-control" autocomplete="off" />
-                <label asp-for="Input.TwoFactorCode" class="form-label"></label>
-                <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <h3 class="text-center mb-3">
+                        🔐 Xác thực hai lớp
+                    </h3>
+
+                    <p class="text-muted text-center mb-4">
+                        Tài khoản của bạn được bảo vệ bằng ứng dụng xác thực.
+                        <br />
+                        Vui lòng nhập mã xác thực để tiếp tục đăng nhập.
+                    </p>
+
+                    <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                        <input asp-for="RememberMe" type="hidden" />
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3"
+                             role="alert">
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.TwoFactorCode"
+                                   class="form-control"
+                                   autocomplete="off"
+                                   placeholder="Nhập mã xác thực" />
+                            <label asp-for="Input.TwoFactorCode">
+                                Mã xác thực (6 chữ số)
+                            </label>
+                            <span asp-validation-for="Input.TwoFactorCode"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="Input.RememberMachine"
+                                   class="form-check-input" />
+                            <label asp-for="Input.RememberMachine"
+                                   class="form-check-label">
+                                Ghi nhớ trình duyệt này
+                            </label>
+                        </div>
+
+                        <button type="submit"
+                                class="w-100 btn btn-lg btn-primary">
+                            Đăng nhập
+                        </button>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <p class="text-center mb-0">
+                        Không có quyền truy cập ứng dụng xác thực?
+                        <br />
+                        <a id="recovery-code-login"
+                           asp-page="./LoginWithRecoveryCode"
+                           asp-route-returnUrl="@Model.ReturnUrl">
+                            👉 Đăng nhập bằng mã khôi phục
+                        </a>
+                    </p>
+
+                </div>
             </div>
-            <div class="checkbox mb-3">
-                <label asp-for="Input.RememberMachine" class="form-label">
-                    <input asp-for="Input.RememberMachine" />
-                    @Html.DisplayNameFor(m => m.Input.RememberMachine)
-                </label>
-            </div>
-            <div>
-                <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-            </div>
-        </form>
+
+        </div>
     </div>
 </div>
-<p>
-    Don't have access to your authenticator device? You can
-    <a id="recovery-code-login" asp-page="./LoginWithRecoveryCode" asp-route-returnUrl="@Model.ReturnUrl">log in with a recovery code</a>.
-</p>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

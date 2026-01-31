@@ -1,10 +1,40 @@
 ﻿@model string
 
-@if (!String.IsNullOrEmpty(Model))
+@if (!string.IsNullOrWhiteSpace(Model))
 {
-    var statusMessageClass = Model.StartsWith("Error") ? "danger" : "success";
-    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        @Model
+    var alertType = "success";
+
+    if (Model.StartsWith("Error", StringComparison.OrdinalIgnoreCase))
+    {
+        alertType = "danger";
+    }
+    else if (Model.StartsWith("Warning", StringComparison.OrdinalIgnoreCase))
+    {
+        alertType = "warning";
+    }
+    else if (Model.StartsWith("Info", StringComparison.OrdinalIgnoreCase))
+    {
+        alertType = "info";
+    }
+
+    <div class="alert alert-@alertType alert-dismissible fade show mt-3" role="alert">
+        <strong>
+            @(
+            alertType switch
+            {
+                "danger" => "❌ Lỗi!",
+                "warning" => "⚠️ Cảnh báo!",
+                "info" => "ℹ️ Thông tin",
+                _ => "✅ Thành công!"
+            }
+            )
+        </strong>
+        <span class="ms-1">@Model</span>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close">
+        </button>
     </div>
 }

@@ -7,6 +7,35 @@
 
 <h3>@ViewData["Title"]</h3>
 
+<div class="alert alert-info" role="alert">
+    <p class="mb-1">
+        <strong>ℹ️ Dữ liệu cá nhân của bạn</strong>
+    </p>
+    <p class="mb-0">
+        Trang này cho phép bạn tải xuống toàn bộ dữ liệu cá nhân mà hệ thống đang lưu trữ về tài khoản của bạn.
+        Dữ liệu sẽ được xuất dưới dạng <strong>JSON</strong>.
+    </p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <p>
+            File tải về sẽ bao gồm:
+        </p>
+        <ul>
+            <li>Thông tin tài khoản (Email, Username, Phone, ...)</li>
+            <li>Các dữ liệu liên quan đến bảo mật</li>
+            <li>Các thiết lập cá nhân của bạn</li>
+        </ul>
+
+        <form method="post">
+            <button type="submit" class="btn btn-primary">
+                ⬇️ Download Personal Data
+            </button>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

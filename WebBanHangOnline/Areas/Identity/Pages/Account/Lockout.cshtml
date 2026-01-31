@@ -1,10 +1,46 @@
 ﻿@page
 @model LockoutModel
 @{
-    ViewData["Title"] = "Locked out";
+    ViewData["Title"] = "Tài khoản tạm thời bị khóa";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">This account has been locked out, please try again later.</p>
-</header>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card border-danger shadow-sm">
+                <div class="card-body text-center p-5">
+
+                    <h2 class="text-danger mb-3">
+                        🔒 Tài khoản đã bị khóa
+                    </h2>
+
+                    <p class="text-muted mb-4">
+                        Tài khoản của bạn đã bị tạm khóa do đăng nhập sai quá nhiều lần.
+                        <br />
+                        Vui lòng thử lại sau một khoảng thời gian.
+                    </p>
+
+                    <div class="alert alert-warning">
+                        ⏳ Nếu bạn quên mật khẩu, hãy sử dụng chức năng
+                        <strong>Quên mật khẩu</strong> để đặt lại.
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a asp-page="/Account/ForgotPassword"
+                           class="btn btn-outline-primary">
+                            🔑 Quên mật khẩu
+                        </a>
+
+                        <a asp-page="/Account/Login"
+                           class="btn btn-secondary">
+                            ← Quay lại đăng nhập
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

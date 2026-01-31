@@ -1,30 +1,62 @@
 ﻿@page
 @model ExternalLoginModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Hoàn tất đăng ký";
 }
 
-<h1>@ViewData["Title"]</h1>
-<h2 id="external-login-title">Associate your @Model.ProviderDisplayName account.</h2>
-<hr />
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
 
-<p id="external-login-description" class="text-info">
-    You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
-    Please enter an email address for this site below and click the Register button to finish
-    logging in.
-</p>
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
 
-<div class="row">
-    <div class="col-md-4">
-        <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="email" placeholder="Please enter your email."/>
-                <label asp-for="Input.Email" class="form-label"></label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    <h2 class="text-center mb-3">
+                        🔗 Liên kết tài khoản @Model.ProviderDisplayName
+                    </h2>
+
+                    <p class="text-muted text-center mb-4">
+                        Bạn đã đăng nhập thành công bằng
+                        <strong>@Model.ProviderDisplayName</strong>.
+                        <br />
+                        Vui lòng nhập email để hoàn tất đăng ký tài khoản.
+                    </p>
+
+                    <form asp-page-handler="Confirmation"
+                          asp-route-returnUrl="@Model.ReturnUrl"
+                          method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="alert alert-danger"
+                             role="alert">
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="Input.Email"
+                                   class="form-control"
+                                   autocomplete="email"
+                                   placeholder="Email"
+                                   required />
+                            <label asp-for="Input.Email">Email</label>
+                            <span asp-validation-for="Input.Email"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit"
+                                class="w-100 btn btn-primary btn-lg">
+                            ✅ Hoàn tất đăng ký
+                        </button>
+                    </form>
+                </div>
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
+
+            <div class="text-center mt-3">
+                <a asp-page="/Account/Login" class="text-decoration-none">
+                    ← Quay lại đăng nhập
+                </a>
+            </div>
+
+        </div>
     </div>
 </div>
 

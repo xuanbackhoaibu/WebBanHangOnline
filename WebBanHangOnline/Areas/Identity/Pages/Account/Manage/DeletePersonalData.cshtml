@@ -1,31 +1,75 @@
 ﻿@page
 @model DeletePersonalDataModel
 @{
-    ViewData["Title"] = "Delete Personal Data";
+    ViewData["Title"] = "Xóa dữ liệu cá nhân & đóng tài khoản";
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
-<h3>@ViewData["Title"]</h3>
+<div class="card shadow-sm border-danger">
+    <div class="card-body">
 
-<div class="alert alert-warning" role="alert">
-    <p>
-        <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-    </p>
-</div>
+        <h4 class="text-danger mb-3">
+            @ViewData["Title"]
+        </h4>
 
-<div>
-    <form id="delete-user" method="post">
-        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-        @if (Model.RequirePassword)
-        {
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Please enter your password." />
-                <label asp-for="Input.Password" class="form-label"></label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+        <div class="alert alert-danger" role="alert">
+            <h6 class="fw-bold mb-2">
+                ⚠ CẢNH BÁO NGHIÊM TRỌNG
+            </h6>
+
+            <p class="mb-2">
+                Hành động này sẽ <strong>xóa vĩnh viễn toàn bộ tài khoản</strong>
+                và dữ liệu liên quan của bạn.
+            </p>
+
+            <ul class="mb-2">
+                <li>Không thể khôi phục tài khoản</li>
+                <li>Mất toàn bộ lịch sử đơn hàng</li>
+                <li>Mất thông tin cá nhân và bảo mật</li>
+            </ul>
+
+            <p class="mb-0">
+                Vui lòng cân nhắc kỹ trước khi tiếp tục.
+            </p>
+        </div>
+
+        <form method="post" id="delete-user">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3"
+                 role="alert">
             </div>
-        }
-        <button class="w-100 btn btn-lg btn-danger" type="submit">Delete data and close my account</button>
-    </form>
+
+            @if (Model.RequirePassword)
+            {
+                <div class="form-floating mb-3 col-md-6">
+                    <input asp-for="Input.Password"
+                           class="form-control"
+                           autocomplete="current-password"
+                           placeholder="Nhập mật khẩu hiện tại" />
+                    <label asp-for="Input.Password">
+                        Mật khẩu xác nhận
+                    </label>
+                    <span asp-validation-for="Input.Password"
+                          class="text-danger"></span>
+                </div>
+            }
+
+            <div class="d-flex gap-2">
+                <button type="submit"
+                        class="btn btn-danger">
+                    Xóa tài khoản vĩnh viễn
+                </button>
+
+                <a asp-page="./PersonalData"
+                   class="btn btn-outline-secondary">
+                    Hủy bỏ
+                </a>
+            </div>
+
+        </form>
+
+    </div>
 </div>
 
 @section Scripts {
