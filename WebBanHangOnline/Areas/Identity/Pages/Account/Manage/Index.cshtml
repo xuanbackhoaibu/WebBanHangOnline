@@ -1,27 +1,140 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "My Profile";
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<h3>@ViewData["Title"]</h3>
-<partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="profile-form" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
-                <label asp-for="Username" class="form-label"></label>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number."/>
-                <label asp-for="Input.PhoneNumber" class="form-label"></label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
-            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-        </form>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-5">
+
+            <h3 class="fw-bold mb-4">Hồ sơ cá nhân </h3>
+
+            <partial name="_StatusMessage" for="StatusMessage" />
+
+            <form method="post" enctype="multipart/form-data">
+
+                <div asp-validation-summary="ModelOnly" 
+                     class="text-danger mb-3" role="alert"></div>
+
+                <div class="row">
+
+                    <!-- LEFT: Avatar -->
+                    <div class="col-md-4 text-center border-end">
+
+                        <img src="@(Model.CurrentAvatar ?? "/images/default-avatar.png")"
+                             class="rounded-circle shadow mb-3"
+                             width="160"
+                             height="160"
+                             style="object-fit:cover;" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Chọn ảnh </label>
+                            <input asp-for="Input.Avatar"
+                                   type="file"
+                                   class="form-control" />
+                        </div>
+
+                        <small class="text-muted">
+                            JPG, PNG. Max 2MB
+                        </small>
+
+                    </div>
+
+                    <!-- RIGHT: Profile Info -->
+                    <div class="col-md-8">
+
+                        <div class="row g-3">
+
+                            <!-- Username -->
+                            <div class="col-md-6">
+                                <label class="form-label">Username</label>
+                                <input class="form-control"
+                                       value="@Model.Username"
+                                       disabled />
+                            </div>
+
+                            <!-- FullName -->
+                            <div class="col-md-6">
+                                <label asp-for="Input.FullName" class="form-label"></label>
+                                <input asp-for="Input.FullName" class="form-control" />
+                                <span asp-validation-for="Input.FullName"
+                                      class="text-danger"></span>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6">
+                                <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                                <input asp-for="Input.PhoneNumber" class="form-control" />
+                                <span asp-validation-for="Input.PhoneNumber"
+                                      class="text-danger"></span>
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div class="col-md-6">
+                                <label asp-for="Input.DateOfBirth" class="form-label"></label>
+                                <input asp-for="Input.DateOfBirth"
+                                       type="date"
+                                       class="form-control" />
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="col-md-6">
+                                <label class="form-label">Giới tính </label>
+                                <select asp-for="Input.Gender"
+                                        class="form-select">
+                                    <option value="">-- Chọn giới tính  --</option>
+                                    <option value="Male">Nam</option>
+                                    <option value="Female">Nữ</option>
+                                    <option value="Other">Khác</option>
+                                </select>
+                            </div>
+
+                            <!-- Province -->
+                            <div class="col-md-4">
+                                <label class="form-label">Tỉnh</label>
+                                <input asp-for="Input.Province"
+                                       class="form-control" />
+                            </div>
+
+                            <!-- District -->
+                            <div class="col-md-4">
+                                <label class="form-label">Huyện</label>
+                                <input asp-for="Input.District"
+                                       class="form-control" />
+                            </div>
+
+                            <!-- Ward -->
+                            <div class="col-md-4">
+                                <label class="form-label">Phường</label>
+                                <input asp-for="Input.Ward"
+                                       class="form-control" />
+                            </div>
+
+                            <!-- Street Address -->
+                            <div class="col-12">
+                                <label class="form-label">Địa chỉ đường phố</label>
+                                <input asp-for="Input.StreetAddress"
+                                       class="form-control" />
+                            </div>
+
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="mt-4 text-end">
+                            <button type="submit"
+                                    class="btn btn-primary px-5 rounded-pill shadow-sm">
+                                lưu
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
     </div>
 </div>
 

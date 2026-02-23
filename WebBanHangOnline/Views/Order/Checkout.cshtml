@@ -1,47 +1,213 @@
 @model List<CartItem>
 
-<h2>📦 Xác nhận đơn hàng</h2>
+@{
+    decimal total = 0;
+    var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
+}
 
-<form asp-action="PlaceOrder" method="post">
-    <div class="mb-3">
-        <label>Địa chỉ giao hàng</label>
-        <input name="address" class="form-control" required />
-    </div>
+<div class="container mt-4">
+    <h2 class="mb-4">📦 Xác nhận đơn hàng</h2>
 
-    <div class="mb-3">
-        <label>Số điện thoại</label>
-        <input name="phone" class="form-control" required />
-    </div>
+    <form asp-action="PlaceOrder" method="post">
+        @Html.AntiForgeryToken()
 
-    <h4>Sản phẩm</h4>
-    <ul class="list-group mb-3">
-        @{
-            decimal total = 0;
+        <div class="row">
+
+            <!-- ================= LEFT ================= -->
+            <div class="col-md-8">
+
+                <!-- ================= ĐỊA CHỈ ================= -->
+                <div class="card mb-4 shadow-sm border-danger">
+                    <div class="card-header bg-white fw-bold text-danger">
+                        📍 Địa chỉ nhận hàng
+                    </div>
+
+                    <div class="card-body">
+
+                        @if (hasAddress)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Họ tên</label>
+                                <input class="form-control"
+                                       value="@ViewBag.FullName"
+                                       readonly />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Số điện thoại</label>
+                                <input id="phoneInput"
+                                       name="phone"
+                                       class="form-control"
+                                       value="@ViewBag.Phone"
+                                       readonly
+                                       required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Địa chỉ giao hàng</label>
+                                <textarea id="addressInput"
+                                          name="address"
+                                          class="form-control"
+                                          rows="3"
+                                          readonly
+                                          required>@ViewBag.Address</textarea>
+                            </div>
+
+                            <button type="button"
+                                    id="editBtn"
+                                    class="btn btn-outline-danger btn-sm"
+                                    onclick="toggleEdit()">
+                                Thay đổi
+                            </button>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                Bạn chưa có địa chỉ trong trang cá nhân.
+                                Vui lòng nhập để tiếp tục đặt hàng.
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Số điện thoại</label>
+                                <input name="phone"
+                                       class="form-control"
+                                       placeholder="Nhập số điện thoại..."
+                                       required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Địa chỉ giao hàng</label>
+                                <textarea name="address"
+                                          class="form-control"
+                                          rows="3"
+                                          placeholder="Nhập địa chỉ đầy đủ..."
+                                          required></textarea>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+
+                <!-- ================= SẢN PHẨM ================= -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light fw-bold">
+                        🛍 Sản phẩm trong đơn hàng
+                    </div>
+
+                    <div class="card-body p-0">
+                        <table class="table mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    var sub = item.ProductVariant.Product.Price * item.Quantity;
+                                    total += sub;
+
+                                    <tr>
+                                        <td>
+                                            <strong>@item.ProductVariant.Product.Name</strong>
+                                            <br />
+                                            <small class="text-muted">
+                                                Size: @item.ProductVariant.Size |
+                                                Màu: @item.ProductVariant.Color
+                                            </small>
+                                        </td>
+
+                                        <td class="text-center">
+                                            x @item.Quantity
+                                        </td>
+
+                                        <td class="text-end text-danger fw-bold">
+                                            @sub.ToString("N0") đ
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= RIGHT ================= -->
+            <div class="col-md-4">
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-light fw-bold">
+                        💳 Phương thức thanh toán
+                    </div>
+
+                    <div class="card-body">
+                        @foreach (var method in new[] { "COD", "VNPay", "Momo", "ZaloPay", "Card" })
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="paymentMethod"
+                                       value="@method"
+                                       required />
+                                <label class="form-check-label">
+                                    @method
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+
+                        <h5 class="d-flex justify-content-between">
+                            <span>Tạm tính:</span>
+                            <span>@total.ToString("N0") đ</span>
+                        </h5>
+
+                        <hr />
+
+                        <h4 class="d-flex justify-content-between text-danger">
+                            <span>Tổng thanh toán:</span>
+                            <span>@total.ToString("N0") đ</span>
+                        </h4>
+
+                        <button type="submit"
+                                class="btn btn-success w-100 mt-3 btn-lg">
+                            🛒 Đặt hàng
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleEdit() {
+
+        var address = document.getElementById("addressInput");
+        var phone = document.getElementById("phoneInput");
+        var btn = document.getElementById("editBtn");
+
+        if (address.readOnly) {
+            address.readOnly = false;
+            phone.readOnly = false;
+            btn.innerText = "Lưu";
+            btn.classList.remove("btn-outline-danger");
+            btn.classList.add("btn-secondary");
+        } else {
+            address.readOnly = true;
+            phone.readOnly = true;
+            btn.innerText = "Thay đổi";
+            btn.classList.remove("btn-secondary");
+            btn.classList.add("btn-outline-danger");
         }
-        @foreach (var item in Model)
-        {
-            var sub = item.ProductVariant.Product.Price * item.Quantity;
-            total += sub;
-
-            <li class="list-group-item d-flex justify-content-between">
-                <span>
-                    @item.ProductVariant.Product.Name
-                    ( @item.ProductVariant.Size / @item.ProductVariant.Color )
-                    x @item.Quantity
-                </span>
-                <strong>@sub.ToString("N0") đ</strong>
-            </li>
-        }
-    </ul>
-
-    <h4 class="text-end">
-        Tổng tiền: <strong>@total.ToString("N0") đ</strong>
-    </h4>
-    
-    
-    <div class="text-end">
-        <button class="btn btn-success btn-lg">
-            Đặt hàng
-        </button>
-    </div>
-</form>
+    }
+</script>

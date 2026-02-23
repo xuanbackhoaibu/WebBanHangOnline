@@ -15,6 +15,8 @@ public class Order
     public decimal TotalAmount { get; set; }
 
     public string Status { get; set; } = "Pending";
+    
+    public string PaymentMethod { get; set; }
 
     // 🔹 Thêm trường PaymentDate
     public DateTime? PaymentDate { get; set; }
