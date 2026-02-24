@@ -11,6 +11,12 @@
     <form asp-action="PlaceOrder" method="post">
         @Html.AntiForgeryToken()
 
+        <!-- 🔥 QUAN TRỌNG: TRUYỀN LẠI selectedItems -->
+        @foreach (var item in Model)
+        {
+            <input type="hidden" name="selectedItems" value="@item.Id" />
+        }
+
         <div class="row">
 
             <!-- ================= LEFT ================= -->

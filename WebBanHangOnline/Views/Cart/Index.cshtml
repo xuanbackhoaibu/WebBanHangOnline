@@ -5,132 +5,237 @@
 
     @if (!Model.Any())
     {
-        <div class="alert alert-warning">
-            Giỏ hàng trống
-        </div>
+    <div class="alert alert-warning">
+        Giỏ hàng trống
+    </div>
     }
     else
     {
-        <div class="table-responsive bg-white rounded shadow-sm">
-            <table class="table align-middle mb-0">
-                <thead class="table-light">
-                <tr>
-                    <th>Sản phẩm</th>
-                    <th>Phân loại</th>
-                    <th>Giá</th>
-                    <th class="text-center">Số lượng</th>
-                    <th>Tạm tính</th>
-                    <th></th>
-                </tr>
-                </thead>
+    <div class="table-responsive bg-white rounded shadow-sm">
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                <th class="text-center">
+                    <input type="checkbox" id="selectAll" />
+                </th>
+                <th>Sản phẩm</th>
+                <th>Phân loại</th>
+                <th>Giá</th>
+                <th class="text-center">Số lượng</th>
+                <th>Tạm tính</th>
+                <th></th>
+            </tr>
+            </thead>
 
-                <tbody>
-                @{
-                    decimal total = 0;
-                }
+            <tbody>
+            @foreach (var item in Model)
+            {
+            var price = item.ProductVariant.Product.Price;
+            var sub = price * item.Quantity;
 
-                @foreach (var item in Model)
-                {
-                    var price = item.ProductVariant.Product.Price;
-                    var sub = price * item.Quantity;
-                    total += sub;
+            <tr>
+                <td class="text-center">
+                    <input type="checkbox"
+                           class="item-checkbox"
+                           value="@item.Id"
+                           data-sub="@sub" />
+                </td>
 
-                    <tr data-id="@item.Id">
-                        <td>
-                            <strong>@item.ProductVariant.Product.Name</strong><br />
-                            <small class="text-muted">
-                                Size: @item.ProductVariant.Size | Màu: @item.ProductVariant.Color
-                            </small>
-                        </td>
+                <td>
+                    <strong>@item.ProductVariant.Product.Name</strong><br />
+                    <small class="text-muted">
+                        Size: @item.ProductVariant.Size |
+                        Màu: @item.ProductVariant.Color
+                    </small>
+                </td>
 
-                        <td>
-                            <span class="badge bg-secondary">
-                                @item.ProductVariant.Size / @item.ProductVariant.Color
-                            </span>
-                        </td>
+                <td>
+                                <span class="badge bg-secondary">
+                                    @item.ProductVariant.Size /
+                                    @item.ProductVariant.Color
+                                </span>
+                </td>
 
-                        <td class="text-danger fw-bold">
-                            @price.ToString("N0") đ
-                        </td>
+                <td class="text-danger fw-bold">
+                    @price.ToString("N0") đ
+                </td>
 
-                        <td class="text-center">
-                            <form asp-action="Update"
-                                  method="post"
-                                  class="d-inline-flex align-items-center">
-                                @Html.AntiForgeryToken()
+                <!-- FORM UPDATE -->
+                <td class="text-center">
+                    <form asp-action="Update"
+                          method="post"
+                          class="d-inline-flex align-items-center">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@item.Id" />
 
-                                <input type="hidden" name="id" value="@item.Id" />
+                        <button type="submit"
+                                name="quantity"
+                                value="@(item.Quantity - 1)"
+                                class="btn btn-outline-secondary btn-sm"
+                                @(item.Quantity <= 1 ? "disabled" : "")>
+                            −
+                        </button>
 
-                                <button type="submit"
-                                        name="quantity"
-                                        value="@(item.Quantity - 1)"
-                                        class="btn btn-outline-secondary btn-sm"
-                                        @(item.Quantity <= 1 ? "disabled" : "")>
-                                    −
-                                </button>
+                        <input type="text"
+                               class="form-control form-control-sm text-center mx-1"
+                               value="@item.Quantity"
+                               readonly
+                               style="width:60px" />
 
-                                <input type="text"
-                                       class="form-control form-control-sm text-center mx-1"
-                                       value="@item.Quantity"
-                                       readonly
-                                       style="width:60px" />
+                        <button type="submit"
+                                name="quantity"
+                                value="@(item.Quantity + 1)"
+                                class="btn btn-outline-secondary btn-sm">
+                            +
+                        </button>
+                    </form>
+                </td>
 
-                                <button type="submit"
-                                        name="quantity"
-                                        value="@(item.Quantity + 1)"
-                                        class="btn btn-outline-secondary btn-sm">
-                                    +
-                                </button>
-                            </form>
-                        </td>
+                <td class="fw-semibold text-danger">
+                    @sub.ToString("N0") đ
+                </td>
 
+                <!-- REMOVE -->
+                <td>
+                    <form asp-action="Remove"
+                          asp-route-id="@item.Id"
+                          method="post"
+                          class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Xóa sản phẩm này?')">
+                            Xóa
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 
-                        <td class="fw-semibold text-danger sub-total">
-                            @sub.ToString("N0") đ
-                        </td>
+    <!-- TỔNG TIỀN -->
+    <div class="row mt-4">
+        <div class="col-md-6"></div>
 
-                        <td>
-                            <form asp-action="Remove"
-                                  asp-route-id="@item.Id"
-                                  method="post"
-                                  class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-danger"
-                                        onclick="return confirm('Xóa sản phẩm này?')">
-                                    Xóa
-                                </button>
-                            </form>
-                        </td>
-
-
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-md-6"></div>
-
-            <div class="col-md-6 text-end">
-                <h4>
-                    Tổng tiền:
-                    <span class="text-danger fw-bold">
-                        @total.ToString("N0") đ
+        <div class="col-md-6 text-end">
+            <h4>
+                Tổng tiền đã chọn:
+                <span class="text-danger fw-bold" id="selectedTotal">
+                        0 đ
                     </span>
-                </h4>
+            </h4>
 
-                <a asp-controller="Order"
-                   asp-action="Checkout"
-                   class="btn btn-lg btn-success mt-2">
-                    Tiến hành đặt hàng
-                </a>
-            </div>
+            <button class="btn btn-lg btn-success mt-2"
+                    id="checkoutBtn"
+                    disabled>
+                Tiến hành đặt hàng
+            </button>
         </div>
+    </div>
     }
 </div>
 
-@section Scripts {
-    <script src="~/js/site.js"></script>
+@section Scripts{
+
+<script src="~/js/site.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const checkboxes = document.querySelectorAll(".item-checkbox");
+        const selectAll = document.getElementById("selectAll");
+        const totalDisplay = document.getElementById("selectedTotal");
+        const checkoutBtn = document.getElementById("checkoutBtn");
+
+        const STORAGE_KEY = "selectedCartItems";
+
+        function formatMoney(number) {
+            return number.toLocaleString('vi-VN') + " đ";
+        }
+
+        function updateTotal() {
+            let total = 0;
+            let selectedIds = [];
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    total += parseFloat(cb.dataset.sub);
+                    selectedIds.push(cb.value);
+                }
+            });
+
+            totalDisplay.innerText = formatMoney(total);
+            checkoutBtn.disabled = selectedIds.length === 0;
+
+            // Lưu trạng thái để reload không mất
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedIds));
+        }
+
+        function restoreSelection() {
+            let saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+
+            let selectedIds = JSON.parse(saved);
+
+            checkboxes.forEach(cb => {
+                if (selectedIds.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+
+            updateTotal();
+        }
+
+        selectAll?.addEventListener("change", function () {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateTotal();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener("change", updateTotal);
+        });
+
+        // ✅ FIX: LẤY TRỰC TIẾP CHECKBOX ĐANG CHECK (KHÔNG DÙNG LOCALSTORAGE KHI SUBMIT)
+        checkoutBtn?.addEventListener("click", function () {
+
+            let selected = [];
+
+            document.querySelectorAll(".item-checkbox:checked")
+                .forEach(cb => selected.push(cb.value));
+
+            if (selected.length === 0) {
+                alert("Vui lòng chọn sản phẩm.");
+                return;
+            }
+
+            let form = document.createElement("form");
+            form.method = "post";
+            form.action = '@Url.Action("CheckoutSelected","Order")';
+
+            let token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                let hiddenToken = document.createElement("input");
+                hiddenToken.type = "hidden";
+                hiddenToken.name = "__RequestVerificationToken";
+                hiddenToken.value = token.value;
+                form.appendChild(hiddenToken);
+            }
+
+            selected.forEach(id => {
+                let input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "selectedItems";
+                input.value = id;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        });
+
+        restoreSelection();
+    });
+</script>
 }

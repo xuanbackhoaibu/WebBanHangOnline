@@ -18,54 +18,71 @@ public class OrderController : Controller
         _userManager = userManager;
     }
 
-    // ============================
-    // 🧾 CHECKOUT
-    // ============================
+    // =========================================================
+    // 🧾 CHECKOUT TOÀN BỘ GIỎ (Giữ nguyên như cũ)
+    // =========================================================
     public async Task<IActionResult> Checkout()
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
             return Challenge();
 
-        var cart = await _context.CartItems
-            .Include(c => c.ProductVariant)
-                .ThenInclude(v => v.Product)
-            .Where(c => c.UserId == user.Id)
-            .ToListAsync();
+        var cart = await GetUserCart(user.Id);
 
         if (!cart.Any())
             return RedirectToAction("Index", "Cart");
 
-        ViewBag.FullName = user.FullName;
-        ViewBag.Phone = user.PhoneNumber;
-        ViewBag.Address = user.StreetAddress;
+        SetUserInfoToViewBag(user);
 
         return View(cart);
     }
 
-    // ============================
-    // 📦 PLACE ORDER
-    // ============================
+    // =========================================================
+    // 🧾 CHECKOUT SẢN PHẨM ĐÃ CHỌN
+    // =========================================================
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> PlaceOrder(string address,
-                                                string phone,
-                                                string paymentMethod)
+    public async Task<IActionResult> CheckoutSelected(List<int> selectedItems)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
             return Challenge();
 
-        var cart = await _context.CartItems
-            .Include(c => c.ProductVariant)
-                .ThenInclude(v => v.Product)
-            .Where(c => c.UserId == user.Id)
-            .ToListAsync();
+        if (selectedItems == null || !selectedItems.Any())
+            return RedirectToAction("Index", "Cart");
+
+        var cart = await GetUserCart(user.Id, selectedItems);
 
         if (!cart.Any())
             return RedirectToAction("Index", "Cart");
 
-        // ===== Validate dữ liệu =====
+        SetUserInfoToViewBag(user);
+
+        return View("Checkout", cart);
+    }
+
+    // =========================================================
+    // 📦 PLACE ORDER (XỬ LÝ CẢ 2 TRƯỜNG HỢP)
+    // =========================================================
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PlaceOrder(
+        string address,
+        string phone,
+        string paymentMethod,
+        List<int> selectedItems)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+            return Challenge();
+
+        var cart = await GetUserCart(user.Id, selectedItems);
+
+        if (!cart.Any())
+            return RedirectToAction("Index", "Cart");
+
+        // ================= VALIDATION =================
+
         if (string.IsNullOrWhiteSpace(paymentMethod))
             return BadRequest("Vui lòng chọn phương thức thanh toán.");
 
@@ -85,7 +102,8 @@ public class OrderController : Controller
         if (string.IsNullOrWhiteSpace(address) || string.IsNullOrWhiteSpace(phone))
             return BadRequest("Vui lòng nhập đầy đủ địa chỉ và số điện thoại.");
 
-// ===== CẬP NHẬT LẠI PROFILE NẾU NGƯỜI DÙNG SỬA =====
+        // ================= UPDATE PROFILE =================
+
         bool needUpdate = false;
 
         if (user.StreetAddress != address)
@@ -101,11 +119,10 @@ public class OrderController : Controller
         }
 
         if (needUpdate)
-        {
             await _userManager.UpdateAsync(user);
-        }
 
-        // ===== Transaction để tránh lỗi =====
+        // ================= TRANSACTION =================
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -115,7 +132,8 @@ public class OrderController : Controller
             {
                 if (item.ProductVariant.Stock < item.Quantity)
                 {
-                    return BadRequest($"Sản phẩm {item.ProductVariant.Product.Name} không đủ số lượng.");
+                    return BadRequest(
+                        $"Sản phẩm {item.ProductVariant.Product.Name} không đủ số lượng.");
                 }
             }
 
@@ -125,7 +143,8 @@ public class OrderController : Controller
                 UserId = user.Id,
                 ShippingAddress = address,
                 PhoneNumber = phone,
-                TotalAmount = cart.Sum(x => x.ProductVariant.Product.Price * x.Quantity),
+                TotalAmount = cart.Sum(x =>
+                    x.ProductVariant.Product.Price * x.Quantity),
                 Status = "Pending",
                 OrderDate = DateTime.Now,
                 PaymentMethod = paymentMethod
@@ -148,32 +167,38 @@ public class OrderController : Controller
                 item.ProductVariant.Stock -= item.Quantity;
             }
 
-            // 🔹 Xóa giỏ hàng
+            // 🔹 Xóa đúng sản phẩm đã đặt
             _context.CartItems.RemoveRange(cart);
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            // ===== Redirect thanh toán =====
+            // ================= REDIRECT THANH TOÁN =================
+
             switch (paymentMethod)
             {
                 case "VNPay":
-                    return RedirectToAction("VNPay", "Payment", new { orderId = order.Id });
+                    return RedirectToAction("VNPay", "Payment",
+                        new { orderId = order.Id });
 
                 case "Momo":
-                    return RedirectToAction("Momo", "Payment", new { orderId = order.Id });
+                    return RedirectToAction("Momo", "Payment",
+                        new { orderId = order.Id });
 
                 case "ZaloPay":
-                    return RedirectToAction("ZaloPay", "Payment", new { orderId = order.Id });
+                    return RedirectToAction("ZaloPay", "Payment",
+                        new { orderId = order.Id });
 
                 case "Card":
-                    return RedirectToAction("Card", "Payment", new { orderId = order.Id });
+                    return RedirectToAction("Card", "Payment",
+                        new { orderId = order.Id });
 
                 default: // COD
                     order.Status = "Confirmed";
                     order.PaymentDate = DateTime.Now;
                     await _context.SaveChangesAsync();
-                    return RedirectToAction("OrderSuccess", new { id = order.Id });
+                    return RedirectToAction("OrderSuccess",
+                        new { id = order.Id });
             }
         }
         catch
@@ -183,9 +208,9 @@ public class OrderController : Controller
         }
     }
 
-    // ============================
+    // =========================================================
     // ✅ ORDER SUCCESS
-    // ============================
+    // =========================================================
     public async Task<IActionResult> OrderSuccess(int id)
     {
         var order = await _context.Orders
@@ -200,9 +225,9 @@ public class OrderController : Controller
         return View(order);
     }
 
-    // ============================
+    // =========================================================
     // 📜 MY ORDERS
-    // ============================
+    // =========================================================
     public async Task<IActionResult> MyOrders()
     {
         var userId = _userManager.GetUserId(User);
@@ -213,5 +238,33 @@ public class OrderController : Controller
             .ToListAsync();
 
         return View(orders);
+    }
+
+    // =========================================================
+    // 🔧 PRIVATE METHODS (TỐI ƯU HÓA)
+    // =========================================================
+
+    private async Task<List<CartItem>> GetUserCart(
+        string userId,
+        List<int>? selectedItems = null)
+    {
+        var query = _context.CartItems
+            .Include(c => c.ProductVariant)
+                .ThenInclude(v => v.Product)
+            .Where(c => c.UserId == userId);
+
+        if (selectedItems != null && selectedItems.Any())
+        {
+            query = query.Where(c => selectedItems.Contains(c.Id));
+        }
+
+        return await query.ToListAsync();
+    }
+
+    private void SetUserInfoToViewBag(ApplicationUser user)
+    {
+        ViewBag.FullName = user.FullName;
+        ViewBag.Phone = user.PhoneNumber;
+        ViewBag.Address = user.StreetAddress;
     }
 }
