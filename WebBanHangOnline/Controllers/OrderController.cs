@@ -62,6 +62,42 @@ public class OrderController : Controller
     }
 
     // =========================================================
+// ⚡ BUY NOW - CHECKOUT TRỰC TIẾP
+// =========================================================
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BuyNow(int variantId, int quantity)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+            return Challenge();
+
+        var variant = await _context.ProductVariants
+            .Include(v => v.Product)
+            .FirstOrDefaultAsync(v => v.Id == variantId);
+
+        if (variant == null)
+            return NotFound();
+
+        if (quantity <= 0 || quantity > variant.Stock)
+            return BadRequest("Số lượng không hợp lệ.");
+
+        // Tạo cart tạm (KHÔNG LƯU DB)
+        var fakeCart = new List<CartItem>
+        {
+            new CartItem
+            {
+                ProductVariantId = variant.Id,
+                Quantity = quantity,
+                ProductVariant = variant
+            }
+        };
+
+        SetUserInfoToViewBag(user);
+
+        return View("Checkout", fakeCart);
+    }
+    // =========================================================
     // 📦 PLACE ORDER (XỬ LÝ CẢ 2 TRƯỜNG HỢP)
     // =========================================================
     [HttpPost]

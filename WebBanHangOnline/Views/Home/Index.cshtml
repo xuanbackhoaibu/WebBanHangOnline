@@ -165,7 +165,6 @@
     </div>
 </section>
 
-
 <!-- ================= TABS ================= -->
 <section class="tabs container">
     <div class="tab-head">
@@ -174,52 +173,78 @@
         <button class="tab-btn" data-tab="sale">Khuyến mãi</button>
     </div>
 
+    <!-- ===== PHỔ BIẾN ===== -->
     <div class="tab-body active" id="popular">
         <div class="row g-4">
             @foreach (var p in Model.Take(8))
             {
                 <div class="col-6 col-md-3">
                     <div class="product-card">
-                        <img src="@p.Thumbnail" />
-                        <h6>@p.Name</h6>
-                        <div class="price">@p.Price.ToString("N0") đ</div>
+                        <a asp-controller="Product"
+                           asp-action="Details"
+                           asp-route-id="@p.ProductId"
+                           asp-route-slug="@p.Slug"
+                           class="product-link">
+
+                            <img src="@p.Thumbnail" />
+                            <h6>@p.Name</h6>
+                            <div class="price">@p.Price.ToString("N0") đ</div>
+
+                        </a>
                     </div>
                 </div>
             }
         </div>
     </div>
 
+    <!-- ===== BÁN CHẠY ===== -->
     <div class="tab-body" id="hot">
         <div class="row g-4">
             @foreach (var p in Model.Skip(4).Take(8))
             {
                 <div class="col-6 col-md-3">
                     <div class="product-card">
-                        <img src="@p.Thumbnail" />
-                        <h6>@p.Name</h6>
-                        <div class="price">@p.Price.ToString("N0") đ</div>
+                        <a asp-controller="Product"
+                           asp-action="Details"
+                           asp-route-id="@p.ProductId"
+                           asp-route-slug="@p.Slug"
+                           class="product-link">
+
+                            <img src="@p.Thumbnail" />
+                            <h6>@p.Name</h6>
+                            <div class="price">@p.Price.ToString("N0") đ</div>
+
+                        </a>
                     </div>
                 </div>
             }
         </div>
     </div>
 
+    <!-- ===== KHUYẾN MÃI ===== -->
     <div class="tab-body" id="sale">
         <div class="row g-4">
             @foreach (var p in Model.Skip(8).Take(8))
             {
                 <div class="col-6 col-md-3">
                     <div class="product-card">
-                        <img src="@p.Thumbnail" />
-                        <h6>@p.Name</h6>
-                        <div class="price">@p.Price.ToString("N0") đ</div>
+                        <a asp-controller="Product"
+                           asp-action="Details"
+                           asp-route-id="@p.ProductId"
+                           asp-route-slug="@p.Slug"
+                           class="product-link">
+
+                            <img src="@p.Thumbnail" />
+                            <h6>@p.Name</h6>
+                            <div class="price">@p.Price.ToString("N0") đ</div>
+
+                        </a>
                     </div>
                 </div>
             }
         </div>
     </div>
 </section>
-
 <!-- ================= BLOG ================= -->
 <section class="blog container">
     <h4 class="text-center mb-4">Xu hướng thời trang</h4>
@@ -318,6 +343,11 @@ body { background:#f7f7f7; }
     .hero-img { width:100%; margin:20px 0 0; }
 }
 
+.product-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
 
 </style>
 

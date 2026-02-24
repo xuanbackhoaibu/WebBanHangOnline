@@ -29,6 +29,8 @@ namespace WebBanHangOnline.Data
         public DbSet<SupportFaq> SupportFaqs { get; set; }
 
 
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<WishlistItem> WishlistItems { get; set; }
         // 📢 Thông báo
         public DbSet<Notification> Notifications { get; set; } // <-- Thêm mới
 

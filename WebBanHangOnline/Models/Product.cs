@@ -37,8 +37,56 @@ namespace WebBanHangOnline.Models
         public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
 
+        // ======================================================
+        // 🔥 FLASH SALE (THÊM MỚI – KHÔNG ẢNH HƯỞNG CODE CŨ)
+        // ======================================================
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? FlashSalePrice { get; set; }
+
+        public DateTime? FlashSaleStart { get; set; }
+
+        public DateTime? FlashSaleEnd { get; set; }
+
+        [NotMapped]
+        public bool IsFlashSaleActive =>
+            FlashSalePrice.HasValue &&
+            FlashSaleStart.HasValue &&
+            FlashSaleEnd.HasValue &&
+            DateTime.Now >= FlashSaleStart.Value &&
+            DateTime.Now <= FlashSaleEnd.Value;
+
+        [NotMapped]
+        public decimal FinalPrice =>
+            IsFlashSaleActive ? FlashSalePrice!.Value : Price;
+
+
+        // ======================================================
+        // ⭐ REVIEW (ĐÁNH GIÁ)
+        // ======================================================
+
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+        [NotMapped]
+        public double AverageRating =>
+            Reviews != null && Reviews.Any()
+                ? Math.Round(Reviews.Average(r => r.Rating), 1)
+                : 0;
+
+        [NotMapped]
+        public int ReviewCount =>
+            Reviews?.Count ?? 0;
+
+
+        // ======================================================
+        // ❤️ WISHLIST
+        // ======================================================
+
+        public ICollection<WishlistItem> WishlistItems { get; set; } = new List<WishlistItem>();
+
+
         // ===============================
-        // TẠO SLUG TỪ TÊN SẢN PHẨM
+        // TẠO SLUG TỪ TÊN SẢN PHẨM (GIỮ NGUYÊN)
         // ===============================
         public void GenerateSlug()
         {
@@ -47,13 +95,10 @@ namespace WebBanHangOnline.Models
 
             var slug = Name.ToLower().Trim();
 
-            // bỏ dấu tiếng Việt
             slug = RemoveVietnameseTone(slug);
 
-            // bỏ ký tự đặc biệt
             slug = Regex.Replace(slug, @"[^a-z0-9\s-]", "");
 
-            // đổi space -> -
             slug = Regex.Replace(slug, @"\s+", "-");
 
             Slug = slug;

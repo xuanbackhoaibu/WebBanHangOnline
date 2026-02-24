@@ -496,6 +496,15 @@ namespace WebBanHangOnline.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("FlashSaleEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("FlashSalePrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("FlashSaleStart")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -574,6 +583,38 @@ namespace WebBanHangOnline.Migrations
                     b.ToTable("ProductVariants");
                 });
 
+            modelBuilder.Entity("WebBanHangOnline.Models.Review", b =>
+                {
+                    b.Property<int>("ReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewId"));
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Reviews");
+                });
+
             modelBuilder.Entity("WebBanHangOnline.Models.SupportFaq", b =>
                 {
                     b.Property<int>("SupportFaqId")
@@ -628,6 +669,31 @@ namespace WebBanHangOnline.Migrations
                     b.HasKey("SupportRequestId");
 
                     b.ToTable("SupportRequests");
+                });
+
+            modelBuilder.Entity("WebBanHangOnline.Models.WishlistItem", b =>
+                {
+                    b.Property<int>("WishlistItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WishlistItemId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("WishlistItemId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("WishlistItems");
                 });
 
             modelBuilder.Entity("CartItem", b =>
@@ -763,6 +829,28 @@ namespace WebBanHangOnline.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("WebBanHangOnline.Models.Review", b =>
+                {
+                    b.HasOne("WebBanHangOnline.Models.Product", "Product")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("WebBanHangOnline.Models.WishlistItem", b =>
+                {
+                    b.HasOne("WebBanHangOnline.Models.Product", "Product")
+                        .WithMany("WishlistItems")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Order", b =>
                 {
                     b.Navigation("OrderDetails");
@@ -777,7 +865,11 @@ namespace WebBanHangOnline.Migrations
                 {
                     b.Navigation("Images");
 
+                    b.Navigation("Reviews");
+
                     b.Navigation("Variants");
+
+                    b.Navigation("WishlistItems");
                 });
 #pragma warning restore 612, 618
         }

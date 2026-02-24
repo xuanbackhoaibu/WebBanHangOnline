@@ -1,8 +1,8 @@
 @model List<CartItem>
 
 @{
-    decimal total = 0;
-    var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
+decimal total = 0;
+var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
 }
 
 <div class="container mt-4">
@@ -11,10 +11,20 @@
     <form asp-action="PlaceOrder" method="post">
         @Html.AntiForgeryToken()
 
-        <!-- 🔥 QUAN TRỌNG: TRUYỀN LẠI selectedItems -->
+        <!-- ================= GIỮ LOGIC CŨ + HỖ TRỢ BUY NOW ================= -->
         @foreach (var item in Model)
         {
-            <input type="hidden" name="selectedItems" value="@item.Id" />
+        if (item.Id > 0)
+        {
+        <!-- ✅ CHECKOUT TỪ CART -->
+        <input type="hidden" name="selectedItems" value="@item.Id" />
+        }
+        else
+        {
+        <!-- ✅ BUY NOW -->
+        <input type="hidden" name="variantId" value="@item.ProductVariantId" />
+        <input type="hidden" name="quantity" value="@item.Quantity" />
+        }
         }
 
         <div class="row">
@@ -32,63 +42,63 @@
 
                         @if (hasAddress)
                         {
-                            <div class="mb-3">
-                                <label class="form-label">Họ tên</label>
-                                <input class="form-control"
-                                       value="@ViewBag.FullName"
-                                       readonly />
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Họ tên</label>
+                            <input class="form-control"
+                                   value="@ViewBag.FullName"
+                                   readonly />
+                        </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Số điện thoại</label>
-                                <input id="phoneInput"
-                                       name="phone"
-                                       class="form-control"
-                                       value="@ViewBag.Phone"
-                                       readonly
-                                       required />
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input id="phoneInput"
+                                   name="phone"
+                                   class="form-control"
+                                   value="@ViewBag.Phone"
+                                   readonly
+                                   required />
+                        </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Địa chỉ giao hàng</label>
-                                <textarea id="addressInput"
-                                          name="address"
-                                          class="form-control"
-                                          rows="3"
-                                          readonly
-                                          required>@ViewBag.Address</textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ giao hàng</label>
+                            <textarea id="addressInput"
+                                      name="address"
+                                      class="form-control"
+                                      rows="3"
+                                      readonly
+                                      required>@ViewBag.Address</textarea>
+                        </div>
 
-                            <button type="button"
-                                    id="editBtn"
-                                    class="btn btn-outline-danger btn-sm"
-                                    onclick="toggleEdit()">
-                                Thay đổi
-                            </button>
+                        <button type="button"
+                                id="editBtn"
+                                class="btn btn-outline-danger btn-sm"
+                                onclick="toggleEdit()">
+                            Thay đổi
+                        </button>
                         }
                         else
                         {
-                            <div class="alert alert-warning">
-                                Bạn chưa có địa chỉ trong trang cá nhân.
-                                Vui lòng nhập để tiếp tục đặt hàng.
-                            </div>
+                        <div class="alert alert-warning">
+                            Bạn chưa có địa chỉ trong trang cá nhân.
+                            Vui lòng nhập để tiếp tục đặt hàng.
+                        </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Số điện thoại</label>
-                                <input name="phone"
-                                       class="form-control"
-                                       placeholder="Nhập số điện thoại..."
-                                       required />
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input name="phone"
+                                   class="form-control"
+                                   placeholder="Nhập số điện thoại..."
+                                   required />
+                        </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Địa chỉ giao hàng</label>
-                                <textarea name="address"
-                                          class="form-control"
-                                          rows="3"
-                                          placeholder="Nhập địa chỉ đầy đủ..."
-                                          required></textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ giao hàng</label>
+                            <textarea name="address"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Nhập địa chỉ đầy đủ..."
+                                      required></textarea>
+                        </div>
                         }
 
                     </div>
@@ -103,37 +113,37 @@
                     <div class="card-body p-0">
                         <table class="table mb-0 align-middle">
                             <thead class="table-light">
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th class="text-center">Số lượng</th>
-                                    <th class="text-end">Thành tiền</th>
-                                </tr>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in Model)
-                                {
-                                    var sub = item.ProductVariant.Product.Price * item.Quantity;
-                                    total += sub;
+                            @foreach (var item in Model)
+                            {
+                            var sub = item.ProductVariant.Product.Price * item.Quantity;
+                            total += sub;
 
-                                    <tr>
-                                        <td>
-                                            <strong>@item.ProductVariant.Product.Name</strong>
-                                            <br />
-                                            <small class="text-muted">
-                                                Size: @item.ProductVariant.Size |
-                                                Màu: @item.ProductVariant.Color
-                                            </small>
-                                        </td>
+                            <tr>
+                                <td>
+                                    <strong>@item.ProductVariant.Product.Name</strong>
+                                    <br />
+                                    <small class="text-muted">
+                                        Size: @item.ProductVariant.Size |
+                                        Màu: @item.ProductVariant.Color
+                                    </small>
+                                </td>
 
-                                        <td class="text-center">
-                                            x @item.Quantity
-                                        </td>
+                                <td class="text-center">
+                                    x @item.Quantity
+                                </td>
 
-                                        <td class="text-end text-danger fw-bold">
-                                            @sub.ToString("N0") đ
-                                        </td>
-                                    </tr>
-                                }
+                                <td class="text-end text-danger fw-bold">
+                                    @sub.ToString("N0") đ
+                                </td>
+                            </tr>
+                            }
                             </tbody>
                         </table>
                     </div>
@@ -152,16 +162,16 @@
                     <div class="card-body">
                         @foreach (var method in new[] { "COD", "VNPay", "Momo", "ZaloPay", "Card" })
                         {
-                            <div class="form-check mb-2">
-                                <input class="form-check-input"
-                                       type="radio"
-                                       name="paymentMethod"
-                                       value="@method"
-                                       required />
-                                <label class="form-check-label">
-                                    @method
-                                </label>
-                            </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="paymentMethod"
+                                   value="@method"
+                                   required />
+                            <label class="form-check-label">
+                                @method
+                            </label>
+                        </div>
                         }
                     </div>
                 </div>
@@ -202,13 +212,13 @@
         var phone = document.getElementById("phoneInput");
         var btn = document.getElementById("editBtn");
 
-        if (address.readOnly) {
+        if (address && phone && address.readOnly) {
             address.readOnly = false;
             phone.readOnly = false;
             btn.innerText = "Lưu";
             btn.classList.remove("btn-outline-danger");
             btn.classList.add("btn-secondary");
-        } else {
+        } else if (address && phone) {
             address.readOnly = true;
             phone.readOnly = true;
             btn.innerText = "Thay đổi";
