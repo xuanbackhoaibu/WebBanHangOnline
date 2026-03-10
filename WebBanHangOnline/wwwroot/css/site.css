@@ -228,7 +228,7 @@ body {
 
 .coutura-search input {
   border: none;
-  padding: 10px 16px;
+  
 }
 
 .coutura-search .btn-search {
@@ -449,3 +449,4 @@ body {
 .coutura-menu {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
+

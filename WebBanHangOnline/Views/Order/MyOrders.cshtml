@@ -1,25 +1,413 @@
 @model List<Order>
 
-<h2>📜 Đơn hàng của tôi</h2>
+<!DOCTYPE html>
+<html>
+<head>
 
-<table class="table">
-    <thead>
-    <tr>
-        <th>Mã</th>
-        <th>Ngày</th>
-        <th>Tổng tiền</th>
-        <th>Trạng thái</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var o in Model)
+<meta charset="utf-8"/>
+
+<title>Đơn hàng của tôi</title>
+
+<style>
+
+body{
+background:#f5f5f5;
+font-family:Segoe UI;
+margin:0;
+}
+
+.order-container{
+max-width:1100px;
+margin:auto;
+padding:25px;
+}
+
+.order-title{
+font-size:24px;
+font-weight:700;
+margin-bottom:20px;
+}
+
+.order-filter{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+flex-wrap:wrap;
+}
+
+.filter-btn{
+border:1px solid #ddd;
+background:white;
+padding:8px 18px;
+border-radius:20px;
+cursor:pointer;
+transition:.25s;
+}
+
+.filter-btn:hover{
+background:#ee4d2d;
+color:white;
+}
+
+.filter-btn.active{
+background:#ee4d2d;
+color:white;
+}
+
+.order-card{
+background:white;
+border-radius:10px;
+padding:20px;
+margin-bottom:20px;
+border:1px solid #eee;
+transition:.3s;
+}
+
+.order-card:hover{
+transform:translateY(-3px);
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.order-header{
+display:flex;
+justify-content:space-between;
+border-bottom:1px solid #eee;
+padding-bottom:10px;
+margin-bottom:15px;
+}
+
+.order-id{
+font-weight:600;
+}
+
+.order-date{
+font-size:13px;
+color:#888;
+}
+
+.status-success{color:#28a745}
+.status-warning{color:#f39c12}
+.status-danger{color:#dc3545}
+.status-gray{color:#888}
+
+.product-row{
+display:flex;
+align-items:center;
+padding:12px 0;
+border-bottom:1px dashed #eee;
+}
+
+.product-img{
+width:65px;
+height:65px;
+object-fit:cover;
+border-radius:6px;
+margin-right:15px;
+}
+
+.product-info{
+flex:1;
+}
+
+.product-name{
+font-weight:500;
+}
+
+.product-meta{
+font-size:13px;
+color:#777;
+}
+
+.product-price{
+font-weight:600;
+}
+
+.order-progress{
+height:6px;
+background:#eee;
+border-radius:4px;
+margin-top:15px;
+overflow:hidden;
+}
+
+.progress-bar{height:100%}
+
+.progress-25{width:25%;background:#999}
+.progress-70{width:70%;background:#f39c12}
+.progress-100{width:100%;background:#28a745}
+.progress-cancel{width:100%;background:#dc3545}
+
+.order-footer{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-top:15px;
+}
+
+.order-total span{
+color:#ee4d2d;
+font-weight:700;
+font-size:18px;
+}
+
+.order-actions button,
+.order-actions a{
+margin-left:8px;
+}
+
+.btn-main{
+background:#ee4d2d;
+color:white;
+padding:7px 15px;
+border-radius:6px;
+text-decoration:none;
+}
+
+.btn-main:hover{
+background:#d63c1f;
+}
+
+.btn-cancel{
+border:1px solid #dc3545;
+color:#dc3545;
+background:white;
+padding:7px 15px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.btn-buy{
+border:1px solid #007bff;
+color:#007bff;
+background:white;
+padding:7px 15px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.empty-order{
+background:white;
+padding:60px;
+text-align:center;
+border-radius:10px;
+}
+
+.empty-icon{
+font-size:40px;
+margin-bottom:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="order-container">
+
+<h2 class="order-title">📦 Đơn hàng của tôi</h2>
+
+<div class="order-filter">
+
+<button class="filter-btn active" data-status="all">Tất cả</button>
+<button class="filter-btn" data-status="Pending">Chờ xác nhận</button>
+<button class="filter-btn" data-status="Shipping">Đang giao</button>
+<button class="filter-btn" data-status="Completed">Đã giao</button>
+<button class="filter-btn" data-status="Cancelled">Đã hủy</button>
+
+</div>
+
+@if(!Model.Any())
+{
+<div class="empty-order">
+<div class="empty-icon">🛒</div>
+<h4>Chưa có đơn hàng</h4>
+<p>Hãy mua sắm để tạo đơn đầu tiên</p>
+</div>
+}
+
+@foreach(var o in Model)
+{
+
+<div class="order-card" data-status="@o.Status">
+
+<div class="order-header">
+
+<div>
+
+<div class="order-id">Đơn hàng #@o.Id</div>
+
+<div class="order-date">
+@o.OrderDate.ToString("dd/MM/yyyy")
+</div>
+
+</div>
+
+<div class="order-status
+@(o.Status=="Completed"?"status-success":
+o.Status=="Shipping"?"status-warning":
+o.Status=="Cancelled"?"status-danger":"status-gray")">
+
+@o.Status
+
+</div>
+
+</div>
+
+
+@if(o.OrderDetails != null)
+{
+foreach(var item in o.OrderDetails)
+{
+
+<div class="product-row">
+
+    <img src="@item.ProductVariant.Product.Thumbnail" class="product-img"/>
+
+<div class="product-info">
+
+<div class="product-name">
+@item.ProductVariant.Product.Name
+</div>
+
+<div class="product-meta">
+
+@if(item.ProductVariant.Color != null)
+{
+<span>Màu: @item.ProductVariant.Color</span>
+}
+
+@if(item.ProductVariant.Size != null)
+{
+<span> | Size: @item.ProductVariant.Size</span>
+}
+
+</div>
+
+<div class="product-meta">
+Số lượng: @item.Quantity
+</div>
+
+</div>
+
+<div class="product-price">
+@(item.Price * item.Quantity).ToString("N0") đ
+</div>
+
+</div>
+
+}
+}
+
+<div class="order-progress">
+
+@if(o.Status=="Pending")
+{
+<div class="progress-bar progress-25"></div>
+}
+
+@if(o.Status=="Shipping")
+{
+<div class="progress-bar progress-70"></div>
+}
+
+@if(o.Status=="Completed")
+{
+<div class="progress-bar progress-100"></div>
+}
+
+@if(o.Status=="Cancelled")
+{
+<div class="progress-bar progress-cancel"></div>
+}
+
+</div>
+
+<div class="order-footer">
+
+<div class="order-total">
+Tổng:
+<span>@o.TotalAmount.ToString("N0") đ</span>
+</div>
+
+<div class="order-actions">
+
+    <a asp-controller="Order"
+       asp-action="OrderSuccess"
+       asp-route-id="@o.Id"
+       class="btn-main">
+        Chi tiết
+    </a>
+    
+    @if(o.Status=="Pending")
     {
-        <tr>
-            <td>#@o.Id</td>
-            <td>@o.OrderDate.ToString("dd/MM/yyyy")</td>
-            <td>@o.TotalAmount.ToString("N0") đ</td>
-            <td>@o.Status</td>
-        </tr>
+        <form asp-controller="Order"
+              asp-action="CancelOrder"
+              method="post"
+              style="display:inline">
+
+            <input type="hidden" name="id" value="@o.Id"/>
+
+            <button type="submit" class="btn-cancel">
+                Hủy đơn
+            </button>
+
+        </form>
     }
-    </tbody>
-</table>
+
+
+    @if(o.Status=="Completed" || o.Status=="Cancelled")
+    {
+        <a asp-controller="Order"
+           asp-action="Checkout"
+           class="btn-buy">
+            Mua lại
+        </a>
+    }
+
+</div>
+
+</div>
+
+</div>
+
+}
+
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded",function(){
+
+const buttons=document.querySelectorAll(".filter-btn")
+const orders=document.querySelectorAll(".order-card")
+
+buttons.forEach(btn=>{
+
+btn.addEventListener("click",()=>{
+
+buttons.forEach(b=>b.classList.remove("active"))
+
+btn.classList.add("active")
+
+let status=btn.dataset.status
+
+orders.forEach(o=>{
+
+if(status==="all"||o.dataset.status===status)
+o.style.display="block"
+else
+o.style.display="none"
+
+})
+
+})
+
+})
+
+})
+
+</script>
+
+</body>
+</html>

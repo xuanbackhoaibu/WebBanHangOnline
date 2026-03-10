@@ -116,6 +116,8 @@ public class OrderController : Controller
 
         if (!cart.Any())
             return RedirectToAction("Index", "Cart");
+        
+        
 
         // ================= VALIDATION =================
 
@@ -274,6 +276,39 @@ public class OrderController : Controller
             .ToListAsync();
 
         return View(orders);
+    }
+    
+    // =========================================================
+// ❌ CANCEL ORDER
+// =========================================================
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelOrder(int id)
+    {
+        var userId = _userManager.GetUserId(User);
+
+        var order = await _context.Orders
+            .Include(o => o.OrderDetails)
+            .ThenInclude(d => d.ProductVariant)
+            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
+
+        if (order == null)
+            return NotFound();
+
+        if (order.Status != "Pending")
+            return BadRequest("Chỉ có thể hủy đơn đang chờ xác nhận.");
+
+        // 🔄 hoàn lại stock
+        foreach (var item in order.OrderDetails)
+        {
+            item.ProductVariant.Stock += item.Quantity;
+        }
+
+        order.Status = "Cancelled";
+
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction("MyOrders");
     }
 
     // =========================================================
