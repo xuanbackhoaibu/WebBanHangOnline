@@ -102,6 +102,34 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
     .highlight-missing {
         border:2px solid #ff424f !important;
     }
+
+    .product-tabs{
+        margin-top:40px;
+    }
+
+    .product-tabs .nav-link{
+        color:#333;
+        font-weight:500;
+    }
+
+    .product-tabs .nav-link.active{
+        color:#ee4d2d;
+        border-color:#ee4d2d #ee4d2d #fff;
+    }
+
+    .product-description{
+        line-height:1.8;
+        font-size:15px;
+    }
+
+    .review-item{
+        border-bottom:1px solid #eee;
+        padding:12px 0;
+    }
+
+    .review-star{
+        color:#ffc107;
+    }
 </style>
 
 <div class="container mt-4">
@@ -117,11 +145,11 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 <div class="d-flex gap-2 flex-wrap">
                     @if (Model.Images != null && Model.Images.Any())
                     {
-                    foreach (var img in Model.Images)
-                    {
-                    <img src="@img.ImageUrl"
-                         class="thumbnail-img @(img.ImageUrl == mainImage ? "active-thumb" : "")" />
-                    }
+                        foreach (var img in Model.Images)
+                        {
+                            <img src="@img.ImageUrl"
+                                 class="thumbnail-img @(img.ImageUrl == mainImage ? "active-thumb" : "")" />
+                        }
                     }
                 </div>
 
@@ -134,30 +162,30 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 <div class="mb-2">
                     @for (int i = 1; i <= 5; i++)
                     {
-                    <i class="bi @(i <= averageRating ? "bi-star-fill text-warning" : "bi-star text-warning")"></i>
+                        <i class="bi @(i <= averageRating ? "bi-star-fill text-warning" : "bi-star text-warning")"></i>
                     }
                     <span class="ms-2">
-    @averageRating.ToString("0.0") (@reviewCount đánh giá)
-</span>
+                        @averageRating.ToString("0.0") (@reviewCount đánh giá)
+                    </span>
                 </div>
 
                 @if (isFlashSale)
                 {
-                <div class="flash-sale mb-2">
-                    🔥 Flash Sale kết thúc sau:
-                    <span id="countdown"></span>
-                </div>
+                    <div class="flash-sale mb-2">
+                        🔥 Flash Sale kết thúc sau:
+                        <span id="countdown"></span>
+                    </div>
                 }
 
                 <div class="mb-3">
                     @if (isFlashSale)
                     {
-                    <span class="price-old">@Model.Price.ToString("N0") ₫</span>
-                    <h3 class="text-danger">@Model.FlashSalePrice?.ToString("N0") ₫</h3>
+                        <span class="price-old">@Model.Price.ToString("N0") ₫</span>
+                        <h3 class="text-danger">@Model.FlashSalePrice?.ToString("N0") ₫</h3>
                     }
                     else
                     {
-                    <h3 class="text-danger">@Model.Price.ToString("N0") ₫</h3>
+                        <h3 class="text-danger">@Model.Price.ToString("N0") ₫</h3>
                     }
                 </div>
 
@@ -169,12 +197,12 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                         <label class="fw-bold">Size</label><br />
                         @if (Model.Variants != null)
                         {
-                        foreach (var s in Model.Variants.Select(v => v.Size).Distinct())
-                        {
-                        <button type="button"
-                                class="variant-btn size-btn"
-                                data-size="@s">@s</button>
-                        }
+                            foreach (var s in Model.Variants.Select(v => v.Size).Distinct())
+                            {
+                                <button type="button"
+                                        class="variant-btn size-btn"
+                                        data-size="@s">@s</button>
+                            }
                         }
                     </div>
 
@@ -225,6 +253,143 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
             </div>
         </div>
     </div>
+    
+    <div class="container product-tabs">
+
+    <div class="product-container">
+
+        <ul class="nav nav-tabs" id="productTab" role="tablist">
+
+            <li class="nav-item">
+                <button class="nav-link active"
+                        data-bs-toggle="tab"
+                        data-bs-target="#desc">
+                    Mô tả sản phẩm
+                </button>
+            </li>
+
+            <li class="nav-item">
+                <button class="nav-link"
+                        data-bs-toggle="tab"
+                        data-bs-target="#info">
+                    Thông tin sản phẩm
+                </button>
+            </li>
+
+            <li class="nav-item">
+                <button class="nav-link"
+                        data-bs-toggle="tab"
+                        data-bs-target="#review">
+                    Đánh giá (@reviewCount)
+                </button>
+            </li>
+
+        </ul>
+
+        <div class="tab-content pt-3">
+
+            <!-- DESCRIPTION -->
+            <div class="tab-pane fade show active" id="desc">
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="product-description">
+                        @Html.Raw(Model.Description)
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">
+                        Sản phẩm chưa có mô tả.
+                    </p>
+                }
+
+            </div>
+
+
+            <!-- PRODUCT INFO -->
+            <div class="tab-pane fade" id="info">
+
+                <table class="table">
+
+                    <tr>
+                        <th width="200">Tên sản phẩm</th>
+                        <td>@Model.Name</td>
+                    </tr>
+
+                    <tr>
+                        <th>Danh mục</th>
+                        <td>@Model.Category?.Name</td>
+                    </tr>
+
+                    <tr>
+                        <th>Giá</th>
+                        <td>@Model.Price.ToString("N0") ₫</td>
+                    </tr>
+
+                    @if(Model.IsFlashSaleActive)
+                    {
+                        <tr>
+                            <th>Flash Sale</th>
+                            <td class="text-danger">
+                                @Model.FlashSalePrice?.ToString("N0") ₫
+                            </td>
+                        </tr>
+                    }
+
+                </table>
+
+            </div>
+
+
+            <!-- REVIEWS -->
+            <div class="tab-pane fade" id="review">
+
+                @if(Model.Reviews != null && Model.Reviews.Any())
+                {
+                    foreach(var r in Model.Reviews)
+                    {
+                        <div class="review-item">
+
+                            <div class="fw-bold">
+                                @r.UserName
+                            </div>
+
+                            <div class="review-star">
+                                @for(int i=1;i<=5;i++)
+                                {
+                                    if(i<=r.Rating)
+                                    {
+                                        <i class="bi bi-star-fill"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star"></i>
+                                    }
+                                }
+                            </div>
+
+                            <div class="mt-1">
+                                @r.Comment
+                            </div>
+
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">
+                        Chưa có đánh giá nào cho sản phẩm này.
+                    </p>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 </div>
 
 @section Scripts{

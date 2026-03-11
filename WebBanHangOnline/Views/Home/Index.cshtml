@@ -8,9 +8,8 @@
     <div class="hero-content">
         <small>XUANBAC</small>
         <h1>Autumn<br />& Winter 2026</h1>
-        <a href="#" class="btn-main">MUA NGAY</a>
     </div>
-    <img src="/images/hero.jpg" class="hero-img" />
+    <img src="/images/l.jpg" class="hero-img" />
 </section>
 
 <!-- ================= WOMEN ================= -->
@@ -349,8 +348,37 @@ body { background:#f7f7f7; }
     display: block;
 }
 
+.product-card h6 {
+    font-size:14px;
+    margin:10px 0 4px;
 
+    display: -webkit-box;
+    -webkit-line-clamp: 2;   /* chỉ hiển thị 2 dòng */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    height: 2.8em; /* 2 dòng */
+}
 
+.hero-content small{
+    font-size:22px;
+    letter-spacing:4px;
+    font-weight:500;
+    color:#333;
+}
+
+.hero-content h1{
+    font-size:70px;      /* chữ to hơn */
+    font-weight:300;     /* nét mảnh */
+    line-height:1.15;    /* cân đối dòng */
+    letter-spacing:1px;
+    color:#222;
+    
+}
+.hero-content{
+    margin-left:60px;   /* dịch sang phải */
+}
 </style>
 
 @section Scripts {

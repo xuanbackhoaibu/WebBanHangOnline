@@ -195,43 +195,65 @@
     </div>
 
     <!-- ================= FOOTER ================= -->
-    <footer class="coutura-footer">
+    <footer class="shop-footer">
         <div class="container footer-grid">
 
-            <div>
-                <h5>couturamona.</h5>
-                <p>Thời trang cao cấp, phong cách tối giản, hiện đại.</p>
+            <!-- LOGO + MÔ TẢ -->
+            <div class="footer-col">
+                <h4 class="logo">XUANBAC</h4>
+                <p>Shop thời trang hiện đại dành cho nam, nữ và trẻ em. 
+                    Luôn cập nhật xu hướng mới nhất.</p>
+
+                <div class="social">
+                    <a href="#">Facebook</a>
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                </div>
             </div>
 
-            <div>
+            <!-- THÔNG TIN -->
+            <div class="footer-col">
                 <h6>Thông tin</h6>
                 <ul>
-                    <li>Trang chủ</li>
-                    <li>Giới thiệu</li>
-                    <li>Chính sách</li>
-                    <li>Liên hệ</li>
+                    <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li><a asp-controller="Home" asp-action="About">Giới thiệu</a></li>
+                    <li><a asp-controller="Home" asp-action="Privacy">Chính sách</a></li>
+                    <li><a asp-controller="Support" asp-action="Create">Liên hệ</a></li>
                 </ul>
             </div>
 
-            <div>
+            <!-- HỖ TRỢ -->
+            <div class="footer-col">
                 <h6>Hỗ trợ</h6>
                 <ul>
-                    <li>Hỏi đáp</li>
-                    <li>Giao hàng</li>
-                    <li>Thanh toán</li>
+                    <li><a href="#">Hỏi đáp</a></li>
+                    <li><a href="#">Giao hàng</a></li>
+                    <li><a href="#">Thanh toán</a></li>
+                    <li><a href="#">Đổi trả</a></li>
                 </ul>
             </div>
 
-            <div>
+            <!-- NEWSLETTER -->
+            <div class="footer-col">
                 <h6>Đăng ký nhận tin</h6>
-                <input type="email" placeholder="Email của bạn">
-                <button>Gửi</button>
+                <p>Nhận thông tin khuyến mãi mới nhất.</p>
+
+                <div class="newsletter">
+                    <input type="email" placeholder="Nhập email của bạn">
+                    <button>Đăng ký</button>
+                </div>
+
+                <p class="contact">
+                    Hotline: 0123 456 789<br>
+                    Email: support@xuanbac.vn
+                </p>
             </div>
 
         </div>
 
+        <!-- COPYRIGHT -->
         <div class="footer-bottom">
-            © 2025 - WebBanHangOnline | Coutura UI
+            © 2026 XuanBac Fashion. All rights reserved.
         </div>
     </footer>
 
@@ -407,6 +429,82 @@
             margin-right: 6px;
         }
 
+        .shop-footer{
+            background:#111;
+            color:#ccc;
+            margin-top:80px;
+        }
+
+        .footer-grid{
+            display:grid;
+            grid-template-columns: repeat(4,1fr);
+            gap:40px;
+            padding:50px 0;
+        }
+
+        .footer-col h6{
+            color:#fff;
+            margin-bottom:15px;
+        }
+
+        .footer-col ul{
+            list-style:none;
+            padding:0;
+        }
+
+        .footer-col ul li{
+            margin-bottom:8px;
+        }
+
+        .footer-col ul li a{
+            text-decoration:none;
+            color:#bbb;
+        }
+
+        .footer-col ul li a:hover{
+            color:#ff6b6b;
+        }
+
+        .logo{
+            font-size:22px;
+            color:#fff;
+        }
+
+        .social a{
+            display:inline-block;
+            margin-right:10px;
+            color:#bbb;
+            text-decoration:none;
+        }
+
+        .social a:hover{
+            color:#ff6b6b;
+        }
+
+        .newsletter{
+            display:flex;
+            margin-top:10px;
+        }
+
+        .newsletter input{
+            flex:1;
+            padding:8px;
+            border:none;
+        }
+
+        .newsletter button{
+            background:#ff6b6b;
+            border:none;
+            color:#fff;
+            padding:8px 14px;
+        }
+
+        .footer-bottom{
+            text-align:center;
+            padding:15px;
+            border-top:1px solid #333;
+            font-size:14px;
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
