@@ -2,61 +2,899 @@
     Layout = "_AdminLayout";
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<h2>📊 ADMIN DASHBOARD</h2>
+<style>
+    * {
+        font-family: 'Inter', sans-serif;
+    }
 
-<div class="row text-center">
-    <div class="col-md-4">
-        <div class="card bg-primary text-white mb-3">
-            <div class="card-body">
-                <h5>Tổng đơn hàng</h5>
-                <h2>@ViewBag.TotalOrders</h2>
+    .dashboard-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .dashboard-header h2 {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 2rem;
+        margin: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .date-picker {
+        background: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .date-picker:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+
+    .date-picker i {
+        color: #667eea;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .stat-icon.orders { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .stat-icon.revenue { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+    .stat-icon.users { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+    .stat-icon.products { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+
+    .stat-content h5 {
+        color: #64748b;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-trend {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .charts-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+        flex-shrink: 0;
+    }
+
+    .chart-header h4 {
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .chart-container {
+        flex: 1;
+        position: relative;
+        min-height: 0;
+        width: 100%;
+    }
+
+    .chart-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 300px;
+    }
+
+    .recent-orders {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid rgba(226, 232, 240, 0.6);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .table-header h4 {
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .view-all {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        background: #f8fafc;
+        transition: all 0.3s ease;
+    }
+
+    .view-all:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .order-table tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .order-table td {
+        padding: 1rem 0;
+        color: #334155;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .status-delivered, .status-completed, .status-paid { background: #d1fae5; color: #065f46; }
+    .status-pending, .status-waiting { background: #fff3cd; color: #856404; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-processing { background: #e0f2fe; color: #0369a1; }
+
+    .avatar-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .user-email {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .btn-icon:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+
+    @@media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .charts-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .order-table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .chart-card {
+            height: 350px;
+        }
+    }
+</style>
+
+@{
+    // Tính toán các chỉ số phụ với kiểm tra null
+    var totalOrders = 0;
+    var totalRevenue = 0m;
+    var totalUsers = 0;
+    var totalProducts = 0;
+
+    try
+    {
+        totalOrders = ViewBag.TotalOrders as int? ?? 0;
+        totalRevenue = ViewBag.TotalRevenue as decimal? ?? 0;
+        totalUsers = ViewBag.TotalUsers as int? ?? 0;
+        totalProducts = ViewBag.TotalProducts as int? ?? 0;
+    }
+    catch
+    {
+        // Bỏ qua lỗi
+    }
+}
+
+<div class="dashboard-header">
+    <h2><i class="fas fa-chart-pie me-2"></i>Dashboard Overview</h2>
+    <div class="date-picker" onclick="location.reload()">
+        <i class="far fa-calendar-alt"></i>
+        <span>@DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))</span>
+        <i class="fas fa-sync-alt ms-2" style="font-size: 0.8rem;"></i>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon orders">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="stat-content">
+            <h5>Tổng đơn hàng</h5>
+            <div class="stat-value">@totalOrders.ToString("N0")</div>
+            <div class="stat-trend">
+                <i class="fas fa-chart-line"></i>
+                <span>Tổng số đơn hàng</span>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card bg-success text-white mb-3">
-            <div class="card-body">
-                <h5>Tổng doanh thu</h5>
-                <h2>@String.Format("{0:N0} đ", ViewBag.TotalRevenue)</h2>
+    <div class="stat-card">
+        <div class="stat-icon revenue">
+            <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+            <h5>Tổng doanh thu</h5>
+            <div class="stat-value">@String.Format("{0:N0}", totalRevenue) đ</div>
+            <div class="stat-trend">
+                <i class="fas fa-chart-line"></i>
+                <span>Đã thanh toán</span>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card bg-dark text-white mb-3">
-            <div class="card-body">
-                <h5>Tổng người dùng</h5>
-                <h2>@ViewBag.TotalUsers</h2>
+    <div class="stat-card">
+        <div class="stat-icon users">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+            <h5>Tổng người dùng</h5>
+            <div class="stat-value">@totalUsers.ToString("N0")</div>
+            <div class="stat-trend">
+                <i class="fas fa-chart-line"></i>
+                <span>Tổng tài khoản</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon products">
+            <i class="fas fa-box"></i>
+        </div>
+        <div class="stat-content">
+            <h5>Tổng sản phẩm</h5>
+            <div class="stat-value">@totalProducts.ToString("N0")</div>
+            <div class="stat-trend">
+                <i class="fas fa-chart-line"></i>
+                <span>Đang bán</span>
             </div>
         </div>
     </div>
 </div>
 
-<hr />
+<div class="charts-row">
+    <div class="chart-card">
+        <div class="chart-header">
+            <h4><i class="fas fa-chart-line me-2" style="color: #667eea;"></i>Doanh thu 7 ngày gần nhất</h4>
+        </div>
+        <div class="chart-container" id="revenueChartContainer">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
 
-<h4>📈 Doanh thu 7 ngày gần nhất</h4>
-<canvas id="revenueChart" height="100"></canvas>
+    <div class="chart-card">
+        <div class="chart-header">
+            <h4><i class="fas fa-chart-pie me-2" style="color: #f093fb;"></i>Phân bố đơn hàng</h4>
+        </div>
+        <div class="chart-container" id="orderDistributionContainer">
+            <canvas id="orderDistributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="recent-orders">
+    <div class="table-header">
+        <h4><i class="fas fa-history me-2" style="color: #667eea;"></i>Đơn hàng gần đây</h4>
+        <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="view-all">
+            Xem tất cả <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    @{
+        IEnumerable<dynamic> recentOrders = null;
+        bool hasRecentOrders = false;
+
+        try
+        {
+            recentOrders = ViewBag.RecentOrders as IEnumerable<dynamic>;
+            hasRecentOrders = recentOrders != null && recentOrders.Any();
+        }
+        catch
+        {
+            hasRecentOrders = false;
+        }
+    }
+
+    @if (hasRecentOrders)
+    {
+        <table class="order-table">
+            <tbody>
+                @foreach (var order in recentOrders)
+                {
+                    // Tạo initials từ tên khách hàng
+                    string initials = "KH";
+                    string customerName = "Khách hàng";
+                    string customerEmail = "";
+
+                    try
+                    {
+                        customerName = order.CustomerName ?? "Khách hàng";
+                        customerEmail = order.CustomerEmail ?? "";
+
+                        if (!string.IsNullOrEmpty(customerName) && customerName != "Khách vãng lai")
+                        {
+                            var nameParts = customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            if (nameParts.Length > 1)
+                            {
+                                string firstInitial = nameParts[0].Length > 0 ? nameParts[0][0].ToString() : "";
+                                string lastInitial = nameParts[nameParts.Length - 1].Length > 0 ? nameParts[nameParts.Length - 1][0].ToString() : "";
+                                initials = (firstInitial + lastInitial).ToUpper();
+
+                                if (string.IsNullOrEmpty(initials))
+                                {
+                                    initials = "KH";
+                                }
+                            }
+                            else if (customerName.Length >= 2)
+                            {
+                                initials = customerName.Substring(0, 2).ToUpper();
+                            }
+                            else if (customerName.Length >= 1)
+                            {
+                                initials = customerName.Substring(0, 1).ToUpper();
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        initials = "KH";
+                    }
+
+                    // Xác định class cho status badge
+                    string statusClass = "status-pending";
+                    string statusText = "Chờ xử lý";
+
+                    try
+                    {
+                        statusText = order.Status ?? "Pending";
+                        string statusLower = statusText.ToLower();
+
+                        if (statusLower.Contains("giao") || statusLower.Contains("completed") || statusLower.Contains("paid") || statusLower.Contains("delivered"))
+                        {
+                            statusClass = "status-delivered";
+                            statusText = "Đã giao";
+                        }
+                        else if (statusLower.Contains("hủy") || statusLower.Contains("cancelled"))
+                        {
+                            statusClass = "status-cancelled";
+                            statusText = "Đã hủy";
+                        }
+                        else if (statusLower.Contains("xử lý") || statusLower.Contains("processing"))
+                        {
+                            statusClass = "status-processing";
+                            statusText = "Đang xử lý";
+                        }
+                        else if (statusLower.Contains("pending") || statusLower.Contains("chờ"))
+                        {
+                            statusClass = "status-pending";
+                            statusText = "Chờ xử lý";
+                        }
+                    }
+                    catch
+                    {
+                        statusClass = "status-pending";
+                        statusText = "Chờ xử lý";
+                    }
+
+                    <tr>
+                        <td>
+                            <div class="avatar-group">
+                                <div class="avatar">@initials</div>
+                                <div class="user-info">
+                                    <span class="user-name">@customerName</span>
+                                    <span class="user-email">@(!string.IsNullOrEmpty(customerEmail) ? customerEmail : "Chưa có email")</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @try
+                            {
+                                string orderCode = order.OrderCode ?? "ORD" + order.Id.ToString("D6");
+                                <span>#@orderCode</span>
+                            }
+                            catch
+                            {
+                                <span>#ORD-000</span>
+                            }
+                        </td>
+                        <td>
+                            @try
+                            {
+                                decimal amount = order.TotalAmount is decimal ? (decimal)order.TotalAmount : 0;
+                                @String.Format("{0:N0}", amount) <span>đ</span>
+                            }
+                            catch
+                            {
+                                <span>0 đ</span>
+                            }
+                        </td>
+                        <td><span class="status-badge @statusClass">@statusText</span></td>
+                        <td>
+                            @try
+                            {
+                                string orderDate = order.OrderDate is DateTime ? ((DateTime)order.OrderDate).ToString("dd/MM/yyyy HH:mm") : "N/A";
+                                @orderDate
+                            }
+                            catch
+                            {
+                                <span>N/A</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                @{
+                                    int orderId = 0;
+                                    try
+                                    {
+                                        orderId = order.Id is int ? (int)order.Id : 0;
+                                    }
+                                    catch
+                                    {
+                                        orderId = 0;
+                                    }
+                                }
+                                <button class="btn-icon" onclick="viewOrderDetail(@orderId)" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon" onclick="editOrder(@orderId)" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-shopping-cart"></i>
+            <p>Chưa có đơn hàng nào</p>
+        </div>
+    }
+</div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-    const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels));
-    const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartData));
-
-    new Chart(document.getElementById('revenueChart'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Doanh thu (VNĐ)',
-                data: data,
-                borderWidth: 3,
-                tension: 0.3
-            }]
+        // Format số tiền VNĐ
+        function formatCurrency(value) {
+            try {
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(value);
+            } catch (e) {
+                return value + ' đ';
+            }
         }
-    });
-</script>
+
+        // Đợi DOM load xong mới vẽ biểu đồ
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            @{
+                // Chuẩn bị dữ liệu cho biểu đồ doanh thu
+                var revenueLabelsJson = "[]";
+                var revenueDataJson = "[]";
+                var hasRevenueData = false;
+                
+                try
+                {
+                    if (ViewBag.ChartLabels != null && ViewBag.ChartData != null && 
+                        ViewBag.ChartLabels.Count > 0 && ViewBag.ChartData.Count > 0)
+                    {
+                        revenueLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels);
+                        revenueDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartData);
+                        hasRevenueData = true;
+                    }
+                }
+                catch
+                {
+                    revenueLabelsJson = "[]";
+                    revenueDataJson = "[]";
+                    hasRevenueData = false;
+                }
+            }
+
+            // Dữ liệu doanh thu
+            const revenueLabels = @Html.Raw(revenueLabelsJson);
+            const revenueData = @Html.Raw(revenueDataJson);
+            
+            console.log('========== BIỂU ĐỒ DOANH THU ==========');
+            console.log('Has Revenue Data:', @hasRevenueData.ToString().ToLower());
+            console.log('Revenue Labels:', revenueLabels);
+            console.log('Revenue Data:', revenueData);
+            console.log('Revenue Labels Length:', revenueLabels ? revenueLabels.length : 0);
+            console.log('Revenue Data Length:', revenueData ? revenueData.length : 0);
+
+            // Vẽ biểu đồ doanh thu
+            const revenueCtx = document.getElementById('revenueChart');
+            if (revenueCtx) {
+                if (revenueLabels && revenueLabels.length > 0 && revenueData && revenueData.length > 0) {
+                    try {
+                        new Chart(revenueCtx, {
+                            type: 'line',
+                            data: {
+                                labels: revenueLabels,
+                                datasets: [{
+                                    label: 'Doanh thu',
+                                    data: revenueData,
+                                    borderColor: '#667eea',
+                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                    borderWidth: 3,
+                                    tension: 0.3,
+                                    fill: true,
+                                    pointBackgroundColor: '#fff',
+                                    pointBorderColor: '#667eea',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return formatCurrency(context.raw);
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: '#e2e8f0' },
+                                        ticks: {
+                                            callback: function(value) {
+                                                if (value >= 1000000) {
+                                                    return (value / 1000000).toFixed(1) + 'tr';
+                                                }
+                                                if (value >= 1000) {
+                                                    return (value / 1000).toFixed(0) + 'k';
+                                                }
+                                                return value;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        console.log('✅ BIỂU ĐỒ DOANH THU: Vẽ thành công');
+                    } catch (e) {
+                        console.error('❌ BIỂU ĐỒ DOANH THU: Lỗi vẽ:', e);
+                        
+                        // Hiển thị empty state
+                        const container = document.getElementById('revenueChartContainer');
+                        if (container) {
+                            container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Lỗi vẽ biểu đồ</p></div>';
+                        }
+                    }
+                } else {
+                    console.log('⚠️ BIỂU ĐỒ DOANH THU: Không có dữ liệu');
+                    
+                    // Hiển thị empty state
+                    const container = document.getElementById('revenueChartContainer');
+                    if (container) {
+                        container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Chưa có dữ liệu doanh thu trong 7 ngày qua</p></div>';
+                    }
+                }
+            } else {
+                console.error('❌ BIỂU ĐỒ DOANH THU: Không tìm thấy canvas');
+            }
+
+            @{
+                // Chuẩn bị dữ liệu cho biểu đồ phân bố
+                var statusLabelsJson = "[]";
+                var statusDataJson = "[]";
+                var hasOrderStatusData = false;
+                
+                try
+                {
+                    if (ViewBag.OrderStatusLabels != null && ViewBag.OrderStatusData != null && 
+                        ViewBag.OrderStatusLabels.Count > 0 && ViewBag.OrderStatusData.Count > 0)
+                    {
+                        statusLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.OrderStatusLabels);
+                        statusDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.OrderStatusData);
+                        hasOrderStatusData = true;
+                    }
+                }
+                catch
+                {
+                    statusLabelsJson = "[]";
+                    statusDataJson = "[]";
+                    hasOrderStatusData = false;
+                }
+            }
+
+            // Dữ liệu phân bố đơn hàng
+            const statusLabels = @Html.Raw(statusLabelsJson);
+            const statusData = @Html.Raw(statusDataJson);
+            
+            console.log('========== BIỂU ĐỒ PHÂN BỐ ==========');
+            console.log('Has Status Data:', @hasOrderStatusData.ToString().ToLower());
+            console.log('Status Labels:', statusLabels);
+            console.log('Status Data:', statusData);
+            console.log('Status Labels Length:', statusLabels ? statusLabels.length : 0);
+            console.log('Status Data Length:', statusData ? statusData.length : 0);
+
+            // Vẽ biểu đồ phân bố
+            const distributionCtx = document.getElementById('orderDistributionChart');
+            if (distributionCtx) {
+                if (statusLabels && statusLabels.length > 0 && statusData && statusData.length > 0) {
+                    try {
+                        // Màu sắc cho các trạng thái
+                        const statusColors = [
+                            '#10b981', // xanh lá
+                            '#f59e0b', // vàng
+                            '#ef4444', // đỏ
+                            '#3b82f6', // xanh dương
+                            '#8b5cf6', // tím
+                            '#ec4899', // hồng
+                            '#14b8a6'  // xanh ngọc
+                        ];
+
+                        new Chart(distributionCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: statusLabels,
+                                datasets: [{
+                                    data: statusData,
+                                    backgroundColor: statusColors.slice(0, statusLabels.length),
+                                    borderWidth: 0,
+                                    hoverOffset: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            usePointStyle: true,
+                                            padding: 15,
+                                            font: { size: 11 }
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.label || '';
+                                                const value = context.raw || 0;
+                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                                return `${label}: ${value} đơn (${percentage}%)`;
+                                            }
+                                        }
+                                    }
+                                },
+                                cutout: '65%',
+                                layout: {
+                                    padding: {
+                                        bottom: 10
+                                    }
+                                }
+                            }
+                        });
+                        console.log('✅ BIỂU ĐỒ PHÂN BỐ: Vẽ thành công');
+                    } catch (e) {
+                        console.error('❌ BIỂU ĐỒ PHÂN BỐ: Lỗi vẽ:', e);
+                        
+                        // Hiển thị empty state
+                        const container = document.getElementById('orderDistributionContainer');
+                        if (container) {
+                            container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-pie"></i><p>Lỗi vẽ biểu đồ</p></div>';
+                        }
+                    }
+                } else {
+                    console.log('⚠️ BIỂU ĐỒ PHÂN BỐ: Không có dữ liệu');
+                    
+                    // Hiển thị empty state
+                    const container = document.getElementById('orderDistributionContainer');
+                    if (container) {
+                        container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-pie"></i><p>Chưa có dữ liệu phân bố đơn hàng</p></div>';
+                    }
+                }
+            } else {
+                console.error('❌ BIỂU ĐỒ PHÂN BỐ: Không tìm thấy canvas');
+            }
+        });
+
+        // Hàm xem chi tiết đơn hàng
+        function viewOrderDetail(orderId) {
+            if (orderId && orderId > 0) {
+                window.location.href = '@Url.Action("Details", "Order", new { area = "Admin" })' + '?id=' + orderId;
+            } else {
+                console.warn('Order ID không hợp lệ:', orderId);
+            }
+        }
+
+        // Hàm chỉnh sửa đơn hàng
+        function editOrder(orderId) {
+            if (orderId && orderId > 0) {
+                window.location.href = '@Url.Action("Edit", "Order", new { area = "Admin" })' + '?id=' + orderId;
+            } else {
+                console.warn('Order ID không hợp lệ:', orderId);
+            }
+        }
+    </script>
 }
