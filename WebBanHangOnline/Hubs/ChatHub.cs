@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Text.Json;
 using WebBanHangOnline.Data;
@@ -57,16 +58,17 @@ namespace WebBanHangOnline.Hubs
         object QueryProduct(string keyword)
         {
             var products = _db.Products
-                              .Where(p => p.Name.ToLower().Contains(keyword))
-                              .Take(3)
-                              .Select(p => new
-                              {
-                                  name = p.Name,
-                                  price = p.Price,
-                                  image = p.Images.FirstOrDefault().ImageUrl,
-                                  link = "/Product/Detail/" + p.ProductId
-                              })
-                              .ToList();
+    .Include(p => p.Images)
+    .Where(p => p.Name.ToLower().Contains(keyword))
+    .Take(3)
+    .Select(p => new
+    {
+        name = p.Name,
+        price = p.Price,
+        image = p.Images.FirstOrDefault().ImageUrl,
+        link = "/san-pham/" + p.Slug + "-" + p.ProductId
+    })
+    .ToList();
 
             if (!products.Any())
             {
@@ -94,7 +96,19 @@ namespace WebBanHangOnline.Hubs
                 {
                     new {
                         parts = new[] {
-                            new { text = question }
+                            new {
+text = $@"
+Bạn là chatbot tư vấn cho shop thời trang XuanBac.
+
+Quy tắc:
+- Trả lời tối đa 3 câu.
+- Không giải thích dài dòng.
+- Chỉ tư vấn sản phẩm thời trang.
+- Nếu câu hỏi không liên quan mua sắm, hãy kéo về tư vấn sản phẩm.
+
+Khách hỏi: {question}
+"
+}
                         }
                     }
                 }
