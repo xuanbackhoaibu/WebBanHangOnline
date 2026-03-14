@@ -530,7 +530,14 @@
 
         // 👋 Auto welcome
         window.onload = () => {
-         addBot("Xin chào @User.Identity?.Name, bạn muốn chúng tôi tư vấn gì?");
+
+        const saved = localStorage.getItem("chat-history");
+
+        if(saved){
+        chatBody().innerHTML = saved;
+        }
+
+        addBot("Xin chào @User.Identity?.Name, bạn muốn chúng tôi tư vấn gì?");
         };
 
         function chatBody(){
@@ -538,19 +545,22 @@
         }
 
         function addUser(msg){
-            const row = document.createElement("div");
-            row.className = "chat-row user";
 
-            row.innerHTML = `
+        const row = document.createElement("div");
+        row.className = "chat-row user";
+
+        row.innerHTML = `
         <div>
-            <div class="msg-user">${msg}</div>
-            <div class="msg-time">${nowTime()}</div>
+        <div class="msg-user">${msg}</div>
+        <div class="msg-time">${nowTime()}</div>
         </div>
-    `;
+        `;
 
-            chatBody().appendChild(row);
-            chatBody().scrollTop = chatBody().scrollHeight;
+        chatBody().appendChild(row);
 
+        saveChat();
+
+        chatBody().scrollTop = chatBody().scrollHeight;
         }
 
         function addBot(data){
@@ -595,6 +605,7 @@
         `;
         chatBody().appendChild(row);
         chatBody().scrollTop = chatBody().scrollHeight;
+        saveChat();
         }
 
 

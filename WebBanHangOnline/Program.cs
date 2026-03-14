@@ -6,6 +6,8 @@ using WebBanHangOnline.Controllers;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Hubs;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Models.Momo;
+using WebBanHangOnline.Services.Momo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +31,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
-
+// Connect momo
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
 // ===============================
 // 2️⃣ MVC + Razor Pages
 // ===============================
