@@ -515,8 +515,8 @@
             .withUrl("/chatHub")
             .build();
 
-        connection.on("ReceiveMessage", (user, msg) => {
-            addBot(msg);
+        connection.on("ReceiveMessage", (user, data) => {
+        addBot(data);
         });
 
         connection.start().catch(err => console.error(err));
@@ -553,22 +553,48 @@
 
         }
 
+        function addBot(data){
 
+        const row = document.createElement("div");
+        row.className = "chat-row bot";
 
-        function addBot(msg){
-            const row = document.createElement("div");
-            row.className = "chat-row bot";
+        let html = "";
 
-            row.innerHTML = `
+        // Nếu chatbot trả về sản phẩm
+        if(data.products){
+
+        html += `<div class="msg-bot">${data.text}</div>`;
+
+        data.products.forEach(p => {
+
+        html += `
+        <div style="display:flex;gap:10px;margin-top:8px">
+        <img src="${p.image}" width="60" style="border-radius:6px">
+
         <div>
-            <div class="msg-bot">${msg}</div>
-            <div class="msg-time">${nowTime()}</div>
+        <b>${p.name}</b><br>
+        ${p.price.toLocaleString()}đ<br>
+        <a href="${p.link}" style="color:#ff6b6b">Xem sản phẩm</a>
         </div>
-    `;
+        </div>
+        `;
 
-            chatBody().appendChild(row);
-            chatBody().scrollTop = chatBody().scrollHeight;
+        });
 
+        }else{
+
+        html = `<div class="msg-bot">${data.text ?? data}</div>`;
+
+        }
+
+        row.innerHTML = `
+        <div>
+        ${html}
+        <div class="msg-time">${nowTime()}</div>
+        </div>
+        `;
+        chatBody().appendChild(row);
+        chatBody().scrollTop = chatBody().scrollHeight;
         }
 
 
