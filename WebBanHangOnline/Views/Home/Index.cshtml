@@ -466,6 +466,44 @@
 .hero-content{
     margin-left:0;
 }
+a {
+    text-decoration: none; /* Xóa gạch chân */
+    color: #000000;        /* Làm chữ thành màu đen thuần */
+}
+
+/* Hiệu ứng khi di chuột qua (tùy chọn) */
+a:hover {
+    color: #333333;        /* Chuyển sang màu xám đậm khi hover */
+    text-decoration: none; /* Đảm bảo không hiện lại gạch chân */
+}
+/* 1. Xóa gạch chân và chỉnh màu đen cho tất cả liên kết trong footer */
+footer a,
+.footer-section a {
+    text-decoration: none !important; /* Bỏ gạch chân */
+    color: #333333 !important;        /* Màu đen xám (dễ nhìn hơn đen thuần) */
+    transition: 0.3s;                 /* Hiệu ứng mượt khi di chuột */
+}
+
+/* 2. Hiệu ứng khi di chuột qua liên kết (tùy chọn) */
+footer a:hover,
+.footer-section a:hover {
+    color: #000000;                   /* Đậm hơn khi hover */
+    text-decoration: none;
+}
+
+/* 3. Xóa dấu chấm (bullet points) của danh sách */
+footer ul,
+.footer-section ul {
+    list-style: none;                 /* Bỏ dấu chấm tròn */
+    padding: 0;
+    margin: 0;
+}
+
+/* 4. Chỉnh khoảng cách giữa các dòng cho thoáng */
+footer li,
+.footer-section li {
+    margin-bottom: 8px;               /* Tạo khoảng cách giữa các mục */
+}
 </style>
 
 @section Scripts {
