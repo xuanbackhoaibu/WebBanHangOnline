@@ -14,7 +14,6 @@ namespace WebBanHangOnline.Models
         // ===============================
         // SLUG SEO
         // ===============================
-        [Required]
         [MaxLength(255)]
         public string Slug { get; set; } = string.Empty;
 

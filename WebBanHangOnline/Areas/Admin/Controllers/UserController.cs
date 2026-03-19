@@ -103,19 +103,30 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         // ❌ XÓA USER
         // ===============================
         [HttpPost]
-        public async Task<IActionResult> Delete(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Delete(string id)
+{
+    var user = await _userManager.FindByIdAsync(id);
+    if (user == null) return NotFound();
 
-            if (await _userManager.IsInRoleAsync(user, "Admin"))
-            {
-                TempData["Error"] = "Không thể xóa Admin";
-                return RedirectToAction(nameof(Index));
-            }
+    if (await _userManager.IsInRoleAsync(user, "Admin"))
+    {
+        TempData["Error"] = "Không thể xóa Admin";
+        return RedirectToAction(nameof(Index));
+    }
 
-            await _userManager.DeleteAsync(user);
-            return RedirectToAction(nameof(Index));
-        }
+    var result = await _userManager.DeleteAsync(user);
+
+    if (!result.Succeeded)
+    {
+        TempData["Error"] = string.Join(", ", result.Errors.Select(e => e.Description));
+    }
+    else
+    {
+        TempData["Success"] = "Xóa user thành công";
+    }
+
+    return RedirectToAction(nameof(Index));
+}
     }
 }
