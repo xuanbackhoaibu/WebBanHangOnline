@@ -181,7 +181,7 @@ public class OrderController : Controller
                 UserId = user.Id,
                 ShippingAddress = address,
                 PhoneNumber = phone,
-                TotalAmount = cart.Sum(x => x.ProductVariant.Price * x.Quantity),
+                TotalAmount = cart.Sum(x => x.ProductVariant.Product.Price * x.Quantity),
                 Status = "Pending",
                 OrderDate = DateTime.Now,
                 PaymentMethod = paymentMethod
@@ -198,7 +198,7 @@ public class OrderController : Controller
                     OrderId = order.Id,
                     ProductVariantId = item.ProductVariantId,
                     Quantity = item.Quantity,
-                    Price = item.ProductVariant.Price
+                    Price = item.ProductVariant.Product.Price
                 });
 
                 item.ProductVariant.Stock -= item.Quantity;
