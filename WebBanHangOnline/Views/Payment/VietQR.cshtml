@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Thanh toán VietQR";
+}
+
+<h2 style="text-align:center">Quét mã để thanh toán</h2>
+
+<div style="text-align:center; margin-top:20px;">
+    <img src="@ViewBag.QrUrl" style="width:300px;" />
+</div>
+
+<div style="text-align:center; margin-top:20px;">
+    <p><b>Số tiền:</b> @ViewBag.Amount VNĐ</p>
+    <p><b>Nội dung:</b> Chuyển tiền</p>
+
+    <p style="color:red">
+        ⚠️ Vui lòng chuyển đúng nội dung để xác nhận!
+    </p>
+
+    <form method="post" asp-controller="Payment" asp-action="ConfirmPaid">
+        <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
+        <button type="submit" class="btn btn-success">
+            Tôi đã thanh toán
+        </button>
+    </form>
+</div>

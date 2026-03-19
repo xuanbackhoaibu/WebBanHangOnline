@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Helpers;
 using WebBanHangOnline.Models;
 using WebBanHangOnline.Models.Vnpay;
 
@@ -12,7 +13,50 @@ namespace WebBanHangOnline.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
+        // ================================
+        // 💳 VIETQR PAYMENT
+        // ================================
+        public async Task<IActionResult> VietQR(int orderId)
+        {
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == orderId);
 
+            if (order == null)
+                return NotFound();
+
+            // 👉 LẤY ĐÚNG TIỀN ĐƠN HÀNG
+            decimal amount = order.TotalAmount;
+
+            // 👉 TẠO QR
+            string qrUrl = VietQrHelper.GenerateQr(
+                bank: "VCB",                // đổi theo bank bạn
+                account: "123456789",       // STK của bạn
+                amount: amount,
+                content: $"DH{order.Id}",
+                name: "CUONG TRAN MANH"
+            );
+
+            ViewBag.QrUrl = qrUrl;
+            ViewBag.Amount = amount;
+            ViewBag.OrderId = order.Id;
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ConfirmPaid(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+                return NotFound();
+
+            order.Status = "Confirmed";
+            order.PaymentDate = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("OrderSuccess", "Order", new { id = orderId });
+        }
         public PaymentController(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;

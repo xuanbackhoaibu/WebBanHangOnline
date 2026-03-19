@@ -124,7 +124,7 @@ public class OrderController : Controller
         if (string.IsNullOrWhiteSpace(paymentMethod))
             return BadRequest("Vui lòng chọn phương thức thanh toán.");
 
-        var validMethods = new[] { "COD", "VNPay", "Momo", "ZaloPay", "Card" };
+        var validMethods = new[] { "COD", "VNPay", "Momo", "VietQR", "Card" };
 
         if (!validMethods.Contains(paymentMethod))
             return BadRequest("Phương thức thanh toán không hợp lệ.");
@@ -222,8 +222,8 @@ public class OrderController : Controller
                     return RedirectToAction("Momo", "Payment",
                         new { orderId = order.Id });
 
-                case "ZaloPay":
-                    return RedirectToAction("ZaloPay", "Payment",
+                case "VietQR":
+                    return RedirectToAction("VietQR", "Payment",
                         new { orderId = order.Id });
 
                 case "Card":
