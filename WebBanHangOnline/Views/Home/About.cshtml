@@ -1,66 +1,143 @@
 @{
-    ViewData["Title"] = "Giới thiệu";
+ViewData["Title"] = "Giới thiệu";
 }
 
-<div class="container page-content">
+<div class="about-hero text-center text-white d-flex align-items-center justify-content-center">
+    <div>
+        <h1 class="fw-bold">XuanBac Fashion</h1>
+        <p class="lead">Phong cách hiện đại - Chất lượng hàng đầu</p>
+    </div>
+</div>
 
-    <h1 class="page-title">Giới thiệu về XuanBac Fashion</h1>
+<div class="container about-content">
 
-    <p>
-        XuanBac Fashion là thương hiệu thời trang chuyên cung cấp các sản phẩm 
-        quần áo nam, nữ và trẻ em với phong cách hiện đại, trẻ trung và chất lượng cao.
-        Chúng tôi luôn cập nhật những xu hướng thời trang mới nhất nhằm mang đến
-        cho khách hàng những lựa chọn tốt nhất.
-    </p>
+    <!-- INTRO -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <img src="https://images.unsplash.com/photo-1521335629791-ce4aec67dd47"
+                 class="img-fluid rounded shadow"
+                 alt="Fashion Store" />
+        </div>
+        <div class="col-md-6">
+            <h2>Giới thiệu</h2>
+            <p>
+                XuanBac Fashion là thương hiệu thời trang chuyên cung cấp các sản phẩm
+                quần áo nam, nữ và trẻ em với phong cách hiện đại, trẻ trung và chất lượng cao.
+            </p>
+        </div>
+    </div>
 
-    <h3>Sứ mệnh</h3>
-    <p>
-        Mang đến cho khách hàng những sản phẩm thời trang chất lượng,
-        giá cả hợp lý và dịch vụ chăm sóc khách hàng tận tâm.
-    </p>
+    <!-- MISSION / VISION -->
+    <div class="row text-center mb-5">
+        <div class="col-md-6">
+            <div class="info-card p-4 shadow-sm rounded">
+                <h3> Sứ mệnh</h3>
+                <p>
+                    Mang đến sản phẩm thời trang chất lượng, giá hợp lý và dịch vụ tận tâm.
+                </p>
+            </div>
+        </div>
 
-    <h3>Tầm nhìn</h3>
-    <p>
-        Trở thành thương hiệu thời trang được yêu thích tại Việt Nam,
-        xây dựng hệ thống bán hàng trực tuyến chuyên nghiệp và tiện lợi.
-    </p>
+        <div class="col-md-6">
+            <div class="info-card p-4 shadow-sm rounded">
+                <h3> Tầm nhìn</h3>
+                <p>
+                    Trở thành thương hiệu thời trang được yêu thích tại Việt Nam.
+                </p>
+            </div>
+        </div>
+    </div>
 
-    <h3>Sản phẩm của chúng tôi</h3>
-    <ul>
-        <li>Thời trang nam: áo thun, áo sơ mi, quần jeans, áo khoác</li>
-        <li>Thời trang nữ: váy, đầm, áo kiểu, quần thời trang</li>
-        <li>Thời trang trẻ em: quần áo bé trai và bé gái</li>
-        <li>Phụ kiện thời trang</li>
-    </ul>
+    <!-- PRODUCTS -->
+    <h3 class="mb-4 text-center">Sản phẩm của chúng tôi</h3>
 
-    <h3>Cam kết của chúng tôi</h3>
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="product-card text-center p-3 shadow-sm rounded">
+                <img src="men-banner.jpg"
+                     class="img-fluid rounded mb-2" />
+                <h5>Thời trang nam</h5>
+                <p>Áo thun, sơ mi, jeans...</p>
+            </div>
+        </div>
 
-    <ul>
-        <li>Sản phẩm chất lượng cao</li>
-        <li>Hình ảnh và mô tả sản phẩm đúng thực tế</li>
-        <li>Giá cả cạnh tranh</li>
-        <li>Hỗ trợ đổi trả nếu sản phẩm lỗi</li>
-    </ul>
+        <div class="col-md-3">
+            <div class="product-card text-center p-3 shadow-sm rounded">
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b"
+                     class="img-fluid rounded mb-2" />
+                <h5>Thời trang nữ</h5>
+                <p>Váy, đầm, áo kiểu...</p>
+            </div>
+        </div>
 
-    <h3>Thông tin liên hệ</h3>
+        <div class="col-md-3">
+            <div class="product-card text-center p-3 shadow-sm rounded">
+                <img src="https://images.unsplash.com/photo-1503919545889-aef636e10ad4"
+                     class="img-fluid rounded mb-2" />
+                <h5>Thời trang trẻ em</h5>
+                <p>Quần áo bé trai & gái</p>
+            </div>
+        </div>
 
-    <p>
-        📍 Địa chỉ: Hà Nội, Việt Nam <br>
-        📞 Hotline: 0123 456 789 <br>
-        📧 Email: support@xuanbac.vn
-    </p>
+        <div class="col-md-3">
+            <div class="product-card text-center p-3 shadow-sm rounded">
+                <img src="https://images.unsplash.com/photo-1523381294911-8d3cead13475"
+                     class="img-fluid rounded mb-2" />
+                <h5>Phụ kiện</h5>
+                <p>Balo, kính, mũ...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMITMENT -->
+    <div class="mb-5">
+        <h3 class="text-center mb-4">Cam kết của chúng tôi</h3>
+
+        <div class="row text-center">
+            <div class="col-md-3">✔ Chất lượng cao</div>
+            <div class="col-md-3">✔ Hình ảnh thực tế</div>
+            <div class="col-md-3">✔ Giá cạnh tranh</div>
+            <div class="col-md-3">✔ Hỗ trợ đổi trả</div>
+        </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="contact-card text-center p-4 shadow rounded">
+        <h3>Thông tin liên hệ</h3>
+        <p>📍 Hà Nội, Việt Nam</p>
+        <p>📞 0123 456 789</p>
+        <p>📧 support@xuanbac.vn</p>
+    </div>
 
 </div>
 
 <style>
-.page-content{
-    margin-top:120px;
-    margin-bottom:80px;
-    line-height:1.7;
-}
+    .about-hero {
+        height: 300px;
+        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+        url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d') center/cover no-repeat;
+        margin-top: 80px;
+    }
 
-.page-title{
-    font-weight:700;
-    margin-bottom:25px;
-}
+    .about-content {
+        margin-top: 50px;
+        margin-bottom: 80px;
+    }
+
+    .info-card {
+        background: #fff;
+    }
+
+    .product-card {
+        background: #fff;
+        transition: 0.3s;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .contact-card {
+        background: #f8f9fa;
+    }
 </style>

@@ -450,3 +450,27 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+/* ===== FOOTER RESET ===== */
+
+/* Bỏ dấu chấm danh sách */
+.footer-col ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+/* Link trong footer */
+.footer-col ul li a {
+  color: #6c757d;           /* màu xám nhẹ */
+  text-decoration: none;     /* bỏ gạch chân */
+  transition: 0.3s;
+}
+
+/* Hover */
+.footer-col ul li a:hover {
+  color: #0d6efd;           /* xanh khi hover */
+  text-decoration: none;
+}
+.footer-col ul li {
+  margin-bottom: 8px;
+}
