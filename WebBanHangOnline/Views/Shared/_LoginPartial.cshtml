@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -50,19 +50,19 @@
 else
 {
     <li class="nav-item">
-        <a class="nav-link text-decoration-none"
+        <a class="btn btn-outline-dark btn-sm rounded-pill px-3"
            asp-area="Identity"
            asp-page="/Account/Login">
+            <i class="bi bi-box-arrow-in-right me-1"></i>
             Đăng nhập
         </a>
     </li>
 
-    <li class="nav-item text-muted">|</li>
-
-    <li class="nav-item">
-        <a class="nav-link text-decoration-none"
+    <li class="nav-item ms-2">
+        <a class="btn btn-primary btn-sm rounded-pill px-3"
            asp-area="Identity"
            asp-page="/Account/Register">
+            <i class="bi bi-person-plus me-1"></i>
             Đăng ký
         </a>
     </li>

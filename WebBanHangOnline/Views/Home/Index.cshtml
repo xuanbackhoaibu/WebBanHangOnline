@@ -1,19 +1,33 @@
-﻿@model List<WebBanHangOnline.Models.Product>
+@model List<WebBanHangOnline.Models.Product>
 @{
     ViewData["Title"] = "Trang chủ";
 }
 
+<div class="home-page">
+
 <!-- ================= HERO ================= -->
-<section class="hero">
+<section class="hero container">
     <div class="hero-content">
-        <small>XUANBAC</small>
+        <small class="hero-kicker">XUANBAC</small>
         <h1>Autumn<br />& Winter 2026</h1>
+
+        <div class="hero-actions">
+            <a asp-controller="Product"
+               asp-action="Index"
+               class="btn btn-primary btn-lg rounded-pill px-4 hero-btn">
+                Mua sắm ngay
+            </a>
+            <a href="#women"
+               class="btn btn-outline-danger btn-lg rounded-pill px-4 hero-btn">
+                Khám phá thời trang nữ
+            </a>
+        </div>
     </div>
-    <img src="/images/l.jpg" class="hero-img" />
+    <img src="/images/l.jpg" class="hero-img" alt="Hero banner" loading="lazy" />
 </section>
 
 <!-- ================= WOMEN ================= -->
-<section class="section container">
+<section id="women" class="section container">
     <div class="row align-items-center">
         <div class="col-lg-5">
             <img src="/images/women-banner.jpg" class="img-fluid">
@@ -249,40 +263,55 @@
     <h4 class="text-center mb-4">Xu hướng thời trang</h4>
     <div class="row g-4">
         <div class="col-md-4">
-            <img src="/images/blog1.jpg" class="img-fluid">
-            <h6>Beauty life style classic</h6>
+            <div class="blog-card">
+                <img src="/images/blog1.jpg" class="img-fluid blog-img" alt="Blog 1" loading="lazy">
+                <div class="blog-body">
+                    <h6>Beauty life style classic</h6>
+                </div>
+            </div>
         </div>
         <div class="col-md-4">
-            <img src="/images/blog2.jpg" class="img-fluid">
-            <h6>The need of life with vip style</h6>
+            <div class="blog-card">
+                <img src="/images/blog2.jpg" class="img-fluid blog-img" alt="Blog 2" loading="lazy">
+                <div class="blog-body">
+                    <h6>The need of life with vip style</h6>
+                </div>
+            </div>
         </div>
         <div class="col-md-4">
-            <img src="/images/blog3.jpg" class="img-fluid">
-            <h6>There is someone standing behind you</h6>
+            <div class="blog-card">
+                <img src="/images/blog3.jpg" class="img-fluid blog-img" alt="Blog 3" loading="lazy">
+                <div class="blog-body">
+                    <h6>There is someone standing behind you</h6>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
+</div>
+
 <style>
-body { background:#f7f7f7; }
+.home-page { background:#f7f7f7; }
 
 /* HERO */
 .hero {
     display: flex;
     align-items: center;
-    background: #fff;
-    padding: 60px;
-    margin-top: 120px;   /* 🔥 thêm dòng này */
+    background: linear-gradient(135deg, #ffffff 0%, rgba(255,107,107,.06) 55%, rgba(255,183,3,.06) 100%);
+    padding: 56px 34px;
+    margin-top: 0;
+    border-radius: 22px;
+    box-shadow: 0 14px 35px rgba(0,0,0,.06);
 }
 
-.hero-content { max-width:420px; }
-.hero-content h1 { font-size:42px; line-height:1.2; }
-.hero-img { width:520px; margin-left:auto; }
+.hero-content { max-width:520px; }
+.hero-img { width:520px; max-width:100%; margin-left:auto; border-radius: 18px; }
 
 
 /* SECTION */
-.section { margin:70px 0; }
-.section-title { font-weight:700; margin-bottom:20px; }
+.section { margin:54px 0; }
+.section-title { font-weight:800; margin-bottom:20px; letter-spacing: .2px; }
 
 /* PRODUCT */
 .product-card {
@@ -292,9 +321,20 @@ body { background:#f7f7f7; }
     text-align:center;
     border:1px solid #eee;
     transition:.25s;
+    border-radius: 16px;
+    overflow: hidden;
 }
-.product-card:hover { transform:translateY(-4px); border-color:#ff6b6b; }
-.product-card img { width:100%; height:220px; object-fit:cover; }
+.product-card:hover { 
+    transform:translateY(-6px); 
+    border-color:#ff6b6b; 
+    box-shadow: 0 14px 28px rgba(255,107,107,.14);
+}
+.product-card img { 
+    width:100%; 
+    height:220px; 
+    object-fit:cover; 
+    border-radius: 12px;
+}
 .product-card h6 { font-size:14px; margin:10px 0 4px; }
 .price { color:#ff6b6b; font-weight:700; }
 
@@ -306,6 +346,8 @@ body { background:#f7f7f7; }
     padding:4px 8px;
     font-size:11px;
     color:#fff;
+    border-radius: 999px;
+    box-shadow: 0 6px 14px rgba(0,0,0,.12);
 }
 .badge.hot { background:#ff6b6b; }
 .badge.sale { background:#ffb703; }
@@ -317,6 +359,8 @@ body { background:#f7f7f7; }
     justify-content:space-between;
     background:#fdecec;
     padding:30px;
+    border-radius: 22px;
+    box-shadow: 0 14px 35px rgba(0,0,0,.05);
 }
 
 /* TABS */
@@ -328,14 +372,45 @@ body { background:#f7f7f7; }
     font-weight:600;
     margin:0 10px;
     cursor:pointer;
+    padding: 10px 18px;
+    border-radius: 999px;
 }
-.tab-head .active { color:#ff6b6b; }
+.tab-head .active { 
+    color:#fff; 
+    background: #ff6b6b; 
+    box-shadow: 0 10px 22px rgba(255,107,107,.2);
+}
 
 .tab-body { display:none; }
 .tab-body.active { display:block; }
 
 /* BLOG */
-.blog img { width:100%; }
+.blog-card{
+    background:#fff;
+    border: 1px solid #eee;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 26px rgba(0,0,0,.04);
+    transition: .25s;
+}
+.blog-card:hover{
+    transform: translateY(-5px);
+    box-shadow: 0 18px 40px rgba(0,0,0,.08);
+    border-color: #ff6b6b;
+}
+.blog-img{
+    width:100%;
+    height: 200px;
+    object-fit: cover;
+}
+.blog-body{
+    padding: 14px 14px 16px;
+}
+.blog-body h6{
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0;
+}
 
 @@media (max-width: 991px) {
     .hero { flex-direction:column; text-align:center; }
@@ -361,7 +436,7 @@ body { background:#f7f7f7; }
     height: 2.8em; /* 2 dòng */
 }
 
-.hero-content small{
+.hero-kicker{
     font-size:22px;
     letter-spacing:4px;
     font-weight:500;
@@ -369,15 +444,27 @@ body { background:#f7f7f7; }
 }
 
 .hero-content h1{
-    font-size:70px;      /* chữ to hơn */
-    font-weight:300;     /* nét mảnh */
-    line-height:1.15;    /* cân đối dòng */
+    font-size:54px;
+    font-weight:300;
+    line-height:1.05;
     letter-spacing:1px;
     color:#222;
-    
+    margin: 0;
 }
+
+.hero-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top: 22px;
+}
+
+.hero-btn{
+    box-shadow: 0 8px 18px rgba(255,107,107,.18);
+}
+
 .hero-content{
-    margin-left:60px;   /* dịch sang phải */
+    margin-left:0;
 }
 </style>
 
