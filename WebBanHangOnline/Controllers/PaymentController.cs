@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Models.Vnpay;
 
 namespace WebBanHangOnline.Controllers
 {
@@ -17,7 +18,7 @@ namespace WebBanHangOnline.Controllers
             _context = context;
             _config = config;
         }
-
+        
         // Chuyển hướng sang VNPay
         public async Task<IActionResult> VnPay(int orderId)
         {
@@ -28,15 +29,19 @@ namespace WebBanHangOnline.Controllers
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null) return NotFound("Đơn hàng không tồn tại");
-
+// 👉 THÊM DÒNG NÀY
+Console.WriteLine("TOTAL DB: " + order.TotalAmount);
             // Lấy cấu hình VNPay Sandbox
             var hashSecret = _config["VNPay:HashSecret"]?.Trim();
             var tmnCode = _config["VNPay:TmnCode"]?.Trim();
-            var returnUrl = _config["VNPay:ReturnUrl"]?.Trim();
             var vnpUrl = _config["VNPay:Url"]?.Trim();
 
-            if (hashSecret == null || tmnCode == null || returnUrl == null || vnpUrl == null)
+            if (hashSecret == null || tmnCode == null || vnpUrl == null)
                 return BadRequest("Cấu hình VNPay chưa đầy đủ.");
+
+            var returnUrl = _config["VNPay:ReturnUrl"];
+            if (string.IsNullOrWhiteSpace(returnUrl))
+                return BadRequest("Không tạo được ReturnUrl VNPay.");
 
             // Thêm kiểm tra dữ liệu OrderDetails trước khi gửi sang VNPay
             foreach (var detail in order.OrderDetails)
@@ -58,26 +63,18 @@ namespace WebBanHangOnline.Controllers
                 { "vnp_OrderType", "other" },
                 { "vnp_Locale", "vn" },
                 { "vnp_ReturnUrl", returnUrl },
-                { "vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss") }
+                { "vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss") },
+                { "vnp_IpAddr", "127.0.0.1" },
             };
 
-            // 1. Tạo hashData chưa encode để tính chữ ký
-            var hashData = string.Join("&", vnpayParams.Select(p => $"{p.Key}={p.Value}"));
+            var queryString = BuildQueryString(vnpayParams, true);
+var secureHash = HmacSha512(hashSecret, queryString);
 
-            // 2. Tạo chữ ký
-            var secureHash = HmacSha512(hashSecret, hashData);
+var paymentUrl = $"{vnpUrl}?{queryString}&vnp_SecureHash={secureHash}";
+Console.WriteLine(paymentUrl);
 
-            // 3. Tạo query string encode để redirect
-            var query = string.Join("&", vnpayParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+return Redirect(paymentUrl);
 
-            var paymentUrl = $"{vnpUrl}?{query}&vnp_SecureHash={secureHash}";
-
-            // Debug
-            Console.WriteLine("VNPay HashData (chưa encode): " + hashData);
-            Console.WriteLine("VNPay Query (encode): " + query);
-            Console.WriteLine("VNPay SecureHash: " + secureHash);
-
-            return Redirect(paymentUrl);
         }
 
         // Callback VNPay trả về
@@ -91,11 +88,11 @@ namespace WebBanHangOnline.Controllers
             // Lấy chữ ký từ VNPay
             vnpParams.TryGetValue("vnp_SecureHash", out string? vnpSecureHash);
             vnpParams.Remove("vnp_SecureHash");
+            vnpParams.Remove("vnp_SecureHashType");
 
-            // Tính lại chữ ký
-            var sorted = vnpParams.OrderBy(p => p.Key, StringComparer.Ordinal);
-            var hashData = string.Join("&", sorted.Select(p => $"{p.Key}={p.Value}"));
-            var computedHash = HmacSha512(hashSecret, hashData);
+            // Tính lại chữ ký theo đúng format ký của VNPay (sort + URL-encode value)
+            var computedHashData = BuildQueryString(vnpParams, urlEncodeValues: true);
+            var computedHash = HmacSha512(hashSecret, computedHashData);
 
             if (!string.Equals(computedHash, vnpSecureHash, StringComparison.OrdinalIgnoreCase))
             {
@@ -136,6 +133,19 @@ namespace WebBanHangOnline.Controllers
             using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(key));
             var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
             return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+        }
+
+        private static string BuildQueryString(IEnumerable<KeyValuePair<string, string>> data, bool urlEncodeValues)
+        {
+            var ordered = data
+                .Where(kv => !string.IsNullOrEmpty(kv.Key) && kv.Value != null)
+                .OrderBy(kv => kv.Key, StringComparer.Ordinal);
+
+            return string.Join("&", ordered.Select(kv =>
+            {
+                var value = urlEncodeValues ? Uri.EscapeDataString(kv.Value) : kv.Value;
+                return $"{kv.Key}={value}";
+            }));
         }
     }
 }

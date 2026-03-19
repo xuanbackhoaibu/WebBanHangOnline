@@ -7,7 +7,7 @@ namespace WebBanHangOnline.Models
     public class Product
     {
         public int ProductId { get; set; }
-
+        public string ImageUrl { get; set; }
         [Required(ErrorMessage = "Vui lòng nhập tên sản phẩm")]
         public string Name { get; set; } = string.Empty;
 

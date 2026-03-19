@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Text.Json;
 using WebBanHangOnline.Data;
@@ -21,7 +22,7 @@ namespace WebBanHangOnline.Hubs
         {
             var intent = await DetectIntent(message);
 
-            string reply;
+            object reply;
 
             if (intent.Contains("tìm áo"))
                 reply = QueryProduct("áo");
@@ -30,10 +31,16 @@ namespace WebBanHangOnline.Hubs
                 reply = QueryProduct("quần");
 
             else if (intent.Contains("giá rẻ"))
-                reply = "Shop có nhiều mẫu dưới 200k rất đẹp 🔥 Bạn muốn áo hay quần ạ?";
+                reply = new
+                {
+                    text = "Shop có nhiều mẫu dưới 200k 🔥 Bạn muốn áo hay quần?"
+                };
 
             else
-                reply = await AskAI(message);
+                reply = new
+                {
+                    text = await AskAI(message)
+                };
 
             await Clients.Caller.SendAsync("ReceiveMessage", user, reply);
         }
@@ -47,28 +54,38 @@ namespace WebBanHangOnline.Hubs
             return await AskAI(prompt);
         }
 
-        // ===== QUERY DB =====
-        string QueryProduct(string keyword)
+        // ===== QUERY DATABASE =====
+        object QueryProduct(string keyword)
         {
             var products = _db.Products
-                              .Where(p => p.Name.Contains(keyword))
-                              .Take(3)
-                              .ToList();
+    .Include(p => p.Images)
+    .Where(p => p.Name.ToLower().Contains(keyword))
+    .Take(3)
+    .Select(p => new
+    {
+        name = p.Name,
+        price = p.Price,
+        image = p.Images.FirstOrDefault().ImageUrl,
+        link = "/san-pham/" + p.Slug + "-" + p.ProductId
+    })
+    .ToList();
 
             if (!products.Any())
-                return $"Hiện shop chưa có {keyword} phù hợp 😢";
+            {
+                return new
+                {
+                    text = $"Hiện shop chưa có {keyword} phù hợp 😢"
+                };
+            }
 
-            var sb = new StringBuilder($"Shop gợi ý {keyword} cho bạn:\n");
-
-            foreach (var p in products)
-                sb.AppendLine($"• {p.Name} – {p.Price:N0}đ");
-
-            sb.Append("\nBạn thích phong cách nào ạ?");
-
-            return sb.ToString();
+            return new
+            {
+                text = $"Shop gợi ý {keyword} cho bạn:",
+                products = products
+            };
         }
 
-        // ===== GỌI AI =====
+        // ===== GỌI GEMINI AI =====
         async Task<string> AskAI(string question)
         {
             var apiKey = _config["Gemini:ApiKey"];
@@ -79,7 +96,19 @@ namespace WebBanHangOnline.Hubs
                 {
                     new {
                         parts = new[] {
-                            new { text = question }
+                            new {
+text = $@"
+Bạn là chatbot tư vấn cho shop thời trang XuanBac.
+
+Quy tắc:
+- Trả lời tối đa 3 câu.
+- Không giải thích dài dòng.
+- Chỉ tư vấn sản phẩm thời trang.
+- Nếu câu hỏi không liên quan mua sắm, hãy kéo về tư vấn sản phẩm.
+
+Khách hỏi: {question}
+"
+}
                         }
                     }
                 }
@@ -99,7 +128,7 @@ namespace WebBanHangOnline.Hubs
                 .GetProperty("content")
                 .GetProperty("parts")[0]
                 .GetProperty("text")
-                .GetString();
+                .GetString() ?? "Shop chưa hiểu câu hỏi 🤔";
         }
     }
 }

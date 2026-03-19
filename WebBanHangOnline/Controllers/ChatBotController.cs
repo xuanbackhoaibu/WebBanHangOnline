@@ -32,15 +32,26 @@ namespace WebBanHangOnline.Controllers
             // ===== DATABASE SEARCH =====
             if (msg.Contains("áo"))
             {
-                var products = _db.Products
-                                  .Where(p => p.Name.Contains("áo"))
-                                  .Take(3)
-                                  .ToList();
+                // tìm số tiền trong câu chat
+                var match = System.Text.RegularExpressions.Regex.Match(msg, @"\d+");
+
+                int budget = 0;
+
+                if (match.Success)
+                    budget = int.Parse(match.Value);
+
+                var query = _db.Products.Where(p => p.Name.ToLower().Contains("áo"));
+
+                // nếu có ngân sách thì lọc theo giá
+                if (budget > 0)
+                    query = query.Where(p => p.Price <= budget);
+
+                var products = query.Take(3).ToList();
 
                 if (!products.Any())
-                    return Json(new { reply = "Hiện shop chưa có áo phù hợp 😢" });
+                    return Json(new { reply = "Không có sản phẩm phù hợp ngân sách 😢" });
 
-                string text = "Shop gợi ý cho bạn:\n";
+                string text = "Shop gợi ý áo cho bạn:\n";
 
                 foreach (var p in products)
                     text += $"- {p.Name} ({p.Price:N0}đ)\n";

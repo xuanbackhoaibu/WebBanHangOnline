@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -15,6 +15,7 @@
     <!-- Site CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebBanHangOnline.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
 </head>
 <body class="coutura-body">
 
@@ -205,8 +206,8 @@
                     Luôn cập nhật xu hướng mới nhất.</p>
 
                 <div class="social">
-                    <a href="#">Facebook</a>
-                    <a href="#">Instagram</a>
+                    <a href="https://www.facebook.com/xuan.bac0706">Facebook</a>
+                    <a href="https://www.instagram.com/bc_pupyw">Instagram</a>
                     <a href="#">TikTok</a>
                 </div>
             </div>
@@ -259,347 +260,43 @@
 
     @RenderSection("Scripts", required: false)
 
-    <!-- ===== MODERN CHATBOX ===== -->
-    <div id="chat-btn">💬</div>
+    <!-- ===== CHATBOT WIDGET ===== -->
+    <input type="hidden" id="xb-chat-welcome" value="Xin chào @(User.Identity?.IsAuthenticated == true ? User.Identity?.Name : "bạn")! Bạn muốn mình tư vấn gì: size, phối đồ, hay gợi ý theo ngân sách?" />
 
-    <div id="chat-box">
-        <div id="chat-header">
-            Tư vấn nhanh
-            <span onclick="document.getElementById('chat-box').style.display='none'">✖</span>
-        </div>
-
-        <div id="chat-body"></div>
-
-        <div id="chat-input">
-            <input id="chat-msg" placeholder="Nhập tin nhắn..." onkeydown="handleEnter(event)">
-            <button onclick="sendChat()">➤</button>
-        </div>
+    <div id="xb-chat-btn" title="Chat tư vấn">
+        <i class="bi bi-chat-dots-fill"></i>
     </div>
 
-    <style>
-        #chat-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            background: #ff6b6b;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 8px 20px rgba(0,0,0,.3);
-            cursor: pointer;
-            transition: .25s;
-            z-index: 9999;
-        }
-
-            #chat-btn:hover {
-                transform: scale(1.08);
-            }
-
-        #chat-box {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 330px;
-            height: 440px;
-            background: #fff;
-            border-radius: 20px;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 12px 35px rgba(0,0,0,.35);
-            animation: show .25s ease;
-            z-index: 9999;
-        }
-
-        @@keyframes show {
-            from {
-                transform: scale(.8);
-                opacity: 0
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1
-            }
-        }
-
-        #chat-header {
-            background: linear-gradient(135deg,#ff6b6b,#ff9f9f);
-            color: white;
-            padding: 12px;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        #chat-body {
-            flex: 1;
-            background: #f6f6f6;
-            padding: 12px;
-            overflow: auto;
-        }
-
-        .chat-row {
-            display: flex;
-            width: 100%;
-            margin-bottom: 8px;
-        }
-
-            .chat-row.bot {
-                justify-content: flex-start;
-            }
-
-            .chat-row.user {
-                justify-content: flex-end;
-            }
-
-        .msg-user,
-        .msg-bot {
-            max-width: 260px;      /* FIX CHẮC CHẮN */
-            display: inline-block;
-            padding: 8px 12px;
-            border-radius: 18px;
-            font-size: 14px;
-
-            white-space: normal;
-            word-break: normal;
-            overflow-wrap: normal;
-            word-wrap: normal;
-
-            line-height: 1.4;
-        }
-
-
-
-        .msg-bot {
-            background: white;
-            border-radius: 18px 18px 18px 4px;
-        }
-
-        .msg-user {
-            background: #ff6b6b;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-        }
-
-
-        .msg-time {
-            font-size: 11px;
-            opacity: .6;
-            margin-top: 4px;
-            text-align: right;
-        }
-
-        #chat-input {
-            display: flex;
-            padding: 10px;
-            background: #fff;
-        }
-
-            #chat-input input {
-                flex: 1;
-                border: none;
-                outline: none;
-                padding: 10px;
-                background: #f1f1f1;
-                border-radius: 14px;
-            }
-
-            #chat-input button {
-                border: none;
-                margin-left: 6px;
-                background: #ff6b6b;
-                color: white;
-                padding: 10px 16px;
-                border-radius: 14px;
-            }
-
-        .chat-row > div {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .msg-time {
-            align-self: flex-end;
-            margin-right: 6px;
-        }
-
-        .shop-footer{
-            background:#111;
-            color:#ccc;
-            margin-top:80px;
-        }
-
-        .footer-grid{
-            display:grid;
-            grid-template-columns: repeat(4,1fr);
-            gap:40px;
-            padding:50px 0;
-        }
-
-        .footer-col h6{
-            color:#fff;
-            margin-bottom:15px;
-        }
-
-        .footer-col ul{
-            list-style:none;
-            padding:0;
-        }
-
-        .footer-col ul li{
-            margin-bottom:8px;
-        }
-
-        .footer-col ul li a{
-            text-decoration:none;
-            color:#bbb;
-        }
-
-        .footer-col ul li a:hover{
-            color:#ff6b6b;
-        }
-
-        .logo{
-            font-size:22px;
-            color:#fff;
-        }
-
-        .social a{
-            display:inline-block;
-            margin-right:10px;
-            color:#bbb;
-            text-decoration:none;
-        }
-
-        .social a:hover{
-            color:#ff6b6b;
-        }
-
-        .newsletter{
-            display:flex;
-            margin-top:10px;
-        }
-
-        .newsletter input{
-            flex:1;
-            padding:8px;
-            border:none;
-        }
-
-        .newsletter button{
-            background:#ff6b6b;
-            border:none;
-            color:#fff;
-            padding:8px 14px;
-        }
-
-        .footer-bottom{
-            text-align:center;
-            padding:15px;
-            border-top:1px solid #333;
-            font-size:14px;
-        }
-    </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
-    <script>
-
-        /* ===== SIGNALR REALTIME ===== */
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chatHub")
-            .build();
-
-        connection.on("ReceiveMessage", (user, msg) => {
-            addBot(msg);
-        });
-
-        connection.start().catch(err => console.error(err));
-        /* =========================== */
-
-        const chatBox = document.getElementById("chat-box");
-
-        document.getElementById("chat-btn").onclick = () => {
-         chatBox.style.display = chatBox.style.display === "flex" ? "none" : "flex";
-        };
-
-        // 👋 Auto welcome
-        window.onload = () => {
-         addBot("Xin chào @User.Identity?.Name, bạn muốn chúng tôi tư vấn gì?");
-        };
-
-        function chatBody(){
-         return document.getElementById("chat-body");
-        }
-
-        function addUser(msg){
-            const row = document.createElement("div");
-            row.className = "chat-row user";
-
-            row.innerHTML = `
-        <div>
-            <div class="msg-user">${msg}</div>
-            <div class="msg-time">${nowTime()}</div>
+    <div id="xb-chat-box" aria-live="polite">
+        <div id="xb-chat-header">
+            <div class="xb-chat-title">
+                <div class="xb-chat-avatar">XB</div>
+                <div class="xb-chat-title-text">
+                    <b>Tư vấn nhanh</b>
+                    <span id="xb-chat-status" class="xb-chat-status">Đang kết nối…</span>
+                </div>
+            </div>
+            <div class="xb-chat-actions">
+                <button type="button" id="xb-chat-clear" class="xb-icon-btn" title="Xoá lịch sử">
+                    <i class="bi bi-trash3"></i>
+                </button>
+                <button type="button" id="xb-chat-close" class="xb-icon-btn" title="Đóng">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
         </div>
-    `;
 
-            chatBody().appendChild(row);
-            chatBody().scrollTop = chatBody().scrollHeight;
+        <div id="xb-chat-body"></div>
 
-        }
-
-
-
-        function addBot(msg){
-            const row = document.createElement("div");
-            row.className = "chat-row bot";
-
-            row.innerHTML = `
-        <div>
-            <div class="msg-bot">${msg}</div>
-            <div class="msg-time">${nowTime()}</div>
+        <div id="xb-chat-input">
+            <input id="xb-chat-msg" placeholder="Nhập tin nhắn..." autocomplete="off" />
+            <button id="xb-chat-send" type="button">Gửi</button>
         </div>
-    `;
-
-            chatBody().appendChild(row);
-            chatBody().scrollTop = chatBody().scrollHeight;
-
-        }
-
-
-
-        function handleEnter(e){
-         if(e.key === "Enter"){
-           e.preventDefault();
-           sendChat();
-         }
-        }
-
-                function sendChat(){
-            let input = document.getElementById("chat-msg");
-            let msg = input.value.trim();
-            if(!msg) return;
-
-            addUser(msg);
-            input.value = "";
-
-            connection.invoke("SendMessage", "user", msg);
-        }
-
-                function nowTime(){
-            const d = new Date();
-            return d.getHours().toString().padStart(2,'0') + ":" +
-                   d.getMinutes().toString().padStart(2,'0');
-        }
-
-    </script>
-    <!-- ===== END CHATBOX ===== -->
+    </div>
+    <!-- ===== END CHATBOT WIDGET ===== -->
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/chatbot.js" asp-append-version="true"></script>
 </body>
 </html>
