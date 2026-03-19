@@ -7,12 +7,21 @@
 
 <h2>🧥 Quản lý sản phẩm</h2>
 
-<a asp-area="Admin"
-   asp-controller="Product"
-   asp-action="Create"
-   class="btn btn-primary mb-3">
-    + Thêm sản phẩm
-</a>
+<div class="mb-3 d-flex gap-2">
+    <a asp-area="Admin"
+       asp-controller="Product"
+       asp-action="Create"
+       class="btn btn-primary">
+        + Thêm sản phẩm
+    </a>
+
+    <a asp-area="Admin"
+       asp-controller="Product"
+       asp-action="Import"
+       class="btn btn-success">
+        📥 Import từ Excel
+    </a>
+</div>
 
 <table class="table table-bordered align-middle">
     <thead>

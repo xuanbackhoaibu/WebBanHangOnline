@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Import sản phẩm từ Excel";
+    Layout = "_AdminLayout";
+}
+
+<h2>📥 Import sản phẩm từ Excel</h2>
+
+<div class="alert alert-info">
+    <strong>Hướng dẫn:</strong>
+    <ul>
+        <li>Chọn file Excel (.xlsx hoặc .xls) với cấu trúc cột như sau (bắt đầu từ dòng 2):</li>
+        <li><strong>Cột A</strong>: Name (tên sản phẩm, bắt buộc)</li>
+        <li><strong>Cột B</strong>: CategoryId (mã danh mục, bắt buộc, phải tồn tại và đang hoạt động)</li>
+        <li><strong>Cột C</strong>: Price (giá &gt; 0, bắt buộc)</li>
+        <li><strong>Cột D</strong>: Description (mô tả, có thể để trống)</li>
+        <li><strong>Cột E</strong>: IsActive (true/false hoặc 1/0, có thể để trống = true)</li>
+    </ul>
+    <p>
+        Bạn có thể tải file mẫu tại đây:
+        <a asp-area="Admin"
+           asp-controller="Product"
+           asp-action="DownloadTemplate"
+           class="btn btn-sm btn-outline-light">
+            Tải file Excel mẫu
+        </a>
+    </p>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @Html.Raw(TempData["ErrorMessage"])
+    </div>
+}
+
+@if (TempData["ImportErrors"] != null)
+{
+    <div class="alert alert-warning">
+        <strong>Các dòng bị lỗi:</strong><br />
+        @Html.Raw(TempData["ImportErrors"])
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-area="Admin"
+      asp-controller="Product"
+      asp-action="Import"
+      method="post"
+      enctype="multipart/form-data">
+
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label for="file" class="form-label">Chọn file Excel</label>
+        <input type="file" name="file" id="file" class="form-control" accept=".xlsx,.xls" />
+    </div>
+
+    <div class="text-danger mb-3">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Bắt đầu import
+    </button>
+
+    <a asp-area="Admin"
+       asp-controller="Product"
+       asp-action="Index"
+       class="btn btn-secondary ms-2">
+        Quay lại danh sách
+    </a>
+</form>
+
