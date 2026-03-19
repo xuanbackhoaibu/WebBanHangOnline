@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using WebBanHangOnline.Models.Momo;
-using WebBanHangOnline.Models.Order;
 namespace WebBanHangOnline.Services.Momo
 {
     public class MomoService : IMomoService
@@ -10,9 +9,9 @@ namespace WebBanHangOnline.Services.Momo
         {
             _options = options;
         }
-        public async Task<MomoCreatePaymentResponseModel> CreatePaymentMomo(OrderInfoModel model)
+        public Task<MomoCreatePaymentResponseModel> CreatePaymentMomo(Order model)
         {
-
+            throw new NotImplementedException("MoMo payment creation is not implemented yet.");
         }
     }
 }

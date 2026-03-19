@@ -1,6 +1,9 @@
-﻿namespace WebBanHangOnline.Services.Momo
+using WebBanHangOnline.Models.Momo;
+
+namespace WebBanHangOnline.Services.Momo
 {
-    public interface IMomoService : MomoService
+    public interface IMomoService
     {
+        Task<MomoCreatePaymentResponseModel> CreatePaymentMomo(Order model);
     }
 }
