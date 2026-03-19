@@ -144,10 +144,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                             // Tìm theo tên category (không phân biệt hoa/thường)
                             var normalizedName = categoryCellTrim.ToLower();
                             var category = await _context.Categories
-                                .FirstOrDefaultAsync(c =>
-                                    c.IsActive &&
-                                    c.Name != null &&
-                                    c.Name.ToLower() == normalizedName);
+                                .FirstOrDefaultAsync(c => c.IsActive && c.Name == categoryCellTrim);
 
                             if (category != null)
                                 categoryId = category.CategoryId;
@@ -168,6 +165,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                         continue;
                     }
 
+                    priceCell = priceCell.Replace(",", "").Trim();
                     if (!decimal.TryParse(priceCell, out var price) || price <= 0)
                     {
                         errors.Add($"Dòng {row}: Giá không hợp lệ.");
@@ -188,7 +186,9 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                         CategoryId = categoryId,
                         Description = description,
                         Price = price,
-                        IsActive = isActive
+                        IsActive = isActive,
+                        Thumbnail = "/images/no-image.png",
+                        ImageUrl = "/images/no-image.png" // ✅ THÊM DÒNG NÀY
                     };
 
                     product.GenerateSlug();
@@ -238,6 +238,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                             {
                                 var thumbName = await SaveFileAsync(thumbFile);
                                 product.Thumbnail = "/images/products/" + thumbName;
+
                             }
                             else
                             {
@@ -284,7 +285,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Lỗi khi đọc file Excel: {ex.Message}";
+                TempData["ErrorMessage"] = $"Lỗi: {ex.InnerException?.Message ?? ex.Message}";
                 return View();
             }
 
@@ -361,6 +362,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             {
                 var thumbName = await SaveFileAsync(ThumbnailFile);
                 product.Thumbnail = "/images/products/" + thumbName;
+                product.ImageUrl = product.Thumbnail;
             }
 
             _context.Products.Add(product);
@@ -418,7 +420,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             model.GenerateSlug();
 
             // 🔥 QUAN TRỌNG – clear lỗi ModelState của Slug
-            ModelState.Remove(nameof(Product.Slug));
+            ModelState.Clear();
 
             if (!ModelState.IsValid || model.CategoryId == 0)
             {

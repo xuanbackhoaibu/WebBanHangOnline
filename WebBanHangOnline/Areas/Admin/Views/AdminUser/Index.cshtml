@@ -34,6 +34,22 @@
                    onclick="return confirm('Xác nhận thay đổi trạng thái?')">
                     🔒 / 🔓
                 </a>
+            
+            <form asp-area="Admin"
+      asp-controller="User"
+      asp-action="Delete"
+      method="post"
+      style="display:inline;"
+      onsubmit="return confirm('Bạn chắc chắn muốn xóa?');">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="id" value="@user.Id" />
+
+    <button type="submit" class="btn btn-danger btn-sm">
+        ❌ Xóa
+    </button>
+</form>
             </td>
         </tr>
     }
