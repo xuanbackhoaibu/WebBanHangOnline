@@ -1,5 +1,5 @@
 @{
-    Layout = "_AdminLayout";
+Layout = "_AdminLayout";
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
@@ -40,6 +40,7 @@
         gap: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
+        position: relative;
     }
 
     .date-picker:hover {
@@ -49,6 +50,28 @@
 
     .date-picker i {
         color: #667eea;
+    }
+
+    .refresh-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 10px;
+        height: 10px;
+        background: #10b981;
+        border-radius: 50%;
+        display: none;
+    }
+
+    .date-picker.refreshing .refresh-badge {
+        display: block;
+        animation: pulse 1s infinite;
+    }
+
+    @@keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
     }
 
     .stats-grid {
@@ -312,6 +335,62 @@
         color: #cbd5e1;
     }
 
+    /* Style cho debug panel */
+    .debug-panel {
+        background: #1e293b;
+        color: #fff;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 12px;
+        font-family: monospace;
+        font-size: 14px;
+        border: 2px solid #ef4444;
+    }
+
+    .debug-panel h3 {
+        color: #ef4444;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+    .debug-panel h4 {
+        color: #f59e0b;
+        margin: 15px 0 5px 0;
+        font-size: 16px;
+    }
+
+    .debug-panel pre {
+        background: #0f172a;
+        padding: 10px;
+        border-radius: 8px;
+        overflow-x: auto;
+        color: #10b981;
+        margin: 5px 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .debug-panel .success { color: #10b981; }
+    .debug-panel .error { color: #ef4444; }
+    .debug-panel .warning { color: #f59e0b; }
+
+    /* Auto refresh indicator */
+    .auto-refresh-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        margin-left: 5px;
+        animation: blink 1s infinite;
+    }
+
+    @@keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
     @@media (max-width: 1200px) {
         .stats-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -338,32 +417,34 @@
     }
 </style>
 
-@{
-    // Tính toán các chỉ số phụ với kiểm tra null
-    var totalOrders = 0;
-    var totalRevenue = 0m;
-    var totalUsers = 0;
-    var totalProducts = 0;
 
-    try
-    {
-        totalOrders = ViewBag.TotalOrders as int? ?? 0;
-        totalRevenue = ViewBag.TotalRevenue as decimal? ?? 0;
-        totalUsers = ViewBag.TotalUsers as int? ?? 0;
-        totalProducts = ViewBag.TotalProducts as int? ?? 0;
-    }
-    catch
-    {
-        // Bỏ qua lỗi
-    }
+@{
+// Tính toán các chỉ số phụ với kiểm tra null
+var totalOrders = 0;
+var totalRevenue = 0m;
+var totalUsers = 0;
+var totalProducts = 0;
+
+try
+{
+totalOrders = ViewBag.TotalOrders as int? ?? 0;
+totalRevenue = ViewBag.TotalRevenue as decimal? ?? 0;
+totalUsers = ViewBag.TotalUsers as int? ?? 0;
+totalProducts = ViewBag.TotalProducts as int? ?? 0;
+}
+catch
+{
+// Bỏ qua lỗi
+}
 }
 
 <div class="dashboard-header">
     <h2><i class="fas fa-chart-pie me-2"></i>Dashboard Overview</h2>
-    <div class="date-picker" onclick="location.reload()">
+    <div class="date-picker" id="refreshButton">
         <i class="far fa-calendar-alt"></i>
         <span>@DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))</span>
         <i class="fas fa-sync-alt ms-2" style="font-size: 0.8rem;"></i>
+        <span class="refresh-badge"></span>
     </div>
 </div>
 
@@ -374,7 +455,7 @@
         </div>
         <div class="stat-content">
             <h5>Tổng đơn hàng</h5>
-            <div class="stat-value">@totalOrders.ToString("N0")</div>
+            <div class="stat-value" id="totalOrders">@totalOrders.ToString("N0")</div>
             <div class="stat-trend">
                 <i class="fas fa-chart-line"></i>
                 <span>Tổng số đơn hàng</span>
@@ -388,7 +469,7 @@
         </div>
         <div class="stat-content">
             <h5>Tổng doanh thu</h5>
-            <div class="stat-value">@String.Format("{0:N0}", totalRevenue) đ</div>
+            <div class="stat-value" id="totalRevenue">@String.Format("{0:N0}", totalRevenue) đ</div>
             <div class="stat-trend">
                 <i class="fas fa-chart-line"></i>
                 <span>Đã thanh toán</span>
@@ -402,7 +483,7 @@
         </div>
         <div class="stat-content">
             <h5>Tổng người dùng</h5>
-            <div class="stat-value">@totalUsers.ToString("N0")</div>
+            <div class="stat-value" id="totalUsers">@totalUsers.ToString("N0")</div>
             <div class="stat-trend">
                 <i class="fas fa-chart-line"></i>
                 <span>Tổng tài khoản</span>
@@ -416,7 +497,7 @@
         </div>
         <div class="stat-content">
             <h5>Tổng sản phẩm</h5>
-            <div class="stat-value">@totalProducts.ToString("N0")</div>
+            <div class="stat-value" id="totalProducts">@totalProducts.ToString("N0")</div>
             <div class="stat-trend">
                 <i class="fas fa-chart-line"></i>
                 <span>Đang bán</span>
@@ -454,447 +535,413 @@
     </div>
 
     @{
-        IEnumerable<dynamic> recentOrders = null;
-        bool hasRecentOrders = false;
+    IEnumerable<dynamic> recentOrdersList = null;
+    bool hasRecentOrders = false;
 
-        try
-        {
-            recentOrders = ViewBag.RecentOrders as IEnumerable<dynamic>;
-            hasRecentOrders = recentOrders != null && recentOrders.Any();
-        }
-        catch
-        {
-            hasRecentOrders = false;
-        }
+    try
+    {
+    recentOrdersList = ViewBag.RecentOrders as IEnumerable<dynamic>;
+    hasRecentOrders = recentOrdersList != null && recentOrdersList.Any();
+    }
+    catch
+    {
+    hasRecentOrders = false;
+    }
     }
 
     @if (hasRecentOrders)
     {
-        <table class="order-table">
-            <tbody>
-                @foreach (var order in recentOrders)
+    <table class="order-table">
+        <tbody>
+        @foreach (var order in recentOrdersList)
+        {
+        // Tạo initials từ tên khách hàng
+        string initials = "KH";
+        string customerName = "Khách hàng";
+        string customerEmail = "";
+
+        try
+        {
+        customerName = order.CustomerName ?? "Khách hàng";
+        customerEmail = order.CustomerEmail ?? "";
+
+        if (!string.IsNullOrEmpty(customerName) && customerName != "Khách vãng lai")
+        {
+        var nameParts = customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (nameParts.Length > 1)
+        {
+        string firstInitial = nameParts[0].Length > 0 ? nameParts[0][0].ToString() : "";
+        string lastInitial = nameParts[nameParts.Length - 1].Length > 0 ? nameParts[nameParts.Length - 1][0].ToString() : "";
+        initials = (firstInitial + lastInitial).ToUpper();
+
+        if (string.IsNullOrEmpty(initials))
+        {
+        initials = "KH";
+        }
+        }
+        else if (customerName.Length >= 2)
+        {
+        initials = customerName.Substring(0, 2).ToUpper();
+        }
+        else if (customerName.Length >= 1)
+        {
+        initials = customerName.Substring(0, 1).ToUpper();
+        }
+        }
+        }
+        catch
+        {
+        initials = "KH";
+        }
+
+        // Xác định class cho status badge
+        string statusClass = "status-pending";
+        string statusText = "Chờ xử lý";
+
+        try
+        {
+        statusText = order.Status ?? "Pending";
+        string statusLower = statusText.ToLower();
+
+        if (statusLower.Contains("giao") || statusLower.Contains("completed") || statusLower.Contains("paid") || statusLower.Contains("delivered") || statusLower.Contains("hoàn thành"))
+        {
+        statusClass = "status-delivered";
+        statusText = "Đã hoàn thành";
+        }
+        else if (statusLower.Contains("hủy") || statusLower.Contains("cancelled"))
+        {
+        statusClass = "status-cancelled";
+        statusText = "Đã hủy";
+        }
+        else if (statusLower.Contains("xử lý") || statusLower.Contains("processing") || statusLower.Contains("xác nhận"))
+        {
+        statusClass = "status-processing";
+        statusText = "Đang xử lý";
+        }
+        else if (statusLower.Contains("vận chuyển") || statusLower.Contains("shipping"))
+        {
+        statusClass = "status-processing";
+        statusText = "Đang vận chuyển";
+        }
+        else if (statusLower.Contains("pending") || statusLower.Contains("chờ"))
+        {
+        statusClass = "status-pending";
+        statusText = "Đang chờ";
+        }
+        }
+        catch
+        {
+        statusClass = "status-pending";
+        statusText = "Chờ xử lý";
+        }
+
+        <tr>
+            <td>
+                <div class="avatar-group">
+                    <div class="avatar">@initials</div>
+                    <div class="user-info">
+                        <span class="user-name">@customerName</span>
+                        <span class="user-email">@(!string.IsNullOrEmpty(customerEmail) ? customerEmail : "Chưa có email")</span>
+                    </div>
+                </div>
+            </td>
+            <td>
+                @try
                 {
-                    // Tạo initials từ tên khách hàng
-                    string initials = "KH";
-                    string customerName = "Khách hàng";
-                    string customerEmail = "";
-
-                    try
-                    {
-                        customerName = order.CustomerName ?? "Khách hàng";
-                        customerEmail = order.CustomerEmail ?? "";
-
-                        if (!string.IsNullOrEmpty(customerName) && customerName != "Khách vãng lai")
-                        {
-                            var nameParts = customerName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                            if (nameParts.Length > 1)
-                            {
-                                string firstInitial = nameParts[0].Length > 0 ? nameParts[0][0].ToString() : "";
-                                string lastInitial = nameParts[nameParts.Length - 1].Length > 0 ? nameParts[nameParts.Length - 1][0].ToString() : "";
-                                initials = (firstInitial + lastInitial).ToUpper();
-
-                                if (string.IsNullOrEmpty(initials))
-                                {
-                                    initials = "KH";
-                                }
-                            }
-                            else if (customerName.Length >= 2)
-                            {
-                                initials = customerName.Substring(0, 2).ToUpper();
-                            }
-                            else if (customerName.Length >= 1)
-                            {
-                                initials = customerName.Substring(0, 1).ToUpper();
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        initials = "KH";
-                    }
-
-                    // Xác định class cho status badge
-                    string statusClass = "status-pending";
-                    string statusText = "Chờ xử lý";
-
-                    try
-                    {
-                        statusText = order.Status ?? "Pending";
-                        string statusLower = statusText.ToLower();
-
-                        if (statusLower.Contains("giao") || statusLower.Contains("completed") || statusLower.Contains("paid") || statusLower.Contains("delivered"))
-                        {
-                            statusClass = "status-delivered";
-                            statusText = "Đã giao";
-                        }
-                        else if (statusLower.Contains("hủy") || statusLower.Contains("cancelled"))
-                        {
-                            statusClass = "status-cancelled";
-                            statusText = "Đã hủy";
-                        }
-                        else if (statusLower.Contains("xử lý") || statusLower.Contains("processing"))
-                        {
-                            statusClass = "status-processing";
-                            statusText = "Đang xử lý";
-                        }
-                        else if (statusLower.Contains("pending") || statusLower.Contains("chờ"))
-                        {
-                            statusClass = "status-pending";
-                            statusText = "Chờ xử lý";
-                        }
-                    }
-                    catch
-                    {
-                        statusClass = "status-pending";
-                        statusText = "Chờ xử lý";
-                    }
-
-                    <tr>
-                        <td>
-                            <div class="avatar-group">
-                                <div class="avatar">@initials</div>
-                                <div class="user-info">
-                                    <span class="user-name">@customerName</span>
-                                    <span class="user-email">@(!string.IsNullOrEmpty(customerEmail) ? customerEmail : "Chưa có email")</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            @try
-                            {
-                                string orderCode = order.OrderCode ?? "ORD" + order.Id.ToString("D6");
-                                <span>#@orderCode</span>
-                            }
-                            catch
-                            {
-                                <span>#ORD-000</span>
-                            }
-                        </td>
-                        <td>
-                            @try
-                            {
-                                decimal amount = order.TotalAmount is decimal ? (decimal)order.TotalAmount : 0;
-                                @String.Format("{0:N0}", amount) <span>đ</span>
-                            }
-                            catch
-                            {
-                                <span>0 đ</span>
-                            }
-                        </td>
-                        <td><span class="status-badge @statusClass">@statusText</span></td>
-                        <td>
-                            @try
-                            {
-                                string orderDate = order.OrderDate is DateTime ? ((DateTime)order.OrderDate).ToString("dd/MM/yyyy HH:mm") : "N/A";
-                                @orderDate
-                            }
-                            catch
-                            {
-                                <span>N/A</span>
-                            }
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                @{
-                                    int orderId = 0;
-                                    try
-                                    {
-                                        orderId = order.Id is int ? (int)order.Id : 0;
-                                    }
-                                    catch
-                                    {
-                                        orderId = 0;
-                                    }
-                                }
-                                <button class="btn-icon" onclick="viewOrderDetail(@orderId)" title="Xem chi tiết">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn-icon" onclick="editOrder(@orderId)" title="Chỉnh sửa">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                string orderCode = order.OrderCode ?? "ORD" + order.Id.ToString("D6");
+                <span>#@orderCode</span>
                 }
-            </tbody>
-        </table>
+                catch
+                {
+                <span>#ORD-000</span>
+                }
+            </td>
+            <td>
+                @try
+                {
+                decimal amount = order.TotalAmount is decimal ? (decimal)order.TotalAmount : 0;
+                @String.Format("{0:N0}", amount) <span>đ</span>
+                }
+                catch
+                {
+                <span>0 đ</span>
+                }
+            </td>
+            <td><span class="status-badge @statusClass">@statusText</span></td>
+            <td>
+                @try
+                {
+                string orderDate = order.OrderDate is DateTime ? ((DateTime)order.OrderDate).ToString("dd/MM/yyyy HH:mm") : "N/A";
+                @orderDate
+                }
+                catch
+                {
+                <span>N/A</span>
+                }
+            </td>
+            <td>
+                <div class="action-buttons">
+                    @{
+                    int orderId = 0;
+                    try
+                    {
+                    orderId = order.Id is int ? (int)order.Id : 0;
+                    }
+                    catch
+                    {
+                    orderId = 0;
+                    }
+                    }
+                    <button class="btn-icon" onclick="viewOrderDetail(@orderId)" title="Xem chi tiết">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon" onclick="editOrder(@orderId)" title="Chỉnh sửa">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+        }
+        </tbody>
+    </table>
     }
     else
     {
-        <div class="empty-state">
-            <i class="fas fa-shopping-cart"></i>
-            <p>Chưa có đơn hàng nào</p>
-        </div>
+    <div class="empty-state">
+        <i class="fas fa-shopping-cart"></i>
+        <p>Chưa có đơn hàng nào</p>
+    </div>
     }
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script>
-        // Format số tiền VNĐ
-        function formatCurrency(value) {
-            try {
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(value);
-            } catch (e) {
-                return value + ' đ';
-            }
+<script>
+    // Format số tiền VNĐ
+    function formatCurrency(value) {
+        try {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(value);
+        } catch (e) {
+            return value + ' đ';
+        }
+    }
+
+    // Biến toàn cục lưu trữ biểu đồ
+    let revenueChart = null;
+    let distributionChart = null;
+
+    // Dữ liệu từ server
+    @{
+    var revenueLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels ?? new List<string>());
+    var revenueDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartData ?? new List<decimal>());
+    var statusLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.OrderStatusLabels ?? new List<string>());
+    var statusDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.OrderStatusData ?? new List<int>());
+    }
+
+    // Hàm vẽ biểu đồ doanh thu
+    function renderRevenueChart(labels, data) {
+        const ctx = document.getElementById('revenueChart');
+        if (!ctx) return;
+
+        // Hủy biểu đồ cũ nếu có
+        if (revenueChart) {
+            revenueChart.destroy();
         }
 
-        // Đợi DOM load xong mới vẽ biểu đồ
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            @{
-                // Chuẩn bị dữ liệu cho biểu đồ doanh thu
-                var revenueLabelsJson = "[]";
-                var revenueDataJson = "[]";
-                var hasRevenueData = false;
-                
-                try
-                {
-                    if (ViewBag.ChartLabels != null && ViewBag.ChartData != null && 
-                        ViewBag.ChartLabels.Count > 0 && ViewBag.ChartData.Count > 0)
-                    {
-                        revenueLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels);
-                        revenueDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartData);
-                        hasRevenueData = true;
-                    }
-                }
-                catch
-                {
-                    revenueLabelsJson = "[]";
-                    revenueDataJson = "[]";
-                    hasRevenueData = false;
-                }
-            }
-
-            // Dữ liệu doanh thu
-            const revenueLabels = @Html.Raw(revenueLabelsJson);
-            const revenueData = @Html.Raw(revenueDataJson);
-            
-            console.log('========== BIỂU ĐỒ DOANH THU ==========');
-            console.log('Has Revenue Data:', @hasRevenueData.ToString().ToLower());
-            console.log('Revenue Labels:', revenueLabels);
-            console.log('Revenue Data:', revenueData);
-            console.log('Revenue Labels Length:', revenueLabels ? revenueLabels.length : 0);
-            console.log('Revenue Data Length:', revenueData ? revenueData.length : 0);
-
-            // Vẽ biểu đồ doanh thu
-            const revenueCtx = document.getElementById('revenueChart');
-            if (revenueCtx) {
-                if (revenueLabels && revenueLabels.length > 0 && revenueData && revenueData.length > 0) {
-                    try {
-                        new Chart(revenueCtx, {
-                            type: 'line',
-                            data: {
-                                labels: revenueLabels,
-                                datasets: [{
-                                    label: 'Doanh thu',
-                                    data: revenueData,
-                                    borderColor: '#667eea',
-                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                                    borderWidth: 3,
-                                    tension: 0.3,
-                                    fill: true,
-                                    pointBackgroundColor: '#fff',
-                                    pointBorderColor: '#667eea',
-                                    pointBorderWidth: 2,
-                                    pointRadius: 4,
-                                    pointHoverRadius: 6
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                return formatCurrency(context.raw);
-                                            }
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: { color: '#e2e8f0' },
-                                        ticks: {
-                                            callback: function(value) {
-                                                if (value >= 1000000) {
-                                                    return (value / 1000000).toFixed(1) + 'tr';
-                                                }
-                                                if (value >= 1000) {
-                                                    return (value / 1000).toFixed(0) + 'k';
-                                                }
-                                                return value;
-                                            }
-                                        }
-                                    }
+        if (labels && labels.length > 0) {
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#667eea',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
                                 }
                             }
-                        });
-                        console.log('✅ BIỂU ĐỒ DOANH THU: Vẽ thành công');
-                    } catch (e) {
-                        console.error('❌ BIỂU ĐỒ DOANH THU: Lỗi vẽ:', e);
-                        
-                        // Hiển thị empty state
-                        const container = document.getElementById('revenueChartContainer');
-                        if (container) {
-                            container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Lỗi vẽ biểu đồ</p></div>';
                         }
-                    }
-                } else {
-                    console.log('⚠️ BIỂU ĐỒ DOANH THU: Không có dữ liệu');
-                    
-                    // Hiển thị empty state
-                    const container = document.getElementById('revenueChartContainer');
-                    if (container) {
-                        container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>Chưa có dữ liệu doanh thu trong 7 ngày qua</p></div>';
-                    }
-                }
-            } else {
-                console.error('❌ BIỂU ĐỒ DOANH THU: Không tìm thấy canvas');
-            }
-
-            @{
-                // Chuẩn bị dữ liệu cho biểu đồ phân bố
-                var statusLabelsJson = "[]";
-                var statusDataJson = "[]";
-                var hasOrderStatusData = false;
-                
-                try
-                {
-                    if (ViewBag.OrderStatusLabels != null && ViewBag.OrderStatusData != null && 
-                        ViewBag.OrderStatusLabels.Count > 0 && ViewBag.OrderStatusData.Count > 0)
-                    {
-                        statusLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.OrderStatusLabels);
-                        statusDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.OrderStatusData);
-                        hasOrderStatusData = true;
-                    }
-                }
-                catch
-                {
-                    statusLabelsJson = "[]";
-                    statusDataJson = "[]";
-                    hasOrderStatusData = false;
-                }
-            }
-
-            // Dữ liệu phân bố đơn hàng
-            const statusLabels = @Html.Raw(statusLabelsJson);
-            const statusData = @Html.Raw(statusDataJson);
-            
-            console.log('========== BIỂU ĐỒ PHÂN BỐ ==========');
-            console.log('Has Status Data:', @hasOrderStatusData.ToString().ToLower());
-            console.log('Status Labels:', statusLabels);
-            console.log('Status Data:', statusData);
-            console.log('Status Labels Length:', statusLabels ? statusLabels.length : 0);
-            console.log('Status Data Length:', statusData ? statusData.length : 0);
-
-            // Vẽ biểu đồ phân bố
-            const distributionCtx = document.getElementById('orderDistributionChart');
-            if (distributionCtx) {
-                if (statusLabels && statusLabels.length > 0 && statusData && statusData.length > 0) {
-                    try {
-                        // Màu sắc cho các trạng thái
-                        const statusColors = [
-                            '#10b981', // xanh lá
-                            '#f59e0b', // vàng
-                            '#ef4444', // đỏ
-                            '#3b82f6', // xanh dương
-                            '#8b5cf6', // tím
-                            '#ec4899', // hồng
-                            '#14b8a6'  // xanh ngọc
-                        ];
-
-                        new Chart(distributionCtx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: statusLabels,
-                                datasets: [{
-                                    data: statusData,
-                                    backgroundColor: statusColors.slice(0, statusLabels.length),
-                                    borderWidth: 0,
-                                    hoverOffset: 4
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom',
-                                        labels: {
-                                            usePointStyle: true,
-                                            padding: 15,
-                                            font: { size: 11 }
-                                        }
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                const label = context.label || '';
-                                                const value = context.raw || 0;
-                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                                return `${label}: ${value} đơn (${percentage}%)`;
-                                            }
-                                        }
-                                    }
-                                },
-                                cutout: '65%',
-                                layout: {
-                                    padding: {
-                                        bottom: 10
-                                    }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#e2e8f0' },
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1000000) return (value / 1000000).toFixed(1) + 'tr';
+                                    if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
+                                    return value;
                                 }
                             }
-                        });
-                        console.log('✅ BIỂU ĐỒ PHÂN BỐ: Vẽ thành công');
-                    } catch (e) {
-                        console.error('❌ BIỂU ĐỒ PHÂN BỐ: Lỗi vẽ:', e);
-                        
-                        // Hiển thị empty state
-                        const container = document.getElementById('orderDistributionContainer');
-                        if (container) {
-                            container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-pie"></i><p>Lỗi vẽ biểu đồ</p></div>';
                         }
                     }
-                } else {
-                    console.log('⚠️ BIỂU ĐỒ PHÂN BỐ: Không có dữ liệu');
-                    
-                    // Hiển thị empty state
-                    const container = document.getElementById('orderDistributionContainer');
-                    if (container) {
-                        container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-pie"></i><p>Chưa có dữ liệu phân bố đơn hàng</p></div>';
-                    }
                 }
-            } else {
-                console.error('❌ BIỂU ĐỒ PHÂN BỐ: Không tìm thấy canvas');
+            });
+
+            // Kiểm tra và thông báo nếu có doanh thu
+            const totalRevenue = data.reduce((sum, val) => sum + val, 0);
+            if (totalRevenue > 0) {
+                console.log('✅ Biểu đồ doanh thu đã vẽ với dữ liệu:', data);
+
+                // Highlight ngày có doanh thu
+                const revenueDates = labels.filter((_, index) => data[index] > 0);
+                if (revenueDates.length > 0) {
+                    console.log('📅 Các ngày có doanh thu:', revenueDates.join(', '));
+                }
             }
+        }
+    }
+
+    // Hàm vẽ biểu đồ phân bố
+    function renderDistributionChart(labels, data) {
+        const ctx = document.getElementById('orderDistributionChart');
+        if (!ctx) return;
+
+        // Hủy biểu đồ cũ nếu có
+        if (distributionChart) {
+            distributionChart.destroy();
+        }
+
+        if (labels && labels.length > 0 && data && data.length > 0) {
+            const colors = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'];
+
+            distributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} đơn (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+
+            console.log('✅ Biểu đồ phân bố đã vẽ với dữ liệu:', data);
+        }
+    }
+
+    // Hàm tải lại dữ liệu từ server
+    async function refreshData() {
+        const refreshButton = document.getElementById('refreshButton');
+        refreshButton.classList.add('refreshing');
+
+        try {
+            // Gọi API để lấy dữ liệu mới
+            const response = await fetch('@Url.Action("GetDashboardData", "Dashboard")');
+            const data = await response.json();
+
+            if (data.success) {
+                // Cập nhật số liệu thống kê
+                document.getElementById('totalOrders').textContent = data.totalOrders.toLocaleString('vi-VN');
+                document.getElementById('totalRevenue').textContent = formatCurrency(data.totalRevenue);
+                document.getElementById('totalUsers').textContent = data.totalUsers.toLocaleString('vi-VN');
+                document.getElementById('totalProducts').textContent = data.totalProducts.toLocaleString('vi-VN');
+
+                // Vẽ lại biểu đồ với dữ liệu mới
+                renderRevenueChart(data.revenueLabels, data.revenueData);
+                renderDistributionChart(data.statusLabels, data.statusData);
+
+                console.log('🔄 Đã cập nhật dữ liệu mới:', new Date().toLocaleTimeString());
+            }
+        } catch (error) {
+            console.error('Lỗi khi tải dữ liệu:', error);
+        } finally {
+            refreshButton.classList.remove('refreshing');
+        }
+    }
+
+    // Khởi tạo khi trang load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('========== KHỞI TẠO BIỂU ĐỒ ==========');
+
+        // Parse dữ liệu từ server
+        const revenueLabels = @Html.Raw(revenueLabelsJson);
+        const revenueData = @Html.Raw(revenueDataJson);
+        const statusLabels = @Html.Raw(statusLabelsJson);
+        const statusData = @Html.Raw(statusDataJson);
+
+        console.log('Dữ liệu doanh thu:', revenueData);
+        console.log('Dữ liệu phân bố:', statusData);
+
+        // Vẽ biểu đồ lần đầu
+        renderRevenueChart(revenueLabels, revenueData);
+        renderDistributionChart(statusLabels, statusData);
+
+        // Thiết lập tự động refresh mỗi 30 giây
+        setInterval(refreshData, 30000); // 30 giây
+
+        // Click để refresh thủ công
+        document.getElementById('refreshButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            refreshData();
         });
 
-        // Hàm xem chi tiết đơn hàng
-        function viewOrderDetail(orderId) {
-            if (orderId && orderId > 0) {
-                window.location.href = '@Url.Action("Details", "Order", new { area = "Admin" })' + '?id=' + orderId;
-            } else {
-                console.warn('Order ID không hợp lệ:', orderId);
-            }
-        }
+        console.log('✅ Khởi tạo hoàn tất - Tự động refresh mỗi 30 giây');
+    });
 
-        // Hàm chỉnh sửa đơn hàng
-        function editOrder(orderId) {
-            if (orderId && orderId > 0) {
-                window.location.href = '@Url.Action("Edit", "Order", new { area = "Admin" })' + '?id=' + orderId;
-            } else {
-                console.warn('Order ID không hợp lệ:', orderId);
-            }
+    // Hàm xem chi tiết đơn hàng
+    function viewOrderDetail(orderId) {
+        if (orderId && orderId > 0) {
+            window.location.href = '@Url.Action("Details", "Order", new { area = "Admin" })' + '?id=' + orderId;
         }
-    </script>
+    }
+
+    // Hàm chỉnh sửa đơn hàng
+    function editOrder(orderId) {
+        if (orderId && orderId > 0) {
+            window.location.href = '@Url.Action("Edit", "Order", new { area = "Admin" })' + '?id=' + orderId;
+        }
+    }
+</script>
 }

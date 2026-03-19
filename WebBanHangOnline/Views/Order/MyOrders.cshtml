@@ -4,200 +4,208 @@
 <html>
 <head>
 
-<meta charset="utf-8"/>
+    <meta charset="utf-8"/>
 
-<title>Đơn hàng của tôi</title>
+    <title>Đơn hàng của tôi</title>
 
-<style>
+    <style>
 
-body{
-background:#f5f5f5;
-font-family:Segoe UI;
-margin:0;
-}
+        body{
+            background:#f5f5f5;
+            font-family:Segoe UI;
+            margin:0;
+        }
 
-.order-container{
-max-width:1100px;
-margin:auto;
-padding:25px;
-}
+        .order-container{
+            max-width:1100px;
+            margin:auto;
+            padding:25px;
+        }
 
-.order-title{
-font-size:24px;
-font-weight:700;
-margin-bottom:20px;
-}
+        .order-title{
+            font-size:24px;
+            font-weight:700;
+            margin-bottom:20px;
+        }
 
-.order-filter{
-display:flex;
-gap:10px;
-margin-bottom:20px;
-flex-wrap:wrap;
-}
+        .order-filter{
+            display:flex;
+            gap:10px;
+            margin-bottom:20px;
+            flex-wrap:wrap;
+        }
 
-.filter-btn{
-border:1px solid #ddd;
-background:white;
-padding:8px 18px;
-border-radius:20px;
-cursor:pointer;
-transition:.25s;
-}
+        .filter-btn{
+            border:1px solid #ddd;
+            background:white;
+            padding:8px 18px;
+            border-radius:20px;
+            cursor:pointer;
+            transition:.25s;
+        }
 
-.filter-btn:hover{
-background:#ee4d2d;
-color:white;
-}
+        .filter-btn:hover{
+            background:#ee4d2d;
+            color:white;
+        }
 
-.filter-btn.active{
-background:#ee4d2d;
-color:white;
-}
+        .filter-btn.active{
+            background:#ee4d2d;
+            color:white;
+        }
 
-.order-card{
-background:white;
-border-radius:10px;
-padding:20px;
-margin-bottom:20px;
-border:1px solid #eee;
-transition:.3s;
-}
+        .order-card{
+            background:white;
+            border-radius:10px;
+            padding:20px;
+            margin-bottom:20px;
+            border:1px solid #eee;
+            transition:.3s;
+        }
 
-.order-card:hover{
-transform:translateY(-3px);
-box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
+        .order-card:hover{
+            transform:translateY(-3px);
+            box-shadow:0 10px 25px rgba(0,0,0,.08);
+        }
 
-.order-header{
-display:flex;
-justify-content:space-between;
-border-bottom:1px solid #eee;
-padding-bottom:10px;
-margin-bottom:15px;
-}
+        .order-header{
+            display:flex;
+            justify-content:space-between;
+            border-bottom:1px solid #eee;
+            padding-bottom:10px;
+            margin-bottom:15px;
+        }
 
-.order-id{
-font-weight:600;
-}
+        .order-id{
+            font-weight:600;
+        }
 
-.order-date{
-font-size:13px;
-color:#888;
-}
+        .order-date{
+            font-size:13px;
+            color:#888;
+        }
 
-.status-success{color:#28a745}
-.status-warning{color:#f39c12}
-.status-danger{color:#dc3545}
-.status-gray{color:#888}
+        .status-success{color:#28a745}
+        .status-warning{color:#f39c12}
+        .status-danger{color:#dc3545}
+        .status-gray{color:#888}
 
-.product-row{
-display:flex;
-align-items:center;
-padding:12px 0;
-border-bottom:1px dashed #eee;
-}
+        .product-row{
+            display:flex;
+            align-items:center;
+            padding:12px 0;
+            border-bottom:1px dashed #eee;
+        }
 
-.product-img{
-width:65px;
-height:65px;
-object-fit:cover;
-border-radius:6px;
-margin-right:15px;
-}
+        /* 🔥 FIX + UPGRADE IMAGE */
+        .product-img{
+            width:65px;
+            height:65px;
+            object-fit:cover;
+            border-radius:6px;
+            margin-right:15px;
+            transition:.3s;
+            border:1px solid #eee;
+        }
 
-.product-info{
-flex:1;
-}
+        .product-img:hover{
+            transform:scale(1.08);
+            box-shadow:0 5px 15px rgba(0,0,0,.15);
+        }
 
-.product-name{
-font-weight:500;
-}
+        .product-info{
+            flex:1;
+        }
 
-.product-meta{
-font-size:13px;
-color:#777;
-}
+        .product-name{
+            font-weight:500;
+        }
 
-.product-price{
-font-weight:600;
-}
+        .product-meta{
+            font-size:13px;
+            color:#777;
+        }
 
-.order-progress{
-height:6px;
-background:#eee;
-border-radius:4px;
-margin-top:15px;
-overflow:hidden;
-}
+        .product-price{
+            font-weight:600;
+        }
 
-.progress-bar{height:100%}
+        .order-progress{
+            height:6px;
+            background:#eee;
+            border-radius:4px;
+            margin-top:15px;
+            overflow:hidden;
+        }
 
-.progress-25{width:25%;background:#999}
-.progress-70{width:70%;background:#f39c12}
-.progress-100{width:100%;background:#28a745}
-.progress-cancel{width:100%;background:#dc3545}
+        .progress-bar{height:100%}
 
-.order-footer{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-top:15px;
-}
+        .progress-25{width:25%;background:#999}
+        .progress-70{width:70%;background:#f39c12}
+        .progress-100{width:100%;background:#28a745}
+        .progress-cancel{width:100%;background:#dc3545}
 
-.order-total span{
-color:#ee4d2d;
-font-weight:700;
-font-size:18px;
-}
+        .order-footer{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:15px;
+        }
 
-.order-actions button,
-.order-actions a{
-margin-left:8px;
-}
+        .order-total span{
+            color:#ee4d2d;
+            font-weight:700;
+            font-size:18px;
+        }
 
-.btn-main{
-background:#ee4d2d;
-color:white;
-padding:7px 15px;
-border-radius:6px;
-text-decoration:none;
-}
+        .order-actions button,
+        .order-actions a{
+            margin-left:8px;
+        }
 
-.btn-main:hover{
-background:#d63c1f;
-}
+        .btn-main{
+            background:#ee4d2d;
+            color:white;
+            padding:7px 15px;
+            border-radius:6px;
+            text-decoration:none;
+        }
 
-.btn-cancel{
-border:1px solid #dc3545;
-color:#dc3545;
-background:white;
-padding:7px 15px;
-border-radius:6px;
-cursor:pointer;
-}
+        .btn-main:hover{
+            background:#d63c1f;
+        }
 
-.btn-buy{
-border:1px solid #007bff;
-color:#007bff;
-background:white;
-padding:7px 15px;
-border-radius:6px;
-cursor:pointer;
-}
+        .btn-cancel{
+            border:1px solid #dc3545;
+            color:#dc3545;
+            background:white;
+            padding:7px 15px;
+            border-radius:6px;
+            cursor:pointer;
+        }
 
-.empty-order{
-background:white;
-padding:60px;
-text-align:center;
-border-radius:10px;
-}
+        .btn-buy{
+            border:1px solid #007bff;
+            color:#007bff;
+            background:white;
+            padding:7px 15px;
+            border-radius:6px;
+            cursor:pointer;
+        }
 
-.empty-icon{
-font-size:40px;
-margin-bottom:10px;
-}
+        .empty-order{
+            background:white;
+            padding:60px;
+            text-align:center;
+            border-radius:10px;
+        }
 
-</style>
+        .empty-icon{
+            font-size:40px;
+            margin-bottom:10px;
+        }
+
+    </style>
 
 </head>
 
@@ -205,207 +213,212 @@ margin-bottom:10px;
 
 <div class="order-container">
 
-<h2 class="order-title">📦 Đơn hàng của tôi</h2>
+    <h2 class="order-title">📦 Đơn hàng của tôi</h2>
 
-<div class="order-filter">
+    <div class="order-filter">
 
-<button class="filter-btn active" data-status="all">Tất cả</button>
-<button class="filter-btn" data-status="Pending">Chờ xác nhận</button>
-<button class="filter-btn" data-status="Shipping">Đang giao</button>
-<button class="filter-btn" data-status="Completed">Đã giao</button>
-<button class="filter-btn" data-status="Cancelled">Đã hủy</button>
+        <button class="filter-btn active" data-status="all">Tất cả</button>
+        <button class="filter-btn" data-status="Pending">Chờ xác nhận</button>
+        <button class="filter-btn" data-status="Shipping">Đang giao</button>
+        <button class="filter-btn" data-status="Completed">Đã giao</button>
+        <button class="filter-btn" data-status="Cancelled">Đã hủy</button>
 
-</div>
+    </div>
 
-@if(!Model.Any())
-{
-<div class="empty-order">
-<div class="empty-icon">🛒</div>
-<h4>Chưa có đơn hàng</h4>
-<p>Hãy mua sắm để tạo đơn đầu tiên</p>
-</div>
-}
+    @if(!Model.Any())
+    {
+    <div class="empty-order">
+        <div class="empty-icon">🛒</div>
+        <h4>Chưa có đơn hàng</h4>
+        <p>Hãy mua sắm để tạo đơn đầu tiên</p>
+    </div>
+    }
 
-@foreach(var o in Model)
-{
+    @foreach(var o in Model)
+    {
 
-<div class="order-card" data-status="@o.Status">
+    <div class="order-card" data-status="@o.Status">
 
-<div class="order-header">
+        <div class="order-header">
 
-<div>
+            <div>
 
-<div class="order-id">Đơn hàng #@o.Id</div>
+                <div class="order-id">Đơn hàng #@o.Id</div>
 
-<div class="order-date">
-@o.OrderDate.ToString("dd/MM/yyyy")
-</div>
+                <div class="order-date">
+                    @o.OrderDate.ToString("dd/MM/yyyy")
+                </div>
 
-</div>
+            </div>
 
-<div class="order-status
+            <div class="order-status
 @(o.Status=="Completed"?"status-success":
-o.Status=="Shipping"?"status-warning":
-o.Status=="Cancelled"?"status-danger":"status-gray")">
+            o.Status=="Shipping"?"status-warning":
+            o.Status=="Cancelled"?"status-danger":"status-gray")">
 
-@o.Status
+                @o.Status
 
-</div>
+            </div>
 
-</div>
+        </div>
 
 
-@if(o.OrderDetails != null)
-{
-foreach(var item in o.OrderDetails)
-{
+        @if(o.OrderDetails != null)
+        {
+        foreach(var item in o.OrderDetails)
+        {
 
-<div class="product-row">
+        <div class="product-row">
 
-    <img src="@item.ProductVariant.Product.Thumbnail" class="product-img"/>
+            <!-- 🔥 FIX IMAGE FULL -->
+            <img src="@(item.ProductVariant?.Product != null
+            ? (!string.IsNullOrEmpty(item.ProductVariant.Product.Thumbnail)
+            ? Url.Content(item.ProductVariant.Product.Thumbnail)
+            : "/images/no-image.png")
+            : "/images/no-image.png")"
+                 class="product-img"/>
 
-<div class="product-info">
+            <div class="product-info">
 
-<div class="product-name">
-@item.ProductVariant.Product.Name
-</div>
+                <div class="product-name">
+                    @item.ProductVariant.Product.Name
+                </div>
 
-<div class="product-meta">
+                <div class="product-meta">
 
-@if(item.ProductVariant.Color != null)
-{
-<span>Màu: @item.ProductVariant.Color</span>
-}
+                    @if(item.ProductVariant.Color != null)
+                    {
+                    <span>Màu: @item.ProductVariant.Color</span>
+                    }
 
-@if(item.ProductVariant.Size != null)
-{
-<span> | Size: @item.ProductVariant.Size</span>
-}
+                    @if(item.ProductVariant.Size != null)
+                    {
+                    <span> | Size: @item.ProductVariant.Size</span>
+                    }
 
-</div>
+                </div>
 
-<div class="product-meta">
-Số lượng: @item.Quantity
-</div>
+                <div class="product-meta">
+                    Số lượng: @item.Quantity
+                </div>
 
-</div>
+            </div>
 
-<div class="product-price">
-@(item.Price * item.Quantity).ToString("N0") đ
-</div>
+            <div class="product-price">
+                @(item.Price * item.Quantity).ToString("N0") đ
+            </div>
 
-</div>
+        </div>
 
-}
-}
+        }
+        }
 
-<div class="order-progress">
+        <div class="order-progress">
 
-@if(o.Status=="Pending")
-{
-<div class="progress-bar progress-25"></div>
-}
+            @if(o.Status=="Pending")
+            {
+            <div class="progress-bar progress-25"></div>
+            }
 
-@if(o.Status=="Shipping")
-{
-<div class="progress-bar progress-70"></div>
-}
+            @if(o.Status=="Shipping")
+            {
+            <div class="progress-bar progress-70"></div>
+            }
 
-@if(o.Status=="Completed")
-{
-<div class="progress-bar progress-100"></div>
-}
+            @if(o.Status=="Completed")
+            {
+            <div class="progress-bar progress-100"></div>
+            }
 
-@if(o.Status=="Cancelled")
-{
-<div class="progress-bar progress-cancel"></div>
-}
+            @if(o.Status=="Cancelled")
+            {
+            <div class="progress-bar progress-cancel"></div>
+            }
 
-</div>
+        </div>
 
-<div class="order-footer">
+        <div class="order-footer">
 
-<div class="order-total">
-Tổng:
-<span>@o.TotalAmount.ToString("N0") đ</span>
-</div>
+            <div class="order-total">
+                Tổng:
+                <span>@o.TotalAmount.ToString("N0") đ</span>
+            </div>
 
-<div class="order-actions">
+            <div class="order-actions">
 
-    <a asp-controller="Order"
-       asp-action="OrderSuccess"
-       asp-route-id="@o.Id"
-       class="btn-main">
-        Chi tiết
-    </a>
-    
-    @if(o.Status=="Pending")
-    {
-        <form asp-controller="Order"
-              asp-action="CancelOrder"
-              method="post"
-              style="display:inline">
+                <a asp-controller="Order"
+                   asp-action="OrderSuccess"
+                   asp-route-id="@o.Id"
+                   class="btn-main">
+                    Chi tiết
+                </a>
 
-            <input type="hidden" name="id" value="@o.Id"/>
+                @if(o.Status=="Pending")
+                {
+                <form asp-controller="Order"
+                      asp-action="CancelOrder"
+                      method="post"
+                      style="display:inline">
 
-            <button type="submit" class="btn-cancel">
-                Hủy đơn
-            </button>
+                    <input type="hidden" name="id" value="@o.Id"/>
 
-        </form>
+                    <button type="submit" class="btn-cancel">
+                        Hủy đơn
+                    </button>
+
+                </form>
+                }
+
+                @if(o.Status=="Completed" || o.Status=="Cancelled")
+                {
+                <a asp-controller="Order"
+                   asp-action="Checkout"
+                   class="btn-buy">
+                    Mua lại
+                </a>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
     }
-
-
-    @if(o.Status=="Completed" || o.Status=="Cancelled")
-    {
-        <a asp-controller="Order"
-           asp-action="Checkout"
-           class="btn-buy">
-            Mua lại
-        </a>
-    }
-
-</div>
-
-</div>
-
-</div>
-
-}
 
 </div>
 
 <script>
 
-document.addEventListener("DOMContentLoaded",function(){
+    document.addEventListener("DOMContentLoaded",function(){
 
-const buttons=document.querySelectorAll(".filter-btn")
-const orders=document.querySelectorAll(".order-card")
+        const buttons=document.querySelectorAll(".filter-btn")
+        const orders=document.querySelectorAll(".order-card")
 
-buttons.forEach(btn=>{
+        buttons.forEach(btn=>{
 
-btn.addEventListener("click",()=>{
+            btn.addEventListener("click",()=>{
 
-buttons.forEach(b=>b.classList.remove("active"))
+                buttons.forEach(b=>b.classList.remove("active"))
 
-btn.classList.add("active")
+                btn.classList.add("active")
 
-let status=btn.dataset.status
+                let status=btn.dataset.status
 
-orders.forEach(o=>{
+                orders.forEach(o=>{
 
-if(status==="all"||o.dataset.status===status)
-o.style.display="block"
-else
-o.style.display="none"
+                    if(status==="all"||o.dataset.status===status)
+                        o.style.display="block"
+                    else
+                        o.style.display="none"
 
-})
+                })
 
-})
+            })
 
-})
+        })
 
-})
+    })
 
 </script>
 

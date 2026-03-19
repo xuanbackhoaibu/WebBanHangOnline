@@ -1,36 +1,207 @@
 @model Order
 
-<h2>🎉 Đặt hàng thành công!</h2>
+<div class="container mt-5">
 
-<p><strong>Mã đơn:</strong> #@Model.Id</p>
-<p><strong>Trạng thái:</strong> @Model.Status</p>
+    <!-- HEADER -->
+    <div class="text-center mb-4">
+        <h1 class="text-success fw-bold">🎉 Đặt hàng thành công!</h1>
+        <p class="text-muted">Cảm ơn bạn đã mua hàng ❤️</p>
+    </div>
 
-<h4>Sản phẩm:</h4>
-<ul>
-    @foreach (var item in Model.OrderDetails)
-    {
-    <li>
-        @item.ProductVariant.Product.Name
-        x @item.Quantity
-        – @item.Price.ToString("N0") đ
-    </li>
+    <!-- ORDER INFO -->
+    <div class="card shadow-sm rounded-4 mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Mã đơn: <span class="text-primary">#@Model.Id</span></h5>
+                <p class="mb-1">
+                    📅 @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                </p>
+
+                <p>
+                    Trạng thái:
+                    @if (Model.Status == "Pending")
+                    {
+                        <span class="badge bg-warning text-dark">Chờ thanh toán</span>
+                    }
+                    else if (Model.Status == "Paid")
+                    {
+                        <span class="badge bg-success">Đã thanh toán</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@Model.Status</span>
+                    }
+                </p>
+            </div>
+
+            <div class="text-end">
+                <h3 class="text-danger fw-bold">
+                    @Model.TotalAmount.ToString("N0") đ
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="card shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">📦 Trạng thái đơn hàng</h5>
+
+            <div class="timeline">
+                <div class="step active">📝 Đã đặt</div>
+
+                <div class="step @(Model.Status != "Pending" ? "active" : "")">
+                    💳 Thanh toán
+                </div>
+
+                <div class="step @(Model.Status == "Shipping" || Model.Status == "Completed" ? "active" : "")">
+                    🚚 Giao hàng
+                </div>
+
+                <div class="step @(Model.Status == "Completed" ? "active" : "")">
+                    ✅ Hoàn thành
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCT LIST -->
+    <div class="card shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">🛒 Sản phẩm</h5>
+
+            @foreach (var item in Model.OrderDetails)
+            {
+                <div class="d-flex align-items-center border-bottom py-3">
+
+                    <!-- IMAGE -->
+                    <img src="@(item.ProductVariant.Product.Thumbnail ?? "/images/no-image.png")"
+                         class="rounded product-img" />
+
+                    <!-- INFO -->
+                    <div class="ms-3 flex-grow-1">
+                        <h6 class="mb-1 fw-bold">
+                            @item.ProductVariant.Product.Name
+                        </h6>
+
+                        <small class="text-muted">
+                            Size: @item.ProductVariant.Size |
+                            Màu: @item.ProductVariant.Color
+                        </small><br />
+
+                        <small>Số lượng: x @item.Quantity</small>
+                    </div>
+
+                    <!-- PRICE -->
+                    <div class="text-end">
+                        <div class="text-danger fw-bold">
+                            @item.Price.ToString("N0") đ
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- SHIPPING INFO -->
+    <div class="card shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <h5>📍 Địa chỉ nhận hàng</h5>
+            <p class="mb-1"><strong>@Model.User?.UserName</strong></p>
+            <p class="mb-1">@Model.PhoneNumber</p>
+            <p class="text-muted">@Model.ShippingAddress</p>
+        </div>
+    </div>
+
+    <!-- ACTION -->
+    <div class="text-center mt-4">
+
+        <a asp-action="MyOrders" class="btn btn-outline-primary btn-lg me-2">
+            📦 Xem đơn hàng
+        </a>
+
+        @if (Model.Status == "Pending")
+        {
+            <a asp-controller="Payment"
+               asp-action="VNPay"
+               asp-route-orderId="@Model.Id"
+               class="btn btn-danger btn-lg">
+                💳 Thanh toán VNPay
+            </a>
+        }
+    </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div class="toast show bg-success text-white">
+        <div class="toast-body">
+            ✅ Đặt hàng thành công!
+        </div>
+    </div>
+</div>
+
+<!-- CSS -->
+<style>
+    body {
+        background: #f5f5f5;
     }
-</ul>
 
-<h3>
-    Tổng tiền: @Model.TotalAmount.ToString("N0") đ
-</h3>
+    .product-img {
+        width: 90px;
+        height: 90px;
+        object-fit: cover;
+        transition: 0.3s;
+    }
 
-<a asp-action="MyOrders" class="btn btn-primary">
-    Xem đơn hàng của tôi
-</a>
+    .product-img:hover {
+        transform: scale(1.05);
+    }
 
-@if (Model.Status == "Pending")
-{
-    <a asp-controller="Payment"
-       asp-action="VNPay"
-       asp-route-orderId="@Model.Id"
-       class="btn btn-danger btn-lg">
-        Thanh toán VNPay
-    </a>
-}
+    .timeline {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+    }
+
+    .timeline::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #ddd;
+        z-index: 0;
+    }
+
+    .step {
+        background: #ccc;
+        padding: 10px 15px;
+        border-radius: 20px;
+        z-index: 1;
+        font-size: 14px;
+    }
+
+    .step.active {
+        background: #28a745;
+        color: white;
+    }
+
+    .card {
+        border: none;
+        animation: fadeIn 0.4s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

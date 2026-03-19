@@ -271,6 +271,9 @@ public class OrderController : Controller
         var userId = _userManager.GetUserId(User);
 
         var orders = await _context.Orders
+            .Include(o => o.OrderDetails)
+            .ThenInclude(od => od.ProductVariant)
+            .ThenInclude(pv => pv.Product)
             .Where(o => o.UserId == userId)
             .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
