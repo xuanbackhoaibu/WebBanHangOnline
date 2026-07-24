@@ -72,6 +72,39 @@ dotnet run --project WebBanHangOnline/WebBanHangOnline.csproj
 
 Ứng dụng sẽ tự chạy migration/seed dữ liệu khi khởi động.
 
+## Chạy bằng Docker
+
+Yêu cầu:
+
+- Docker Desktop
+
+Chạy toàn bộ app + SQL Server:
+
+```bash
+docker compose up --build
+```
+
+Sau khi container khởi động xong, mở:
+
+```text
+http://localhost:8083
+```
+
+Compose sẽ tạo:
+
+- Container web: `webthoitrang`
+- Container database: `webthoitrang-db`
+- Database: `WebThoiTrang`
+- Volume dữ liệu: `webthoitrang-sql-data`
+
+Chuỗi kết nối Docker được cấu hình qua biến môi trường:
+
+```text
+ConnectionStrings__DefaultConnection=Server=webthoitrang-db,1433;Database=WebThoiTrang;User Id=sa;Password=WebThoiTrang@12345;TrustServerCertificate=True;Encrypt=False
+```
+
+Khi chạy production, nên đổi mật khẩu SQL Server và không commit secret thật vào repo.
+
 ## Tài khoản demo
 
 Tài khoản admin được seed trong code:
@@ -81,7 +114,25 @@ Email: admin@shop.com
 Password: Admin@123
 ```
 
+Tài khoản khách hàng demo:
+
+```text
+Email: customer@shop.com
+Password: Customer@123
+```
+
 Nên đổi mật khẩu và cấu hình secret/API key bằng `dotnet user-secrets` hoặc biến môi trường trước khi public.
+
+## Dữ liệu demo
+
+Khi database trống, ứng dụng tự seed:
+
+- 4 danh mục: Đồ Nam, Đồ Nữ, Bé Trai, Bé Gái
+- 12 sản phẩm thời trang có ảnh, giá, mô tả và flash sale
+- Size/màu/tồn kho cho từng sản phẩm
+- FAQ hỗ trợ khách hàng
+- Thông báo khuyến mãi
+- 1 tài khoản admin, 1 tài khoản khách hàng và 1 đơn hàng mẫu
 
 ## Ảnh demo
 

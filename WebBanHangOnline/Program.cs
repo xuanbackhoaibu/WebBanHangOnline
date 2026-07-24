@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using System.Globalization;
 using WebBanHangOnline.Controllers;
 using WebBanHangOnline.Data;
@@ -128,10 +129,25 @@ app.MapRazorPages();
 // ===============================
 // 8️⃣ SEED DATABASE
 // ===============================
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await DbInitializer.SeedAsync(services);
-}
+await SeedDatabaseWithRetryAsync(app);
 app.MapHub<ChatHub>("/chatHub");
 app.Run();
+
+static async Task SeedDatabaseWithRetryAsync(WebApplication app)
+{
+    const int maxAttempts = 12;
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            await DbInitializer.SeedAsync(scope.ServiceProvider);
+            return;
+        }
+        catch (SqlException) when (attempt < maxAttempts)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+}

@@ -1,0 +1,39 @@
+name: webthoitrang
+
+services:
+  webthoitrang:
+    container_name: webthoitrang
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Server=webthoitrang-db,1433;Database=WebThoiTrang;User Id=sa;Password=WebThoiTrang@12345;TrustServerCertificate=True;Encrypt=False
+      Gemini__ApiKey: ""
+      VNPay__TmnCode: ""
+      VNPay__HashSecret: ""
+      VNPay__ReturnUrl: http://localhost:8083/Payment/VNPayReturn
+    depends_on:
+      - webthoitrang-db
+    restart: unless-stopped
+
+  webthoitrang-db:
+    container_name: webthoitrang-db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    ports:
+      - "14333:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: WebThoiTrang@12345
+      MSSQL_PID: Developer
+    volumes:
+      - webthoitrang-sql-data:/var/opt/mssql
+    restart: unless-stopped
+
+volumes:
+  webthoitrang-sql-data:
+    name: webthoitrang-sql-data

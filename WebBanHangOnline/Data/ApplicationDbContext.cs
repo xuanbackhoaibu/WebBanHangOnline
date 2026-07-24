@@ -53,6 +53,10 @@ namespace WebBanHangOnline.Data
                 .Property(od => od.Price)
                 .HasPrecision(18, 2);
 
+            builder.Entity<ProductVariant>()
+                .Property(v => v.Price)
+                .HasPrecision(18, 2);
+
             // =========================
             // RELATIONSHIPS
             // =========================
