@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using Microsoft.OpenApi.Models;
 using System.Globalization;
 using WebBanHangOnline.Controllers;
 using WebBanHangOnline.Data;
@@ -40,6 +41,24 @@ builder.Services.AddScoped<IMomoService, MomoService>();
 // ===============================
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "WebBanHangOnline API",
+        Version = "v1",
+        Description = "Catalog, admin analytics, and demo payment webhook APIs for the online fashion e-commerce project."
+    });
+
+    options.AddSecurityDefinition("IdentityCookie", new OpenApiSecurityScheme
+    {
+        Name = ".AspNetCore.Identity.Application",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Cookie,
+        Description = "Admin endpoints use ASP.NET Core Identity cookie authentication."
+    });
+});
 
 // ===============================
 // 3️⃣ SESSION (GIỎ HÀNG / TOAST)
@@ -78,6 +97,17 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "WebBanHangOnline API v1");
+        options.RoutePrefix = "swagger";
+        options.DocumentTitle = "WebBanHangOnline API Docs";
+    });
+}
 
 app.UseRouting();
 

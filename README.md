@@ -169,6 +169,12 @@ OpenAPI file:
 docs/openapi.yaml
 ```
 
+Swagger UI when running locally/Docker:
+
+```text
+http://localhost:8083/swagger/
+```
+
 Postman collection:
 
 ```text
