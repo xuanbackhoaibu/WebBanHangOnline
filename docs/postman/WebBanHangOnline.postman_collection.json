@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "WebBanHangOnline API",
+    "description": "Postman collection for catalog, admin analytics and payment webhook demo APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "orderId",
+      "value": "1"
+    },
+    {
+      "key": "orderAmount",
+      "value": "100000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Catalog",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/catalog/categories"
+          }
+        },
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/catalog/products?page=1&pageSize=12"
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/catalog/products?keyword=ao&page=1&pageSize=8"
+          }
+        },
+        {
+          "name": "Get Product Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/catalog/products/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Analytics - requires admin login cookie",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/analytics/summary"
+          }
+        },
+        {
+          "name": "Revenue 7 Days",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/analytics/revenue?days=7"
+          }
+        },
+        {
+          "name": "Top Products",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/admin/analytics/top-products?take=10"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Demo - requires admin login cookie",
+      "item": [
+        {
+          "name": "Confirm Paid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": {{orderId}},\n  \"amount\": {{orderAmount}},\n  \"status\": \"Paid\",\n  \"provider\": \"DemoGateway\",\n  \"transactionCode\": \"DEMO-0001\"\n}"
+            },
+            "url": "{{baseUrl}}/api/payments/demo-webhook"
+          }
+        },
+        {
+          "name": "Invalid Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": {{orderId}},\n  \"amount\": 1,\n  \"status\": \"Paid\",\n  \"provider\": \"DemoGateway\",\n  \"transactionCode\": \"DEMO-INVALID-AMOUNT\"\n}"
+            },
+            "url": "{{baseUrl}}/api/payments/demo-webhook"
+          }
+        }
+      ]
+    }
+  ]
+}
