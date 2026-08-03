@@ -12,6 +12,10 @@ namespace WebBanHangOnline.Models
 
         public Product? Product { get; set; }
 
+        public string? UserId { get; set; }
+
+        public ApplicationUser? User { get; set; }
+
         [Required]
         public string UserName { get; set; } = string.Empty;
 
@@ -21,5 +25,7 @@ namespace WebBanHangOnline.Models
         public string Comment { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public DateTime? UpdatedAt { get; set; }
     }
 }

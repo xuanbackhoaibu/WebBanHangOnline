@@ -176,25 +176,22 @@ namespace WebBanHangOnline.Data
                 {
                     product.CategoryId = categoryId;
                     product.IsActive = true;
-
-                    if (string.IsNullOrWhiteSpace(product.Thumbnail) || product.Thumbnail == "/images/no-image.png")
-                    {
-                        product.Thumbnail = seed.Image;
-                    }
-
-                    if (string.IsNullOrWhiteSpace(product.ImageUrl))
-                    {
-                        product.ImageUrl = product.Thumbnail;
-                    }
+                    product.Description = seed.Description;
+                    product.Price = seed.Price;
+                    product.FlashSalePrice = seed.SalePrice;
+                    product.FlashSaleStart = seed.SalePrice.HasValue ? now.AddDays(-2) : null;
+                    product.FlashSaleEnd = seed.SalePrice.HasValue ? now.AddDays(14) : null;
+                    product.Thumbnail = seed.Image;
+                    product.ImageUrl = seed.Image;
 
                     if (string.IsNullOrWhiteSpace(product.Slug))
                     {
                         product.GenerateSlug();
                     }
 
-                    if (!product.Images.Any())
+                    if (!product.Images.Any(image => image.ImageUrl == seed.Image))
                     {
-                        product.Images.Add(new ProductImage { ImageUrl = product.Thumbnail });
+                        product.Images.Add(new ProductImage { ImageUrl = seed.Image });
                     }
                 }
 
@@ -303,16 +300,32 @@ BEGIN
     CREATE TABLE [Reviews] (
         [ReviewId] int NOT NULL IDENTITY,
         [ProductId] int NOT NULL,
+        [UserId] nvarchar(450) NULL,
         [UserName] nvarchar(max) NOT NULL,
         [Rating] int NOT NULL,
         [Comment] nvarchar(max) NOT NULL,
         [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
         CONSTRAINT [PK_Reviews] PRIMARY KEY ([ReviewId]),
         CONSTRAINT [FK_Reviews_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([ProductId]) ON DELETE CASCADE
     );
 
     CREATE INDEX [IX_Reviews_ProductId] ON [Reviews] ([ProductId]);
+    EXEC(N'CREATE INDEX [IX_Reviews_UserId] ON [Reviews] ([UserId])');
+    EXEC(N'CREATE UNIQUE INDEX [IX_Reviews_ProductId_UserId] ON [Reviews] ([ProductId], [UserId]) WHERE [UserId] IS NOT NULL');
 END
+
+IF COL_LENGTH('Reviews', 'UserId') IS NULL
+    ALTER TABLE [Reviews] ADD [UserId] nvarchar(450) NULL;
+
+IF COL_LENGTH('Reviews', 'UpdatedAt') IS NULL
+    ALTER TABLE [Reviews] ADD [UpdatedAt] datetime2 NULL;
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Reviews_UserId' AND object_id = OBJECT_ID(N'[Reviews]'))
+    EXEC(N'CREATE INDEX [IX_Reviews_UserId] ON [Reviews] ([UserId])');
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Reviews_ProductId_UserId' AND object_id = OBJECT_ID(N'[Reviews]'))
+    EXEC(N'CREATE UNIQUE INDEX [IX_Reviews_ProductId_UserId] ON [Reviews] ([ProductId], [UserId]) WHERE [UserId] IS NOT NULL');
 ");
         }
 

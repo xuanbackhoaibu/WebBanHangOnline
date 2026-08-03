@@ -611,6 +611,12 @@ namespace WebBanHangOnline.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -618,6 +624,12 @@ namespace WebBanHangOnline.Migrations
                     b.HasKey("ReviewId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductId", "UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
                 });
@@ -844,7 +856,14 @@ namespace WebBanHangOnline.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("WebBanHangOnline.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WebBanHangOnline.Models.WishlistItem", b =>

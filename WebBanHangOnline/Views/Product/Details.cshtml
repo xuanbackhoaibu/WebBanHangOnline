@@ -12,14 +12,21 @@
     var isFlashSale = Model.FlashSalePrice.HasValue
         && Model.FlashSaleEnd.HasValue
         && Model.FlashSaleEnd > DateTime.Now;
-    var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
-    var galleryImages = (Model.Images != null && Model.Images.Any()
-        ? Model.Images.Select(image => image.ImageUrl)
-        : new[] { Model.Thumbnail }).Distinct().ToList();
+    var mainImage = !string.IsNullOrWhiteSpace(Model.Thumbnail)
+        ? Model.Thumbnail
+        : Model.Images?.FirstOrDefault()?.ImageUrl ?? "/images/no-image.png";
+    var galleryImages = new[] { mainImage }
+        .Concat(Model.Images?.Select(image => image.ImageUrl) ?? Enumerable.Empty<string>())
+        .Where(imageUrl => !string.IsNullOrWhiteSpace(imageUrl))
+        .Distinct()
+        .ToList();
     var variants = Model.Variants ?? new List<WebBanHangOnline.Models.ProductVariant>();
     var totalStock = variants.Sum(variant => variant.Stock);
     var relatedProducts = ViewBag.Related as IEnumerable<WebBanHangOnline.Models.Product>
         ?? Enumerable.Empty<WebBanHangOnline.Models.Product>();
+    var canReview = ViewBag.CanReview == true;
+    var userReview = ViewBag.UserReview as WebBanHangOnline.Models.Review;
+    var reviewGateMessage = ViewBag.ReviewGateMessage as string;
 }
 
 @section Styles {
@@ -217,35 +224,86 @@
             </div>
         }
 
-        <form asp-action="AddReview" method="post" class="review-form">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="productId" value="@Model.ProductId" />
+        @if (canReview)
+        {
+            <form asp-action="AddReview" method="post" class="review-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" value="@Model.ProductId" />
 
-            <div class="review-form-head">
-                <div>
-                    <strong>@T("Viết đánh giá của bạn", "Write your review")</strong>
-                    <span>@T("Chọn số sao và chia sẻ cảm nhận thật về sản phẩm.", "Choose a rating and share your real experience.")</span>
+                <div class="review-form-head">
+                    <div>
+                        <strong>@T("Viết đánh giá của bạn", "Write your review")</strong>
+                        <span>@T("Chọn số sao và chia sẻ cảm nhận thật về sản phẩm đã mua.", "Choose a rating and share your real experience.")</span>
+                    </div>
+                    <div class="star-input" aria-label="@T("Chọn số sao", "Choose rating")">
+                        @for (int star = 5; star >= 1; star--)
+                        {
+                            <input type="radio" id="rating-add-@star" name="rating" value="@star" @(star == 5 ? "checked" : "") />
+                            <label for="rating-add-@star" title="@star sao"><i class="bi bi-star-fill"></i></label>
+                        }
+                    </div>
                 </div>
-                <div class="star-input" aria-label="@T("Chọn số sao", "Choose rating")">
-                    @for (int star = 5; star >= 1; star--)
-                    {
-                        <input type="radio" id="rating-@star" name="rating" value="@star" @(star == 5 ? "checked" : "") />
-                        <label for="rating-@star" title="@star sao"><i class="bi bi-star-fill"></i></label>
-                    }
-                </div>
-            </div>
 
-            <div class="review-compose">
-                <textarea name="comment"
-                          maxlength="500"
-                          required
-                          placeholder="@T("Ví dụ: chất vải, form dáng, màu sắc, giao hàng...", "Example: fabric, fit, color, delivery...")"></textarea>
-                <button type="submit">
-                    <i class="bi bi-send"></i>
-                    @T("Gửi đánh giá", "Submit review")
+                <div class="review-compose">
+                    <textarea name="comment"
+                              maxlength="500"
+                              required
+                              placeholder="@T("Ví dụ: chất vải, form dáng, màu sắc, giao hàng...", "Example: fabric, fit, color, delivery...")"></textarea>
+                    <button type="submit">
+                        <i class="bi bi-send"></i>
+                        @T("Gửi", "Send")
+                    </button>
+                </div>
+            </form>
+        }
+        else if (userReview != null)
+        {
+            <form asp-action="EditReview" method="post" class="review-form user-review-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="reviewId" value="@userReview.ReviewId" />
+
+                <div class="review-form-head">
+                    <div>
+                        <strong>@T("Đánh giá của bạn", "Your review")</strong>
+                        <span>@T("Bạn có thể sửa hoặc xoá đánh giá đã gửi cho sản phẩm này.", "You can edit or delete your review for this product.")</span>
+                    </div>
+                    <div class="star-input" aria-label="@T("Chọn số sao", "Choose rating")">
+                        @for (int star = 5; star >= 1; star--)
+                        {
+                            <input type="radio" id="rating-edit-@star" name="rating" value="@star" @(star == userReview.Rating ? "checked" : "") />
+                            <label for="rating-edit-@star" title="@star sao"><i class="bi bi-star-fill"></i></label>
+                        }
+                    </div>
+                </div>
+
+                <div class="review-compose">
+                    <textarea name="comment" maxlength="500" required>@userReview.Comment</textarea>
+                    <button type="submit">
+                        <i class="bi bi-pencil-square"></i>
+                        @T("Lưu", "Save")
+                    </button>
+                </div>
+            </form>
+
+            <form asp-action="DeleteReview" method="post" class="review-delete-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="reviewId" value="@userReview.ReviewId" />
+                <button type="submit" onclick="return confirm('@T("Bạn muốn xoá đánh giá này?", "Delete this review?")')">
+                    <i class="bi bi-trash3"></i>
+                    @T("Xoá đánh giá", "Delete review")
                 </button>
+            </form>
+        }
+        else
+        {
+            <div class="review-gate">
+                <i class="bi bi-patch-check"></i>
+                <div>
+                    <strong>@T("Đánh giá từ khách đã mua", "Verified purchase reviews")</strong>
+                    <span>@reviewGateMessage</span>
+                </div>
             </div>
-        </form>
+        }
 
         <div class="review-summary">
             <div class="review-score">
@@ -261,12 +319,18 @@
             @if (Model.Reviews != null && Model.Reviews.Any())
             {
                 <div class="review-list">
-                    @foreach (var review in Model.Reviews)
+                    @foreach (var review in Model.Reviews.OrderByDescending(item => item.UpdatedAt ?? item.CreatedAt))
                     {
                         <div class="review-item">
                             <div class="review-meta">
-                                <div class="fw-bold">@review.UserName</div>
-                                <time>@review.CreatedAt.ToString("dd/MM/yyyy")</time>
+                                <div class="fw-bold">
+                                    @review.UserName
+                                    @if (!string.IsNullOrWhiteSpace(review.UserId))
+                                    {
+                                        <span class="verified-review">@T("Đã mua", "Verified")</span>
+                                    }
+                                </div>
+                                <time>@((review.UpdatedAt ?? review.CreatedAt).ToString("dd/MM/yyyy"))</time>
                             </div>
                             <div class="review-star">
                                 @for (int i = 1; i <= 5; i++)

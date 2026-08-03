@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Data.SqlClient;
 using Microsoft.OpenApi.Models;
 using System.Globalization;
@@ -22,7 +23,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString)
+        .ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<ChatBotController>();

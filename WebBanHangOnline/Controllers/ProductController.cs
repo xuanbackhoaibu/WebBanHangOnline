@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
 
@@ -153,6 +154,7 @@ namespace WebBanHangOnline.Controllers
                 .Include(p => p.Variants)
                 .Include(p => p.Images) // ⚠️ gallery ảnh
                 .Include(p => p.Reviews)
+                    .ThenInclude(review => review.User)
                 .FirstOrDefaultAsync(p => p.ProductId == id && p.IsActive);
 
             if (product == null)
@@ -167,6 +169,21 @@ namespace WebBanHangOnline.Controllers
                 .Take(4)
                 .ToListAsync();
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Review? userReview = null;
+            var hasPurchased = false;
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                userReview = await _context.Reviews
+                    .FirstOrDefaultAsync(review => review.ProductId == id && review.UserId == userId);
+                hasPurchased = await HasUserPurchasedProductAsync(userId, id);
+            }
+
+            ViewBag.UserReview = userReview;
+            ViewBag.CanReview = !string.IsNullOrWhiteSpace(userId) && hasPurchased && userReview == null;
+            ViewBag.ReviewGateMessage = GetReviewGateMessage(userId, hasPurchased, userReview != null);
+
             return View(product);
         }
 
@@ -174,6 +191,12 @@ namespace WebBanHangOnline.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddReview(int productId, int rating, string? comment)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
             var product = await _context.Products
                 .AsNoTracking()
                 .FirstOrDefaultAsync(item => item.ProductId == productId && item.IsActive);
@@ -181,6 +204,18 @@ namespace WebBanHangOnline.Controllers
             if (product == null)
             {
                 return NotFound();
+            }
+
+            if (!await HasUserPurchasedProductAsync(userId, productId))
+            {
+                TempData["ReviewError"] = "Bạn chỉ có thể đánh giá sản phẩm đã mua thành công.";
+                return RedirectToAction(nameof(Details), new { id = productId, slug = product.Slug });
+            }
+
+            if (await _context.Reviews.AnyAsync(review => review.ProductId == productId && review.UserId == userId))
+            {
+                TempData["ReviewError"] = "Bạn đã đánh giá sản phẩm này. Hãy dùng phần sửa đánh giá của bạn.";
+                return RedirectToAction(nameof(Details), new { id = productId, slug = product.Slug });
             }
 
             rating = Math.Clamp(rating, 1, 5);
@@ -192,13 +227,15 @@ namespace WebBanHangOnline.Controllers
                 return RedirectToAction(nameof(Details), new { id = productId, slug = product.Slug });
             }
 
-            var userName = User.Identity?.IsAuthenticated == true
-                ? User.Identity.Name ?? "Khách hàng"
-                : "Khách hàng";
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(item => item.Id == userId);
+            var userName = !string.IsNullOrWhiteSpace(user?.FullName)
+                ? user.FullName
+                : User.Identity?.Name ?? "Khách hàng";
 
             _context.Reviews.Add(new Review
             {
                 ProductId = productId,
+                UserId = userId,
                 UserName = userName,
                 Rating = rating,
                 Comment = cleanComment.Length > 500 ? cleanComment[..500] : cleanComment,
@@ -209,6 +246,100 @@ namespace WebBanHangOnline.Controllers
             TempData["ReviewSuccess"] = "Cảm ơn bạn đã đánh giá sản phẩm.";
 
             return RedirectToAction(nameof(Details), new { id = productId, slug = product.Slug });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditReview(int reviewId, int rating, string? comment)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var review = await _context.Reviews
+                .Include(item => item.Product)
+                .FirstOrDefaultAsync(item => item.ReviewId == reviewId && item.UserId == userId);
+
+            if (review == null || review.Product == null)
+            {
+                return NotFound();
+            }
+
+            var cleanComment = comment?.Trim();
+            if (string.IsNullOrWhiteSpace(cleanComment))
+            {
+                TempData["ReviewError"] = "Vui lòng nhập nội dung đánh giá.";
+                return RedirectToAction(nameof(Details), new { id = review.ProductId, slug = review.Product.Slug });
+            }
+
+            review.Rating = Math.Clamp(rating, 1, 5);
+            review.Comment = cleanComment.Length > 500 ? cleanComment[..500] : cleanComment;
+            review.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            TempData["ReviewSuccess"] = "Đánh giá của bạn đã được cập nhật.";
+
+            return RedirectToAction(nameof(Details), new { id = review.ProductId, slug = review.Product.Slug });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteReview(int reviewId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var review = await _context.Reviews
+                .Include(item => item.Product)
+                .FirstOrDefaultAsync(item => item.ReviewId == reviewId && item.UserId == userId);
+
+            if (review == null || review.Product == null)
+            {
+                return NotFound();
+            }
+
+            var productId = review.ProductId;
+            var slug = review.Product.Slug;
+
+            _context.Reviews.Remove(review);
+            await _context.SaveChangesAsync();
+            TempData["ReviewSuccess"] = "Đánh giá của bạn đã được xoá.";
+
+            return RedirectToAction(nameof(Details), new { id = productId, slug });
+        }
+
+        private async Task<bool> HasUserPurchasedProductAsync(string userId, int productId)
+        {
+            return await _context.Orders
+                .AnyAsync(order =>
+                    order.UserId == userId &&
+                    OrderStatuses.RevenueStatuses.Contains(order.Status) &&
+                    order.OrderDetails.Any(detail => detail.ProductVariant.ProductId == productId));
+        }
+
+        private static string GetReviewGateMessage(string? userId, bool hasPurchased, bool hasReviewed)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return "Đăng nhập tài khoản đã mua hàng để gửi đánh giá.";
+            }
+
+            if (hasReviewed)
+            {
+                return "Bạn đã đánh giá sản phẩm này. Có thể sửa hoặc xoá đánh giá của mình bên dưới.";
+            }
+
+            if (!hasPurchased)
+            {
+                return "Chỉ tài khoản đã mua sản phẩm này mới có thể gửi đánh giá.";
+            }
+
+            return "Bạn có thể gửi đánh giá cho sản phẩm đã mua.";
         }
     }
 }

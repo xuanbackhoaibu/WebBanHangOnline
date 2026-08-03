@@ -72,6 +72,23 @@ namespace WebBanHangOnline.Data
                 .HasForeignKey(od => od.ProductVariantId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<Review>()
+                .HasOne(review => review.Product)
+                .WithMany(product => product.Reviews)
+                .HasForeignKey(review => review.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Review>()
+                .HasOne(review => review.User)
+                .WithMany()
+                .HasForeignKey(review => review.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Review>()
+                .HasIndex(review => new { review.ProductId, review.UserId })
+                .IsUnique()
+                .HasFilter("[UserId] IS NOT NULL");
+
             // =========================
             // SEED DATA CHO CATEGORY
             // =========================
