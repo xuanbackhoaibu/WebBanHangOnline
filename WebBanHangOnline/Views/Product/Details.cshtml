@@ -289,11 +289,12 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
     (Model.Variants ?? new List<WebBanHangOnline.Models.ProductVariant>())
     .Select(v => new { v.Id, v.Size, v.Color, ColorText = WebBanHangOnline.Helpers.CatalogTextHelper.Display(v.Color), v.Stock })
     ));
-    const text = {
-        inStock: "@T("sản phẩm có sẵn", "items available")",
-        outOfStock: "@T("Số lượng vượt quá tồn kho!", "Quantity exceeds available stock!")",
-        ended: "@T("Đã kết thúc", "Ended")"
-    };
+    const text = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+    {
+        inStock = T("sản phẩm có sẵn", "items available"),
+        outOfStock = T("Số lượng vượt quá tồn kho!", "Quantity exceeds available stock!"),
+        ended = T("Đã kết thúc", "Ended")
+    }));
 
     let selectedSize = null;
     let selectedColor = null;

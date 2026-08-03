@@ -1,7 +1,22 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using WebBanHangOnline.Data
+@using WebBanHangOnline.Models
+@inject ApplicationDbContext LayoutDbContext
+@inject UserManager<ApplicationUser> LayoutUserManager
 @{
     var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
     var isEnglish = currentCulture == "en";
     var returnUrl = Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString;
+    var cartCount = 0;
+
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var layoutUserId = LayoutUserManager.GetUserId(User);
+        cartCount = await LayoutDbContext.CartItems
+            .Where(item => item.UserId == layoutUserId)
+            .SumAsync(item => (int?)item.Quantity) ?? 0;
+    }
 
     string T(string vi, string en) => isEnglish ? en : vi;
 }
@@ -139,9 +154,13 @@
                 <a asp-area=""
                    asp-controller="Cart"
                    asp-action="Index"
-                   class="icon-btn position-relative">
+                   class="icon-btn position-relative"
+                   title="@T($"Giỏ hàng: {cartCount} sản phẩm", $"Cart: {cartCount} items")">
                     <i class="bi bi-cart3"></i>
-                    <span class="cart-badge">3</span>
+                    @if (cartCount > 0)
+                    {
+                        <span class="cart-badge">@cartCount</span>
+                    }
                 </a>
             </div>
         </div>
