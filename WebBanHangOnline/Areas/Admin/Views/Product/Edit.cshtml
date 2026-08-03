@@ -76,9 +76,8 @@
         <div class="mb-3">
             <label class="form-label">Ảnh đại diện hiện tại:</label>
             <br />
-            <img src="@Model.Thumbnail"
-                 class="img-thumbnail"
-                 style="max-width:150px;" />
+             <img src="@Model.Thumbnail"
+                 class="img-thumbnail admin-img-preview" />
         </div>
     }
 
@@ -91,8 +90,7 @@
                accept="image/*"
                onchange="previewThumb(this)" />
         <img id="thumbPreview"
-             class="img-thumbnail mt-2 d-none"
-             style="max-width:150px;" />
+             class="img-thumbnail mt-2 d-none admin-img-preview" />
     </div>
 
     <hr />
@@ -110,8 +108,7 @@
                 {
                     <div class="position-relative me-2 mb-2">
                         <img src="@img.ImageUrl"
-                             class="img-thumbnail"
-                             style="max-width:100px;" />
+                             class="img-thumbnail admin-img-thumb" />
 
                         <input type="checkbox"
                                name="DeleteImageIds"

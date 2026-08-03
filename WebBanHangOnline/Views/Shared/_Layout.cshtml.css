@@ -7,8 +7,17 @@ a.navbar-brand {
   word-break: break-all;
 }
 
-a {
-  color: #0077cc;
+footer.shop-footer a,
+footer.shop-footer a:visited,
+footer.shop-footer a:hover,
+footer.shop-footer a:focus {
+  color: #6c6570;
+  text-decoration: none;
+}
+
+footer.shop-footer a:hover,
+footer.shop-footer a:focus {
+  color: #d94f3d;
 }
 
 .btn-primary {

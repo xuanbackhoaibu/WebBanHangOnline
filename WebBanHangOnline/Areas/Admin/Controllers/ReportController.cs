@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Models;
 
 namespace WebBanHangOnline.Areas.Admin.Controllers
 
@@ -22,7 +23,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         public async Task<IActionResult> Index(DateTime? from, DateTime? to)
         {
             var query = _context.Orders
-                .Where(o => o.Status == "Paid" || o.Status == "Completed");
+                .Where(o => OrderStatuses.RevenueStatuses.Contains(o.Status));
 
             if (from.HasValue)
                 query = query.Where(o => o.OrderDate >= from.Value);
@@ -62,7 +63,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         public async Task<IActionResult> ExportExcel(DateTime? from, DateTime? to)
         {
             var query = _context.Orders
-                .Where(o => o.Status == "Paid" || o.Status == "Completed");
+                .Where(o => OrderStatuses.RevenueStatuses.Contains(o.Status));
 
             if (from.HasValue)
                 query = query.Where(o => o.OrderDate >= from.Value);

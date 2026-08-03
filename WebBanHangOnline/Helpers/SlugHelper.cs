@@ -12,6 +12,7 @@ namespace WebBanHangOnline.Helpers
             if (string.IsNullOrWhiteSpace(text)) return "";
 
             text = text.ToLowerInvariant();
+            text = text.Replace('đ', 'd');
             text = RemoveDiacritics(text);
             text = Regex.Replace(text, @"[^a-z0-9\s-]", "");
             text = Regex.Replace(text, @"\s+", "-").Trim('-');

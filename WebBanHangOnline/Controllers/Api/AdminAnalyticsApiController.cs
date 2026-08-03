@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Models;
 
 namespace WebBanHangOnline.Controllers.Api;
 
@@ -10,18 +11,6 @@ namespace WebBanHangOnline.Controllers.Api;
 [Authorize(Roles = "Admin")]
 public class AdminAnalyticsApiController : ControllerBase
 {
-    private static readonly string[] RevenueStatuses =
-    {
-        "Paid",
-        "Completed",
-        "Confirmed",
-        "Delivered",
-        "Đã giao",
-        "Đã hoàn thành",
-        "Hoàn thành",
-        "Đã thanh toán"
-    };
-
     private readonly ApplicationDbContext _context;
 
     public AdminAnalyticsApiController(ApplicationDbContext context)
@@ -41,7 +30,7 @@ public class AdminAnalyticsApiController : ControllerBase
 
         var revenueQuery = _context.Orders
             .AsNoTracking()
-            .Where(order => RevenueStatuses.Contains(order.Status));
+            .Where(order => OrderStatuses.RevenueStatuses.Contains(order.Status));
 
         var summary = new
         {
@@ -88,9 +77,9 @@ public class AdminAnalyticsApiController : ControllerBase
             {
                 date = date.ToString("yyyy-MM-dd"),
                 orderCount = orders.Count(order => order.date == date),
-                paidOrderCount = orders.Count(order => order.date == date && RevenueStatuses.Contains(order.Status)),
+                paidOrderCount = orders.Count(order => order.date == date && OrderStatuses.RevenueStatuses.Contains(order.Status)),
                 revenue = orders
-                    .Where(order => order.date == date && RevenueStatuses.Contains(order.Status))
+                    .Where(order => order.date == date && OrderStatuses.RevenueStatuses.Contains(order.Status))
                     .Sum(order => order.TotalAmount)
             });
 

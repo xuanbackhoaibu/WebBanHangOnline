@@ -15,7 +15,15 @@ services:
       Gemini__ApiKey: ""
       VNPay__TmnCode: ""
       VNPay__HashSecret: ""
+      VNPay__Url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
       VNPay__ReturnUrl: http://localhost:8083/Payment/VNPayReturn
+      MomoAPI__MomoApiUrl: https://test-payment.momo.vn/v2/gateway/api/create
+      MomoAPI__PartnerCode: ""
+      MomoAPI__AccessKey: ""
+      MomoAPI__SecretKey: ""
+      MomoAPI__ReturnUrl: http://localhost:8083/Payment/MomoReturn
+      MomoAPI__NotifyUrl: http://localhost:8083/Payment/MomoIpn
+      MomoAPI__RequestType: payWithMethod
     depends_on:
       - webthoitrang-db
     restart: unless-stopped

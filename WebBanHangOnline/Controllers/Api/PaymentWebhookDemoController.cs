@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Models;
 
 namespace WebBanHangOnline.Controllers.Api;
 
@@ -10,7 +11,12 @@ namespace WebBanHangOnline.Controllers.Api;
 [Authorize(Roles = "Admin")]
 public class PaymentWebhookDemoController : ControllerBase
 {
-    private static readonly string[] AllowedStatuses = { "Paid", "Failed", "Refunded" };
+    private static readonly string[] AllowedStatuses =
+    {
+        OrderStatuses.Paid,
+        OrderStatuses.Failed,
+        OrderStatuses.Refunded
+    };
     private readonly ApplicationDbContext _context;
 
     public PaymentWebhookDemoController(ApplicationDbContext context)
@@ -51,7 +57,7 @@ public class PaymentWebhookDemoController : ControllerBase
             });
         }
 
-        if (order.Status is "Paid" or "Failed" or "Refunded")
+        if (OrderStatuses.IsFinalPaymentStatus(order.Status))
         {
             return Ok(new
             {
@@ -84,7 +90,7 @@ public class DemoPaymentWebhookRequest
 {
     public int OrderId { get; set; }
     public decimal Amount { get; set; }
-    public string Status { get; set; } = "Paid";
+    public string Status { get; set; } = OrderStatuses.Paid;
     public string Provider { get; set; } = "DemoGateway";
     public string TransactionCode { get; set; } = string.Empty;
 }

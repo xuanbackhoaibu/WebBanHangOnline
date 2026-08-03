@@ -5,6 +5,10 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+}
+
 <div class="container mt-5">
     <div class="card shadow-lg border-0 rounded-4">
         <div class="card-body p-5">
@@ -24,10 +28,9 @@
                     <div class="col-md-4 text-center border-end">
 
                         <img src="@(Model.CurrentAvatar ?? "/images/default-avatar.png")"
-                             class="rounded-circle shadow mb-3"
+                             class="rounded-circle shadow mb-3 account-avatar"
                              width="160"
-                             height="160"
-                             style="object-fit:cover;" />
+                             height="160" />
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Chọn ảnh </label>

@@ -1,0 +1,39 @@
+.about-hero {
+  height: 300px;
+  margin-top: 40px;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.58)),
+    url("https://images.unsplash.com/photo-1490481651871-ab68de25d43d") center / cover no-repeat;
+}
+
+.about-content,
+.page-content {
+  margin-top: 50px;
+  margin-bottom: 80px;
+}
+
+.page-content {
+  line-height: 1.7;
+}
+
+.page-title {
+  margin-bottom: 25px;
+  font-weight: 800;
+}
+
+.about-content .info-card,
+.about-content .product-card {
+  background: #fff;
+}
+
+.about-content .product-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.about-content .product-card:hover {
+  transform: translateY(-5px);
+}
+
+.about-content .contact-card {
+  background: #f8f9fa;
+}

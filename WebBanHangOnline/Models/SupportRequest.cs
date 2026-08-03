@@ -16,7 +16,7 @@ namespace WebBanHangOnline.Models
         [Required(ErrorMessage = "Vui lòng nhập nội dung")]
         public string Message { get; set; } = string.Empty;
 
-        public string Status { get; set; } = "New"; // New, InProgress, Done
+        public string Status { get; set; } = SupportRequestStatuses.New;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }

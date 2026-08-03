@@ -10,12 +10,16 @@ namespace WebBanHangOnline.Hubs
     {
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
-        private readonly HttpClient _http = new HttpClient();
+        private readonly HttpClient _http;
 
-        public ChatHub(ApplicationDbContext db, IConfiguration config)
+        public ChatHub(
+            ApplicationDbContext db,
+            IConfiguration config,
+            IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _config = config;
+            _http = httpClientFactory.CreateClient();
         }
 
         public async Task SendMessage(string user, string message)
@@ -89,6 +93,8 @@ namespace WebBanHangOnline.Hubs
         async Task<string> AskAI(string question)
         {
             var apiKey = _config["Gemini:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return "AI chưa được cấu hình API key. Bạn có thể hỏi shop về áo, quần hoặc giá rẻ nhé.";
 
             var body = new
             {
@@ -120,6 +126,8 @@ Khách hỏi: {question}
             );
 
             var json = await res.Content.ReadAsStringAsync();
+            if (!res.IsSuccessStatusCode)
+                return "AI đang bận, bạn thử lại sau nhé.";
 
             using var doc = JsonDocument.Parse(json);
 

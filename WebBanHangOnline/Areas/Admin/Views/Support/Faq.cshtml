@@ -45,16 +45,25 @@
                     Sửa
                 </a>
 
-                <a asp-action="ToggleFaq" asp-route-id="@f.SupportFaqId"
-                   class="btn btn-sm btn-info">
+                <a href="#"
+                   class="btn btn-sm btn-info"
+                   onclick="event.preventDefault(); document.getElementById('toggle-faq-@f.SupportFaqId').submit();">
                     Bật / Tắt
                 </a>
+                <form id="toggle-faq-@f.SupportFaqId" asp-action="ToggleFaq" method="post" class="d-none">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@f.SupportFaqId" />
+                </form>
 
-                <a asp-action="DeleteFaq" asp-route-id="@f.SupportFaqId"
+                <a href="#"
                    class="btn btn-sm btn-danger"
-                   onclick="return confirm('Xoá FAQ này?')">
+                   onclick="event.preventDefault(); if (confirm('Xoá FAQ này?')) document.getElementById('delete-faq-@f.SupportFaqId').submit();">
                     Xoá
                 </a>
+                <form id="delete-faq-@f.SupportFaqId" asp-action="DeleteFaq" method="post" class="d-none">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@f.SupportFaqId" />
+                </form>
             </td>
         </tr>
     }

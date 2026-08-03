@@ -3,16 +3,34 @@
 @{
 decimal total = 0;
 var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
+var paymentMethods = new[]
+{
+    new { Value = "COD", Title = "Thanh toán khi nhận hàng", Note = "Kiểm tra hàng và thanh toán trực tiếp cho đơn vị giao hàng.", Icon = "bi-cash-stack" },
+    new { Value = "VNPay", Title = "VNPay", Note = "Chuyển sang cổng VNPay để thanh toán ATM/QR/thẻ.", Icon = "bi-bank" },
+    new { Value = "Momo", Title = "MoMo", Note = "Thanh toán nhanh bằng ví MoMo hoặc mã QR MoMo.", Icon = "bi-wallet2" },
+    new { Value = "VietQR", Title = "VietQR", Note = "Quét mã chuyển khoản ngân hàng theo nội dung đơn hàng.", Icon = "bi-qr-code" },
+    new { Value = "Card", Title = "Thẻ nội địa/quốc tế", Note = "Thanh toán thẻ demo cho môi trường thử nghiệm.", Icon = "bi-credit-card-2-front" }
+};
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/checkout.css" asp-append-version="true" />
 }
 
 <div class="checkout-page">
     <div class="checkout-heading">
-        <span class="catalog-kicker">Checkout</span>
-        <h1>Xác nhận đơn hàng</h1>
-        <p>Kiểm tra thông tin nhận hàng, sản phẩm và phương thức thanh toán trước khi đặt hàng.</p>
+        <div>
+            <span class="catalog-kicker">Checkout</span>
+            <h1>Xác nhận đơn hàng</h1>
+            <p>Kiểm tra địa chỉ, sản phẩm và phương thức thanh toán trước khi hoàn tất đơn hàng.</p>
+        </div>
+        <div class="checkout-secure-badge">
+            <i class="bi bi-shield-check"></i>
+            <span>Bảo mật thanh toán</span>
+        </div>
     </div>
 
-    <form asp-action="PlaceOrder" method="post">
+    <form asp-action="PlaceOrder" method="post" class="checkout-form">
         @Html.AntiForgeryToken()
 
         <!-- ================= GIỮ LOGIC CŨ + HỖ TRỢ BUY NOW ================= -->
@@ -31,22 +49,35 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
         }
         }
 
-        <div class="row">
+        <div class="checkout-layout">
 
             <!-- ================= LEFT ================= -->
-            <div class="col-md-8">
+            <div class="checkout-main">
 
                 <!-- ================= ĐỊA CHỈ ================= -->
-                <div class="card checkout-card mb-4 border-0">
-                    <div class="card-header bg-white fw-bold text-danger">
-                        📍 Địa chỉ nhận hàng
+                <section class="checkout-card checkout-section">
+                    <div class="checkout-section-head">
+                        <div>
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Địa chỉ nhận hàng</span>
+                        </div>
+                        @if (hasAddress)
+                        {
+                            <button type="button"
+                                    id="editBtn"
+                                    class="checkout-text-btn"
+                                    onclick="toggleEdit()">
+                                Thay đổi
+                            </button>
+                        }
                     </div>
 
-                    <div class="card-body">
+                    <div class="checkout-section-body">
 
                         @if (hasAddress)
                         {
-                        <div class="mb-3">
+                        <div class="checkout-address-grid">
+                        <div class="checkout-field">
                             <label class="form-label">Họ tên</label>
                             <input id="fullNameInput"
                                    name="fullName"
@@ -55,7 +86,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                                    readonly />
                         </div>
 
-                        <div class="mb-3">
+                        <div class="checkout-field">
                             <label class="form-label">Số điện thoại</label>
                             <input id="phoneInput"
                                    name="phone"
@@ -65,7 +96,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                                    required />
                         </div>
 
-                        <div class="mb-3">
+                        <div class="checkout-field checkout-field-full">
                             <label class="form-label">Địa chỉ giao hàng</label>
                             <textarea id="addressInput"
                                       name="address"
@@ -74,22 +105,17 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                                       readonly
                                       required>@ViewBag.Address</textarea>
                         </div>
-
-                        <button type="button"
-                                id="editBtn"
-                                class="btn btn-outline-danger btn-sm"
-                                onclick="toggleEdit()">
-                            Thay đổi
-                        </button>
+                        </div>
                         }
                         else
                         {
-                        <div class="alert alert-warning">
-                            Bạn chưa có địa chỉ trong trang cá nhân.
-                            Vui lòng nhập để tiếp tục đặt hàng.
+                        <div class="checkout-alert">
+                            <i class="bi bi-info-circle"></i>
+                            <span>Bạn chưa có địa chỉ trong trang cá nhân. Vui lòng nhập để tiếp tục đặt hàng.</span>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="checkout-address-grid">
+                        <div class="checkout-field">
                             <label class="form-label">Họ tên</label>
                             <input name="fullName"
                                    class="form-control"
@@ -97,7 +123,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                                    required />
                         </div>
 
-                        <div class="mb-3">
+                        <div class="checkout-field">
                             <label class="form-label">Số điện thoại</label>
                             <input name="phone"
                                    class="form-control"
@@ -105,7 +131,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                                    required />
                         </div>
 
-                        <div class="mb-3">
+                        <div class="checkout-field checkout-field-full">
                             <label class="form-label">Địa chỉ giao hàng</label>
                             <textarea name="address"
                                       class="form-control"
@@ -113,134 +139,147 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                                       placeholder="Nhập địa chỉ đầy đủ..."
                                       required></textarea>
                         </div>
+                        </div>
                         }
 
                     </div>
-                </div>
+                </section>
 
                 <!-- ================= SẢN PHẨM ================= -->
-                <div class="card checkout-card border-0">
-                    <div class="card-header bg-light fw-bold">
-                        🛍 Sản phẩm trong đơn hàng
+                <section class="checkout-card checkout-section">
+                    <div class="checkout-section-head">
+                        <div>
+                            <i class="bi bi-bag-check"></i>
+                            <span>Sản phẩm trong đơn hàng</span>
+                        </div>
+                        <small>@Model.Count sản phẩm</small>
                     </div>
 
-                    <div class="card-body p-0">
-                        <table class="table mb-0 align-middle">
-                            <thead class="table-light">
-                            <tr>
-                                <th>Sản phẩm</th>
-                                <th class="text-center">Số lượng</th>
-                                <th class="text-end">Thành tiền</th>
-                            </tr>
-                            </thead>
-                            <tbody>
+                    <div class="checkout-products">
                             @foreach (var item in Model)
                             {
-                            var sub = item.ProductVariant.Product.Price * item.Quantity;
+                            var price = item.ProductVariant.Price > 0
+                                ? item.ProductVariant.Price
+                                : item.ProductVariant.Product.FinalPrice;
+                            var sub = price * item.Quantity;
                             total += sub;
 
-                            <tr>
-                                <td>
-                                    <strong>@item.ProductVariant.Product.Name</strong>
-                                    <br />
-                                    <small class="text-muted">
-                                        Size: @item.ProductVariant.Size |
-                                        Màu: @item.ProductVariant.Color
-                                    </small>
-                                </td>
-
-                                <td class="text-center">
-                                    x @item.Quantity
-                                </td>
-
-                                <td class="text-end text-danger fw-bold">
-                                    @sub.ToString("N0") đ
-                                </td>
-                            </tr>
+                            <article class="checkout-product-item">
+                                <img src="@item.ProductVariant.Product.Thumbnail"
+                                     alt="@item.ProductVariant.Product.Name"
+                                     loading="lazy" />
+                                <div class="checkout-product-info">
+                                    <h3>@item.ProductVariant.Product.Name</h3>
+                                    <div class="checkout-product-meta">
+                                        <span>Size @item.ProductVariant.Size</span>
+                                        <span>@item.ProductVariant.Color</span>
+                                    </div>
+                                </div>
+                                <div class="checkout-product-qty">x @item.Quantity</div>
+                                <div class="checkout-product-price">
+                                    <span>@price.ToString("N0") VND</span>
+                                    <strong>@sub.ToString("N0") VND</strong>
+                                </div>
+                            </article>
                             }
-                            </tbody>
-                        </table>
                     </div>
-                </div>
+                </section>
 
             </div>
 
             <!-- ================= RIGHT ================= -->
-            <div class="col-md-4">
+            <aside class="checkout-side">
 
-                <div class="card checkout-card mb-4 border-0">
-                    <div class="card-header bg-light fw-bold">
-                        💳 Phương thức thanh toán
+                <section class="checkout-card checkout-section">
+                    <div class="checkout-section-head">
+                        <div>
+                            <i class="bi bi-credit-card"></i>
+                            <span>Phương thức thanh toán</span>
+                        </div>
                     </div>
 
-                    <div class="card-body">
-                        @foreach (var method in new[] { "COD", "VNPay", "Momo", "VietQR", "Card" })
+                    <div class="checkout-payment-list">
+                        @foreach (var method in paymentMethods)
                         {
-                        <div class="form-check mb-2">
+                        <label class="checkout-payment-option">
                             <input class="form-check-input"
                                    type="radio"
                                    name="paymentMethod"
-                                   value="@method"
+                                   value="@method.Value"
                                    required />
-                            <label class="form-check-label">
-                                @method
-                            </label>
-                        </div>
+                            <span class="checkout-payment-icon">
+                                <i class="bi @method.Icon"></i>
+                            </span>
+                            <span class="checkout-payment-copy">
+                                <strong>@method.Title</strong>
+                                <small>@method.Note</small>
+                            </span>
+                        </label>
                         }
                     </div>
-                </div>
+                </section>
 
-                <div class="card checkout-card checkout-total border-0">
-                    <div class="card-body">
-
-                        <h5 class="d-flex justify-content-between">
-                            <span>Tạm tính:</span>
-                            <span>@total.ToString("N0") đ</span>
-                        </h5>
-
-                        <hr />
-
-                        <h4 class="d-flex justify-content-between text-danger">
-                            <span>Tổng thanh toán:</span>
-                            <span>@total.ToString("N0") đ</span>
-                        </h4>
-
-                        <button type="submit"
-                                class="btn btn-success w-100 mt-3 btn-lg">
-                            🛒 Đặt hàng
-                        </button>
-
+                <section class="checkout-card checkout-total">
+                    <div class="checkout-total-head">
+                        <span>Tóm tắt đơn hàng</span>
+                        <i class="bi bi-receipt"></i>
                     </div>
-                </div>
 
-            </div>
+                    <div class="checkout-total-row">
+                            <span>Tạm tính:</span>
+                            <span>@total.ToString("N0") VND</span>
+                    </div>
+
+                    <div class="checkout-total-row">
+                        <span>Phí vận chuyển:</span>
+                        <span>Miễn phí</span>
+                    </div>
+
+                    <div class="checkout-total-final">
+                            <span>Tổng thanh toán:</span>
+                            <span>@total.ToString("N0") VND</span>
+                    </div>
+
+                    <button type="submit"
+                            class="checkout-submit-btn">
+                        <i class="bi bi-bag-check"></i>
+                        Đặt hàng
+                    </button>
+
+                    <p class="checkout-safe-note">
+                        <i class="bi bi-lock"></i>
+                        Thông tin thanh toán được xử lý qua cổng bảo mật.
+                    </p>
+                </section>
+
+            </aside>
 
         </div>
     </form>
 </div>
 
-<script>
-    function toggleEdit() {
+@section Scripts {
+    <script>
+        function toggleEdit() {
 
-        var address = document.getElementById("addressInput");
-        var phone = document.getElementById("phoneInput");
-        var fullName = document.getElementById("fullNameInput");
-        var btn = document.getElementById("editBtn");
+            var address = document.getElementById("addressInput");
+            var phone = document.getElementById("phoneInput");
+            var fullName = document.getElementById("fullNameInput");
+            var btn = document.getElementById("editBtn");
 
-        if (address && phone && address.readOnly) {
-            address.readOnly = false;
-            phone.readOnly = false;
-            if (fullName) fullName.readOnly = false;
-            btn.innerText = "Lưu";
-            btn.classList.remove("btn-outline-danger");
-            btn.classList.add("btn-secondary");
-        } else if (address && phone) {
-            address.readOnly = true;
-            phone.readOnly = true;
-            if (fullName) fullName.readOnly = true;
-            btn.innerText = "Thay đổi";
-            btn.classList.remove("btn-secondary");
-            btn.classList.add("btn-outline-danger");
+            if (address && phone && address.readOnly) {
+                address.readOnly = false;
+                phone.readOnly = false;
+                if (fullName) fullName.readOnly = false;
+                btn.innerText = "Lưu";
+                btn.classList.add("is-saving");
+            } else if (address && phone) {
+                address.readOnly = true;
+                phone.readOnly = true;
+                if (fullName) fullName.readOnly = true;
+                btn.innerText = "Thay đổi";
+                btn.classList.remove("is-saving");
+            }
         }
-    }
-</script>
+    </script>
+}

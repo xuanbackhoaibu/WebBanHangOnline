@@ -9,17 +9,24 @@ namespace WebBanHangOnline.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
-        private readonly HttpClient _http = new();
+        private readonly HttpClient _http;
 
-        public ChatBotController(ApplicationDbContext db, IConfiguration config)
+        public ChatBotController(
+            ApplicationDbContext db,
+            IConfiguration config,
+            IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _config = config;
+            _http = httpClientFactory.CreateClient();
         }
 
         [HttpPost]
         public async Task<IActionResult> Send([FromBody] ChatRequest req)
         {
+            if (string.IsNullOrWhiteSpace(req.message))
+                return Json(new { reply = "Bạn muốn shop tư vấn mẫu nào hôm nay?" });
+
             var msg = req.message.ToLower();
 
             // ===== QUICK RULES =====
@@ -68,6 +75,8 @@ namespace WebBanHangOnline.Controllers
         async Task<string> AskGemini(string question)
         {
             string apiKey = _config["Gemini:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return "AI chưa được cấu hình API key. Bạn có thể hỏi shop về sản phẩm, giá hoặc phí ship nhé.";
 
             var body = new
             {
@@ -95,6 +104,8 @@ Khách hỏi: {question}"
             );
 
             var result = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+                return "AI đang bận, bạn thử lại sau nhé.";
 
             using var doc = JsonDocument.Parse(result);
 

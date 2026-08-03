@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
@@ -6,6 +7,7 @@ using WebBanHangOnline.Models;
 namespace WebBanHangOnline.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class SupportController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -31,6 +33,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateFaq(SupportFaq model)
         {
             if (!ModelState.IsValid)
@@ -52,6 +55,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditFaq(SupportFaq model)
         {
             if (!ModelState.IsValid)
@@ -64,6 +68,8 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             return RedirectToAction(nameof(Faq));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleFaq(int id)
         {
             var faq = await _context.SupportFaqs.FindAsync(id);
@@ -75,6 +81,8 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             return RedirectToAction(nameof(Faq));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteFaq(int id)
         {
             var faq = await _context.SupportFaqs.FindAsync(id);
@@ -100,8 +108,16 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             return View(requests);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
+            if (!SupportRequestStatuses.All.Contains(status))
+            {
+                TempData["error"] = "Trạng thái hỗ trợ không hợp lệ";
+                return RedirectToAction(nameof(Requests));
+            }
+
             var req = await _context.SupportRequests.FindAsync(id);
             if (req == null) return NotFound();
 
@@ -111,6 +127,8 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             return RedirectToAction(nameof(Requests));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteRequest(int id)
         {
             var req = await _context.SupportRequests.FindAsync(id);

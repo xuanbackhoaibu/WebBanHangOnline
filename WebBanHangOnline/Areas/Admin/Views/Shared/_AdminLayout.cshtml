@@ -19,69 +19,7 @@
     <!-- Custom Admin CSS -->
     <link rel="stylesheet" href="~/css/admin.css" />
 
-    <!-- Inline Upgrade Style -->
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f6fa;
-        }
-
-        .admin-header {
-            background: #111827;
-            color: #fff;
-        }
-
-        .admin-header .navbar-brand {
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .admin-sidebar {
-            background: linear-gradient(180deg, #1e1e2f, #111827);
-            color: #fff;
-            min-height: 100vh;
-        }
-
-        .admin-sidebar .nav-link {
-            color: #cbd5e1;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 6px;
-            transition: 0.2s;
-            font-weight: 500;
-        }
-
-        .admin-sidebar .nav-link i {
-            margin-right: 10px;
-        }
-
-        .admin-sidebar .nav-link:hover {
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-        }
-
-        .admin-sidebar .nav-link.active {
-            background: linear-gradient(90deg, #6366f1, #3b82f6);
-            color: #fff;
-        }
-
-        .content-wrapper {
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-            min-height: 85vh;
-        }
-
-        .badge-dot {
-            width: 8px;
-            height: 8px;
-            background: #ef4444;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 6px;
-        }
-    </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
 

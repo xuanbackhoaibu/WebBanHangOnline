@@ -9,7 +9,7 @@
 <p><strong>Khách:</strong> @Model.User?.UserName</p>
 <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
 <p><strong>Tổng tiền:</strong> <span class="text-danger fw-bold">
-    @String.Format("{0:N0} đ", Model.TotalAmount)
+    @String.Format("{0:N0} VND", Model.TotalAmount)
 </span></p>
 
 <hr />
@@ -59,7 +59,7 @@
         <tr>
             <td>@i.ProductVariant?.Product?.Name</td>
             <td class="text-center">@i.Quantity</td>
-            <td class="text-end">@String.Format("{0:N0} đ", i.Price)</td>
+            <td class="text-end">@String.Format("{0:N0} VND", i.Price)</td>
         </tr>
     }
     </tbody>

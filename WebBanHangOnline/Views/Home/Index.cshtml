@@ -1,6 +1,12 @@
 @model List<WebBanHangOnline.Models.Product>
 @{
-    ViewData["Title"] = "Trang chủ";
+    ViewData["Title"] = WebBanHangOnline.Helpers.CatalogTextHelper.T("Trang chủ", "Home");
+    string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
+    string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/home.css" asp-append-version="true" />
 }
 
 <div class="home-page">
@@ -9,25 +15,26 @@
 <section class="hero container">
     <div class="hero-content">
         <small class="hero-kicker">XUANBAC FASHION</small>
-        <h1>Bộ sưu tập mới cho phong cách mỗi ngày</h1>
+        <h1>@T("Bộ sưu tập mới cho phong cách mỗi ngày", "New collections for everyday style")</h1>
         <p class="hero-copy">
-            Thời trang nam, nữ và trẻ em với trải nghiệm mua sắm nhanh, rõ ràng và dễ lựa chọn.
+            @T("Thời trang nam, nữ và trẻ em với trải nghiệm mua sắm nhanh, rõ ràng và dễ lựa chọn.",
+                "Fashion for men, women and kids with a fast, clear and easy shopping experience.")
         </p>
         <div class="hero-proof">
             <span><i class="bi bi-lightning-charge-fill"></i> Flash sale</span>
-            <span><i class="bi bi-box-seam"></i> Có sẵn tồn kho</span>
-            <span><i class="bi bi-credit-card"></i> Nhiều thanh toán</span>
+            <span><i class="bi bi-box-seam"></i> @T("Có sẵn tồn kho", "In stock")</span>
+            <span><i class="bi bi-credit-card"></i> @T("Nhiều thanh toán", "Multiple payments")</span>
         </div>
 
         <div class="hero-actions">
             <a asp-controller="Product"
                asp-action="Index"
                class="btn btn-primary btn-lg rounded-pill px-4 hero-btn">
-                Mua sắm ngay
+                @T("Mua sắm ngay", "Shop now")
             </a>
             <a href="#women"
                class="btn btn-outline-danger btn-lg rounded-pill px-4 hero-btn">
-                Khám phá thời trang nữ
+                @T("Khám phá thời trang nữ", "Explore women's fashion")
             </a>
         </div>
     </div>
@@ -42,7 +49,7 @@
         </div>
         <div class="col-lg-7">
             <p class="section-eyebrow">For women</p>
-            <h4 class="section-title">Thời trang nữ</h4>
+            <h4 class="section-title">@T("Thời trang nữ", "Women's fashion")</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
@@ -59,8 +66,8 @@
                                asp-route-slug="@p.Slug">
                                 <img src="@p.Thumbnail" />
                             </a>
-                            <h6>@p.Name</h6>
-                            <div class="price">@p.Price.ToString("N0") đ</div>
+                            <h6>@D(p.Name)</h6>
+                            <div class="price">@p.Price.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -74,10 +81,10 @@
 <section class="sale-box">
     <div class="sale-left">
         <img src="/images/d.jpg">
-        <p>Mini backpack</p>
+        <p>@T("Balo mini", "Mini backpack")</p>
     </div>
     <div class="sale-center">
-        <h3>Khuyến mãi giới hạn</h3>
+        <h3>@T("Khuyến mãi giới hạn", "Limited promotion")</h3>
         <h2>50% OFF</h2>
     </div>
     <div class="sale-right">
@@ -90,7 +97,7 @@
     <div class="row align-items-center">
         <div class="col-lg-7">
             <p class="section-eyebrow">For men</p>
-            <h4 class="section-title">Thời trang nam</h4>
+            <h4 class="section-title">@T("Thời trang nam", "Men's fashion")</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
@@ -107,8 +114,8 @@
                                asp-route-slug="@p.Slug">
                                 <img src="@p.Thumbnail" />
                             </a>
-                            <h6>@p.Name</h6>
-                            <div class="price">@p.Price.ToString("N0") đ</div>
+                            <h6>@D(p.Name)</h6>
+                            <div class="price">@p.Price.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -128,7 +135,7 @@
         </div>
         <div class="col-lg-7">
             <p class="section-eyebrow">For boys</p>
-            <h4 class="section-title">Thời trang bé trai</h4>
+            <h4 class="section-title">@T("Thời trang bé trai", "Boys' fashion")</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
@@ -145,8 +152,8 @@
                                asp-route-slug="@p.Slug">
                                 <img src="@p.Thumbnail" />
                             </a>
-                            <h6>@p.Name</h6>
-                            <div class="price">@p.Price.ToString("N0") đ</div>
+                            <h6>@D(p.Name)</h6>
+                            <div class="price">@p.Price.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -160,7 +167,7 @@
     <div class="row align-items-center">
         <div class="col-lg-7">
             <p class="section-eyebrow">For girls</p>
-            <h4 class="section-title">Thời trang bé gái</h4>
+            <h4 class="section-title">@T("Thời trang bé gái", "Girls' fashion")</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
@@ -177,8 +184,8 @@
                                asp-route-slug="@p.Slug">
                                 <img src="@p.Thumbnail" />
                             </a>
-                            <h6>@p.Name</h6>
-                            <div class="price">@p.Price.ToString("N0") đ</div>
+                            <h6>@D(p.Name)</h6>
+                            <div class="price">@p.Price.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -193,9 +200,9 @@
 <!-- ================= TABS ================= -->
 <section class="tabs container">
     <div class="tab-head">
-        <button class="tab-btn active" data-tab="popular">Phổ biến</button>
-        <button class="tab-btn" data-tab="hot">Bán chạy</button>
-        <button class="tab-btn" data-tab="sale">Khuyến mãi</button>
+        <button class="tab-btn active" data-tab="popular">@T("Phổ biến", "Popular")</button>
+        <button class="tab-btn" data-tab="hot">@T("Bán chạy", "Best sellers")</button>
+        <button class="tab-btn" data-tab="sale">@T("Khuyến mãi", "On sale")</button>
     </div>
 
     <!-- ===== PHỔ BIẾN ===== -->
@@ -212,8 +219,8 @@
                            class="product-link">
 
                             <img src="@p.Thumbnail" />
-                            <h6>@p.Name</h6>
-                            <div class="price">@p.Price.ToString("N0") đ</div>
+                            <h6>@D(p.Name)</h6>
+                            <div class="price">@p.Price.ToString("N0") VND</div>
 
                         </a>
                     </div>
@@ -236,8 +243,8 @@
                            class="product-link">
 
                             <img src="@p.Thumbnail" />
-                            <h6>@p.Name</h6>
-                            <div class="price">@p.Price.ToString("N0") đ</div>
+                            <h6>@D(p.Name)</h6>
+                            <div class="price">@p.Price.ToString("N0") VND</div>
 
                         </a>
                     </div>
@@ -260,8 +267,8 @@
                            class="product-link">
 
                             <img src="@p.Thumbnail" />
-                            <h6>@p.Name</h6>
-                            <div class="price">@p.Price.ToString("N0") đ</div>
+                            <h6>@D(p.Name)</h6>
+                            <div class="price">@p.Price.ToString("N0") VND</div>
 
                         </a>
                     </div>
@@ -272,7 +279,7 @@
 </section>
 <!-- ================= BLOG ================= -->
 <section class="blog container">
-    <h4 class="text-center mb-4">Xu hướng thời trang</h4>
+    <h4 class="text-center mb-4">@T("Xu hướng thời trang", "Fashion trends")</h4>
     <div class="row g-4">
         <div class="col-md-4">
             <div class="blog-card">
@@ -302,221 +309,6 @@
 </section>
 
 </div>
-
-<style>
-.home-page { background:#f7f7f7; }
-
-/* HERO */
-.hero {
-    display: flex;
-    align-items: center;
-    background: linear-gradient(135deg, #ffffff 0%, rgba(255,107,107,.06) 55%, rgba(255,183,3,.06) 100%);
-    padding: 56px 34px;
-    margin-top: 0;
-    border-radius: 22px;
-    box-shadow: 0 14px 35px rgba(0,0,0,.06);
-}
-
-.hero-content { max-width:520px; }
-.hero-img { width:520px; max-width:100%; margin-left:auto; border-radius: 18px; }
-
-
-/* SECTION */
-.section { margin:54px 0; }
-.section-title { font-weight:800; margin-bottom:20px; letter-spacing: .2px; }
-
-/* PRODUCT */
-.product-card {
-    position:relative;
-    background:#fff;
-    padding:12px;
-    text-align:center;
-    border:1px solid #eee;
-    transition:.25s;
-    border-radius: 16px;
-    overflow: hidden;
-}
-.product-card:hover { 
-    transform:translateY(-6px); 
-    border-color:#ff6b6b; 
-    box-shadow: 0 14px 28px rgba(255,107,107,.14);
-}
-.product-card img { 
-    width:100%; 
-    height:220px; 
-    object-fit:cover; 
-    border-radius: 12px;
-}
-.product-card h6 { font-size:14px; margin:10px 0 4px; }
-.price { color:#ff6b6b; font-weight:700; }
-
-/* BADGE */
-.badge {
-    position:absolute;
-    top:10px;
-    left:10px;
-    padding:4px 8px;
-    font-size:11px;
-    color:#fff;
-    border-radius: 999px;
-    box-shadow: 0 6px 14px rgba(0,0,0,.12);
-}
-.badge.hot { background:#ff6b6b; }
-.badge.sale { background:#ffb703; }
-
-/* SALE BOX */
-.sale-box {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    background:#fdecec;
-    padding:30px;
-    border-radius: 22px;
-    box-shadow: 0 14px 35px rgba(0,0,0,.05);
-}
-
-/* TABS */
-.tabs { margin:70px 0; }
-.tab-head { text-align:center; margin-bottom:20px; }
-.tab-head button {
-    border:none;
-    background:none;
-    font-weight:600;
-    margin:0 10px;
-    cursor:pointer;
-    padding: 10px 18px;
-    border-radius: 999px;
-}
-.tab-head .active { 
-    color:#fff; 
-    background: #ff6b6b; 
-    box-shadow: 0 10px 22px rgba(255,107,107,.2);
-}
-
-.tab-body { display:none; }
-.tab-body.active { display:block; }
-
-/* BLOG */
-.blog-card{
-    background:#fff;
-    border: 1px solid #eee;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 10px 26px rgba(0,0,0,.04);
-    transition: .25s;
-}
-.blog-card:hover{
-    transform: translateY(-5px);
-    box-shadow: 0 18px 40px rgba(0,0,0,.08);
-    border-color: #ff6b6b;
-}
-.blog-img{
-    width:100%;
-    height: 200px;
-    object-fit: cover;
-}
-.blog-body{
-    padding: 14px 14px 16px;
-}
-.blog-body h6{
-    font-weight: 700;
-    line-height: 1.3;
-    margin: 0;
-}
-
-@@media (max-width: 991px) {
-    .hero { flex-direction:column; text-align:center; }
-    .hero-img { width:100%; margin:20px 0 0; }
-}
-
-.product-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-
-.product-card h6 {
-    font-size:14px;
-    margin:10px 0 4px;
-
-    display: -webkit-box;
-    -webkit-line-clamp: 2;   /* chỉ hiển thị 2 dòng */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.4;
-    height: 2.8em; /* 2 dòng */
-}
-
-.hero-kicker{
-    font-size:22px;
-    letter-spacing:4px;
-    font-weight:500;
-    color:#333;
-}
-
-.hero-content h1{
-    font-size:54px;
-    font-weight:300;
-    line-height:1.05;
-    letter-spacing:1px;
-    color:#222;
-    margin: 0;
-}
-
-.hero-actions{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-top: 22px;
-}
-
-.hero-btn{
-    box-shadow: 0 8px 18px rgba(255,107,107,.18);
-}
-
-.hero-content{
-    margin-left:0;
-}
-a {
-    text-decoration: none; /* Xóa gạch chân */
-    color: #000000;        /* Làm chữ thành màu đen thuần */
-}
-
-/* Hiệu ứng khi di chuột qua (tùy chọn) */
-a:hover {
-    color: #333333;        /* Chuyển sang màu xám đậm khi hover */
-    text-decoration: none; /* Đảm bảo không hiện lại gạch chân */
-}
-/* 1. Xóa gạch chân và chỉnh màu đen cho tất cả liên kết trong footer */
-footer a,
-.footer-section a {
-    text-decoration: none !important; /* Bỏ gạch chân */
-    color: #333333 !important;        /* Màu đen xám (dễ nhìn hơn đen thuần) */
-    transition: 0.3s;                 /* Hiệu ứng mượt khi di chuột */
-}
-
-/* 2. Hiệu ứng khi di chuột qua liên kết (tùy chọn) */
-footer a:hover,
-.footer-section a:hover {
-    color: #000000;                   /* Đậm hơn khi hover */
-    text-decoration: none;
-}
-
-/* 3. Xóa dấu chấm (bullet points) của danh sách */
-footer ul,
-.footer-section ul {
-    list-style: none;                 /* Bỏ dấu chấm tròn */
-    padding: 0;
-    margin: 0;
-}
-
-/* 4. Chỉnh khoảng cách giữa các dòng cho thoáng */
-footer li,
-.footer-section li {
-    margin-bottom: 8px;               /* Tạo khoảng cách giữa các mục */
-}
-</style>
 
 @section Scripts {
 <script>

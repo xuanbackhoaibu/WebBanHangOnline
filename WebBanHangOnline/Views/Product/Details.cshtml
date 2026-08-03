@@ -1,7 +1,9 @@
 @model WebBanHangOnline.Models.Product
 
 @{
-ViewData["Title"] = Model.Name;
+ViewData["Title"] = WebBanHangOnline.Helpers.CatalogTextHelper.Display(Model.Name);
+string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
+string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
 
 var averageRating = Model.Reviews != null && Model.Reviews.Any()
 ? Model.Reviews.Average(r => r.Rating)
@@ -16,121 +18,9 @@ var isFlashSale = Model.FlashSalePrice.HasValue
 var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
 }
 
-<style>
-    body { background:#f5f5f5; }
-
-    .product-container {
-        background:#fff;
-        padding:25px;
-        border-radius:12px;
-        box-shadow:0 4px 20px rgba(0,0,0,.05);
-    }
-
-    #mainImage { transition: opacity .3s ease; }
-
-    .thumbnail-img {
-        width:70px;
-        height:70px;
-        object-fit:cover;
-        cursor:pointer;
-        border:1px solid #ddd;
-        border-radius:6px;
-        transition:.2s;
-    }
-    .thumbnail-img:hover { transform:scale(1.05); }
-    .thumbnail-img.active-thumb {
-        border:2px solid #ee4d2d;
-        transform:scale(1.08);
-    }
-
-    .variant-btn {
-        border:1px solid #ddd;
-        padding:6px 14px;
-        margin:4px;
-        border-radius:6px;
-        cursor:pointer;
-        background:#fff;
-        transition:.2s;
-    }
-    .variant-btn:hover { border-color:#ee4d2d; }
-    .variant-btn.active {
-        border-color:#ee4d2d;
-        color:#ee4d2d;
-        font-weight:600;
-    }
-
-    .flash-sale {
-        background:#ff424f;
-        color:white;
-        padding:6px 12px;
-        border-radius:6px;
-        font-size:14px;
-    }
-
-    .price-old { text-decoration:line-through; color:gray; }
-
-    .variant-error {
-        background:#fff0f0;
-        color:#ff424f;
-        padding:10px 14px;
-        border-radius:6px;
-        border:1px solid #ffccd2;
-        margin-bottom:12px;
-        display:none;
-        animation:fadeSlide .3s ease;
-    }
-
-    @@keyframes fadeSlide {
-        from {opacity:0; transform:translateY(-5px);}
-        to {opacity:1; transform:translateY(0);}
-    }
-
-    .shake { animation:shake .3s; }
-    @@keyframes shake {
-        0%{transform:translateX(0);}
-        25%{transform:translateX(-6px);}
-        50%{transform:translateX(6px);}
-        75%{transform:translateX(-6px);}
-        100%{transform:translateX(0);}
-    }
-
-    .btn-disabled {
-        opacity:.6 !important;
-        pointer-events:none;
-    }
-
-    .highlight-missing {
-        border:2px solid #ff424f !important;
-    }
-
-    .product-tabs{
-        margin-top:40px;
-    }
-
-    .product-tabs .nav-link{
-        color:#333;
-        font-weight:500;
-    }
-
-    .product-tabs .nav-link.active{
-        color:#ee4d2d;
-        border-color:#ee4d2d #ee4d2d #fff;
-    }
-
-    .product-description{
-        line-height:1.8;
-        font-size:15px;
-    }
-
-    .review-item{
-        border-bottom:1px solid #eee;
-        padding:12px 0;
-    }
-
-    .review-star{
-        color:#ffc107;
-    }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/product-detail.css" asp-append-version="true" />
+}
 
 <div class="product-detail-page">
     <div class="product-container">
@@ -157,7 +47,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
 
             <div class="col-md-7">
 
-                <h3>@Model.Name</h3>
+                <h3>@D(Model.Name)</h3>
 
                 <div class="mb-2">
                     @for (int i = 1; i <= 5; i++)
@@ -165,14 +55,14 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                         <i class="bi @(i <= averageRating ? "bi-star-fill text-warning" : "bi-star text-warning")"></i>
                     }
                     <span class="ms-2">
-                        @averageRating.ToString("0.0") (@reviewCount đánh giá)
+                        @averageRating.ToString("0.0") (@reviewCount @T("đánh giá", "reviews"))
                     </span>
                 </div>
 
                 @if (isFlashSale)
                 {
                     <div class="flash-sale mb-2">
-                        🔥 Flash Sale kết thúc sau:
+                        @T("Flash Sale kết thúc sau:", "Flash sale ends in:")
                         <span id="countdown"></span>
                     </div>
                 }
@@ -180,12 +70,12 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 <div class="mb-3">
                     @if (isFlashSale)
                     {
-                        <span class="price-old">@Model.Price.ToString("N0") ₫</span>
-                        <h3 class="text-danger">@Model.FlashSalePrice?.ToString("N0") ₫</h3>
+                        <span class="price-old">@Model.Price.ToString("N0") VND</span>
+                        <h3 class="text-danger">@Model.FlashSalePrice?.ToString("N0") VND</h3>
                     }
                     else
                     {
-                        <h3 class="text-danger">@Model.Price.ToString("N0") ₫</h3>
+                        <h3 class="text-danger">@Model.Price.ToString("N0") VND</h3>
                     }
                 </div>
 
@@ -207,17 +97,17 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                     </div>
 
                     <div class="mb-2">
-                        <label class="fw-bold">Màu</label><br />
+                        <label class="fw-bold">@T("Màu", "Color")</label><br />
                         <div id="colorContainer"></div>
                     </div>
 
                     <div class="mb-2 text-muted">
-                        Tồn kho:
-                        <span id="stockText">Vui lòng chọn phân loại</span>
+                        @T("Tồn kho:", "Stock:")
+                        <span id="stockText">@T("Vui lòng chọn phân loại", "Please choose an option")</span>
                     </div>
 
                     <div id="variantError" class="variant-error">
-                        ⚠ Vui lòng chọn đầy đủ Size và Màu trước khi tiếp tục.
+                        @T("Vui lòng chọn đầy đủ Size và Màu trước khi tiếp tục.", "Please choose both size and color before continuing.")
                     </div>
 
                     <div class="mb-3">
@@ -226,22 +116,22 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                                id="quantityInput"
                                value="1"
                                min="1"
-                               class="form-control"
-                               style="width:120px"/>
+                               class="form-control quantity-input" />
                     </div>
 
                     <div class="d-flex gap-2">
                         <button type="submit"
                                 id="addToCartBtn"
                                 class="btn btn-success btn-disabled">
-                            🛒 Thêm vào giỏ
+                            🛒
+                            @T("Thêm vào giỏ", "Add to cart")
                         </button>
 
                         <button type="button"
                                 id="buyNowBtn"
                                 class="btn btn-danger btn-disabled"
                                 onclick="buyNow()">
-                            Mua ngay
+                            @T("Mua ngay", "Buy now")
                         </button>
                     </div>
                     
@@ -264,7 +154,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 <button class="nav-link active"
                         data-bs-toggle="tab"
                         data-bs-target="#desc">
-                    Mô tả sản phẩm
+                    @T("Mô tả sản phẩm", "Description")
                 </button>
             </li>
 
@@ -272,7 +162,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 <button class="nav-link"
                         data-bs-toggle="tab"
                         data-bs-target="#info">
-                    Thông tin sản phẩm
+                    @T("Thông tin sản phẩm", "Product information")
                 </button>
             </li>
 
@@ -280,7 +170,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 <button class="nav-link"
                         data-bs-toggle="tab"
                         data-bs-target="#review">
-                    Đánh giá (@reviewCount)
+                    @T("Đánh giá", "Reviews") (@reviewCount)
                 </button>
             </li>
 
@@ -294,13 +184,13 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 @if (!string.IsNullOrEmpty(Model.Description))
                 {
                     <div class="product-description">
-                        @Html.Raw(Model.Description)
+                        @D(Model.Description)
                     </div>
                 }
                 else
                 {
                     <p class="text-muted">
-                        Sản phẩm chưa có mô tả.
+                        @T("Sản phẩm chưa có mô tả.", "This product does not have a description yet.")
                     </p>
                 }
 
@@ -313,18 +203,18 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 <table class="table">
 
                     <tr>
-                        <th width="200">Tên sản phẩm</th>
-                        <td>@Model.Name</td>
+                        <th width="200">@T("Tên sản phẩm", "Product name")</th>
+                        <td>@D(Model.Name)</td>
                     </tr>
 
                     <tr>
-                        <th>Danh mục</th>
-                        <td>@Model.Category?.Name</td>
+                        <th>@T("Danh mục", "Category")</th>
+                        <td>@D(Model.Category?.Name)</td>
                     </tr>
 
                     <tr>
-                        <th>Giá</th>
-                        <td>@Model.Price.ToString("N0") ₫</td>
+                        <th>@T("Giá", "Price")</th>
+                        <td>@Model.Price.ToString("N0") VND</td>
                     </tr>
 
                     @if(Model.IsFlashSaleActive)
@@ -332,7 +222,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                         <tr>
                             <th>Flash Sale</th>
                             <td class="text-danger">
-                                @Model.FlashSalePrice?.ToString("N0") ₫
+                                @Model.FlashSalePrice?.ToString("N0") VND
                             </td>
                         </tr>
                     }
@@ -379,7 +269,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
                 else
                 {
                     <p class="text-muted">
-                        Chưa có đánh giá nào cho sản phẩm này.
+                        @T("Chưa có đánh giá nào cho sản phẩm này.", "There are no reviews for this product yet.")
                     </p>
                 }
 
@@ -397,8 +287,13 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
 
     const variants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
     (Model.Variants ?? new List<WebBanHangOnline.Models.ProductVariant>())
-    .Select(v => new { v.Id, v.Size, v.Color, v.Stock })
+    .Select(v => new { v.Id, v.Size, v.Color, ColorText = WebBanHangOnline.Helpers.CatalogTextHelper.Display(v.Color), v.Stock })
     ));
+    const text = {
+        inStock: "@T("sản phẩm có sẵn", "items available")",
+        outOfStock: "@T("Số lượng vượt quá tồn kho!", "Quantity exceeds available stock!")",
+        ended: "@T("Đã kết thúc", "Ended")"
+    };
 
     let selectedSize = null;
     let selectedColor = null;
@@ -443,7 +338,8 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
             const btn=document.createElement("button");
             btn.type="button";
             btn.className="variant-btn";
-            btn.innerText=c;
+            const variant = variants.find(v => v.Size === selectedSize && v.Color === c);
+            btn.innerText=variant?.ColorText || c;
             btn.onclick=function(){
                 document.querySelectorAll("#colorContainer .variant-btn")
                     .forEach(b=>b.classList.remove("active"));
@@ -463,7 +359,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
         selectedStock=variant.Stock;
         document.getElementById("variantId").value=variant.Id;
         document.getElementById("stockText").innerText=
-            variant.Stock+" sản phẩm có sẵn";
+            variant.Stock+" "+text.inStock;
         updateButtons();
     }
 
@@ -491,7 +387,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
 
         if(quantity>selectedStock){
             e.preventDefault();
-            alert("Số lượng vượt quá tồn kho!");
+            alert(text.outOfStock);
             return;
         }
 });
@@ -555,7 +451,7 @@ var mainImage = Model.Images?.FirstOrDefault()?.ImageUrl ?? Model.Thumbnail;
             var now=new Date().getTime();
             var distance=countDownDate-now;
             if(distance<=0){
-                document.getElementById("countdown").innerHTML="Đã kết thúc";
+                document.getElementById("countdown").innerHTML=text.ended;
                 clearInterval(timer);
                 return;
             }

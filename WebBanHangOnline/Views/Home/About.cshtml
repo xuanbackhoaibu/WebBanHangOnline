@@ -2,6 +2,10 @@
 ViewData["Title"] = "Giới thiệu";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/content.css" asp-append-version="true" />
+}
+
 <div class="about-hero text-center text-white d-flex align-items-center justify-content-center">
     <div>
         <h1 class="fw-bold">XuanBac Fashion</h1>
@@ -110,34 +114,3 @@ ViewData["Title"] = "Giới thiệu";
     </div>
 
 </div>
-
-<style>
-    .about-hero {
-        height: 300px;
-        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-        url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d') center/cover no-repeat;
-        margin-top: 80px;
-    }
-
-    .about-content {
-        margin-top: 50px;
-        margin-bottom: 80px;
-    }
-
-    .info-card {
-        background: #fff;
-    }
-
-    .product-card {
-        background: #fff;
-        transition: 0.3s;
-    }
-
-    .product-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .contact-card {
-        background: #f8f9fa;
-    }
-</style>

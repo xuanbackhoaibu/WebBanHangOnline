@@ -1,5 +1,9 @@
 @model List<CartItem>
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/cart.css" asp-append-version="true" />
+}
+
 <div class="cart-page">
     <div class="cart-heading">
         <div>
@@ -7,7 +11,7 @@
             <h1>Giỏ hàng của bạn</h1>
             <p>Chọn sản phẩm muốn thanh toán, kiểm tra số lượng và tiến hành đặt hàng.</p>
         </div>
-        <a asp-controller="Product" asp-action="Index" class="catalog-cart-link">
+        <a asp-area="" asp-controller="Product" asp-action="Index" class="catalog-cart-link">
             <i class="bi bi-arrow-left"></i>
             Tiếp tục mua sắm
         </a>
@@ -19,7 +23,7 @@
         <i class="bi bi-bag"></i>
         <h3>Giỏ hàng đang trống</h3>
         <p>Khám phá bộ sưu tập mới và thêm sản phẩm bạn thích vào giỏ.</p>
-        <a asp-controller="Product" asp-action="Index" class="btn btn-filter">Mua sắm ngay</a>
+        <a asp-area="" asp-controller="Product" asp-action="Index" class="btn btn-filter">Mua sắm ngay</a>
     </div>
     }
     else
@@ -70,12 +74,13 @@
                 </td>
 
                 <td class="text-danger fw-bold">
-                    @price.ToString("N0") đ
+                    @price.ToString("N0") VND
                 </td>
 
                 <!-- FORM UPDATE -->
                 <td class="text-center">
-                    <form asp-action="Update"
+                    <form asp-area=""
+                          asp-action="Update"
                           method="post"
                           class="d-inline-flex align-items-center">
                         @Html.AntiForgeryToken()
@@ -90,10 +95,9 @@
                         </button>
 
                         <input type="text"
-                               class="form-control form-control-sm text-center mx-1"
+                               class="form-control form-control-sm text-center mx-1 cart-quantity-input"
                                value="@item.Quantity"
-                               readonly
-                               style="width:60px" />
+                               readonly />
 
                         <button type="submit"
                                 name="quantity"
@@ -104,13 +108,14 @@
                     </form>
                 </td>
 
-                <td class="fw-semibold text-danger">
-                    @sub.ToString("N0") đ
+                <td class="fw-semibold text-danger cart-money">
+                    @sub.ToString("N0") VND
                 </td>
 
                 <!-- REMOVE -->
                 <td>
-                    <form asp-action="Remove"
+                    <form asp-area=""
+                          asp-action="Remove"
                           asp-route-id="@item.Id"
                           method="post"
                           class="d-inline">
@@ -137,7 +142,7 @@
             <h4>
                 Tổng tiền đã chọn:
                 <span class="text-danger fw-bold" id="selectedTotal">
-                        0 đ
+                        0 VND
                     </span>
             </h4>
 
@@ -167,7 +172,7 @@
         const STORAGE_KEY = "selectedCartItems";
 
         function formatMoney(number) {
-            return number.toLocaleString('vi-VN') + " đ";
+            return number.toLocaleString('vi-VN') + " VND";
         }
 
         function updateTotal() {

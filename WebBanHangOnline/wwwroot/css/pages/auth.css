@@ -1,0 +1,37 @@
+.auth-shell {
+  min-height: 80vh;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.auth-card-wide {
+  max-width: 440px;
+}
+
+.auth-accent {
+  height: 10px;
+  background: linear-gradient(90deg, #ff6b6b, #ff8a3d);
+}
+
+.auth-icon {
+  width: 46px;
+  height: 46px;
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.auth-submit {
+  border-radius: 12px;
+}
+
+.auth-link {
+  color: #ff6b6b;
+}
+
+.account-avatar {
+  object-fit: cover;
+}

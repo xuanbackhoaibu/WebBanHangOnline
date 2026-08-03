@@ -6,15 +6,18 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow border-0" style="width: 100%; max-width: 420px; border-radius: 18px;">
-        <div style="height: 10px; background: linear-gradient(90deg, #ff6b6b, #ff8a3d); border-top-left-radius: 18px; border-top-right-radius: 18px;"></div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+}
+
+<div class="container d-flex justify-content-center align-items-center auth-shell">
+    <div class="card shadow border-0 auth-card">
+        <div class="auth-accent"></div>
         <div class="card-body p-4">
 
             <!-- Tiêu đề -->
             <div class="text-center mb-3">
-                <div class="d-inline-flex align-items-center justify-content-center rounded-pill"
-                     style="width: 46px; height: 46px; background: rgba(255, 107, 107, .15);">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-pill auth-icon">
                     <i class="bi bi-box-arrow-in-right text-danger fs-4"></i>
                 </div>
                 <h3 class="fw-bold mt-3 mb-1">Đăng nhập</h3>
@@ -63,7 +66,7 @@
                 </div>
 
                 <!-- Button -->
-                <button type="submit" class="btn btn-primary w-100 mb-3" style="border-radius: 12px;">
+                <button type="submit" class="btn btn-primary w-100 mb-3 auth-submit">
                     <i class="bi bi-box-arrow-in-right me-2"></i>
                     Đăng nhập
                 </button>
@@ -73,8 +76,7 @@
                     <span class="small text-muted">Chưa có tài khoản?</span>
                     <a asp-page="./Register"
                        asp-route-returnUrl="@Model.ReturnUrl"
-                       class="small text-decoration-none fw-semibold"
-                       style="color: #ff6b6b;">
+                       class="small text-decoration-none fw-semibold auth-link">
                         Đăng ký ngay
                     </a>
                 </div>

@@ -48,7 +48,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(int id, string status)
         {
-            if (string.IsNullOrEmpty(status))
+            if (!OrderStatuses.AdminEditableStatuses.Contains(status))
             {
                 TempData["ErrorMessage"] = "Trạng thái không hợp lệ";
                 return RedirectToAction(nameof(Details), new { id });

@@ -14,7 +14,7 @@ public class Order
 
     public decimal TotalAmount { get; set; }
 
-    public string Status { get; set; } = "Pending";
+    public string Status { get; set; } = OrderStatuses.Pending;
     
     public string PaymentMethod { get; set; }
 

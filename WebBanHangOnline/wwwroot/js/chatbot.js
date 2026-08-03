@@ -11,6 +11,8 @@
   const statusEl = el("xb-chat-status");
 
   const STORAGE_KEY = "xb-chat-history-v1";
+  const isEnglish = document.documentElement.lang === "en";
+  const t = (vi, en) => (isEnglish ? en : vi);
 
   const nowTime = () => {
     const d = new Date();
@@ -93,14 +95,14 @@
         item.className = "xb-product";
 
         const img = document.createElement("img");
-        img.alt = p?.name ? String(p.name) : "Sản phẩm";
+        img.alt = p?.name ? String(p.name) : t("Sản phẩm", "Product");
         if (p?.image) img.src = String(p.image);
 
         const meta = document.createElement("div");
 
         const name = document.createElement("div");
         name.style.fontWeight = "700";
-        name.appendChild(textNode(p?.name ? String(p.name) : "Sản phẩm"));
+        name.appendChild(textNode(p?.name ? String(p.name) : t("Sản phẩm", "Product")));
 
         const price = document.createElement("div");
         price.className = "xb-price";
@@ -108,7 +110,7 @@
 
         const link = document.createElement("a");
         link.href = p?.link ? String(p.link) : "#";
-        link.appendChild(textNode("Xem sản phẩm"));
+        link.appendChild(textNode(t("Xem sản phẩm", "View product")));
 
         meta.appendChild(name);
         meta.appendChild(price);
@@ -135,7 +137,7 @@
     dots.innerHTML = "<i></i><i></i><i></i>";
     typing.appendChild(dots);
     const label = document.createElement("span");
-    label.appendChild(textNode("Đang trả lời..."));
+    label.appendChild(textNode(t("Đang trả lời...", "Typing...")));
     label.style.color = "#6b7280";
     label.style.fontSize = "13px";
     typing.appendChild(label);
@@ -163,7 +165,10 @@
 
   replayHistory();
 
-  const welcome = el("xb-chat-welcome")?.value || "Xin chào, mình có thể tư vấn size, phối đồ hoặc gợi ý sản phẩm theo ngân sách.";
+  const welcome = el("xb-chat-welcome")?.value || t(
+    "Xin chào, mình có thể tư vấn size, phối đồ hoặc gợi ý sản phẩm theo ngân sách.",
+    "Hello, I can help with sizing, outfit styling, or product suggestions by budget."
+  );
   if (!history.length) {
     appendRow("bot", textNode(welcome));
     pushHistory({ role: "bot", text: welcome, at: Date.now() });
@@ -193,8 +198,8 @@
     .withAutomaticReconnect()
     .build();
 
-  connection.onreconnecting(() => setStatus("Mất kết nối, đang thử lại…", "warn"));
-  connection.onreconnected(() => setStatus("Đã kết nối", "ok"));
+  connection.onreconnecting(() => setStatus(t("Mất kết nối, đang thử lại...", "Connection lost, retrying..."), "warn"));
+  connection.onreconnected(() => setStatus(t("Đã kết nối", "Connected"), "ok"));
   connection.onclose(() => setStatus("Offline", "err"));
 
   connection.on("ReceiveMessage", (_user, data) => {
@@ -205,7 +210,7 @@
   });
 
   connection.start()
-    .then(() => setStatus("Đã kết nối", "ok"))
+    .then(() => setStatus(t("Đã kết nối", "Connected"), "ok"))
     .catch(() => setStatus("Offline", "err"));
 
   const send = async () => {
@@ -223,8 +228,9 @@
     } catch {
       hideTyping();
       sendBtn.disabled = false;
-      appendRow("bot", textNode("Hiện mình không gửi được. Bạn thử lại giúp mình nhé."));
-      pushHistory({ role: "bot", text: "Hiện mình không gửi được. Bạn thử lại giúp mình nhé.", at: Date.now() });
+      const errorText = t("Hiện mình không gửi được. Bạn thử lại giúp mình nhé.", "I cannot send this right now. Please try again.");
+      appendRow("bot", textNode(errorText));
+      pushHistory({ role: "bot", text: errorText, at: Date.now() });
     }
   };
 

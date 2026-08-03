@@ -1,24 +1,31 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Helpers;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Services.Momo;
 
 namespace WebBanHangOnline.Controllers
 {
+    [Authorize]
     public class PaymentController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMomoService _momoService;
         // ================================
         // 💳 VIETQR PAYMENT
         // ================================
         public async Task<IActionResult> VietQR(int orderId)
         {
             var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId);
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == _userManager.GetUserId(User));
 
             if (order == null)
                 return NotFound();
@@ -42,24 +49,130 @@ namespace WebBanHangOnline.Controllers
             return View();
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmPaid(int orderId)
         {
-            var order = await _context.Orders.FindAsync(orderId);
+            var userId = _userManager.GetUserId(User);
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
 
             if (order == null)
                 return NotFound();
 
-            order.Status = "Confirmed";
+            order.Status = OrderStatuses.Confirmed;
             order.PaymentDate = DateTime.Now;
 
             await _context.SaveChangesAsync();
 
             return RedirectToAction("OrderSuccess", "Order", new { id = orderId });
         }
-        public PaymentController(ApplicationDbContext context, IConfiguration config)
+        public PaymentController(
+            ApplicationDbContext context,
+            IConfiguration config,
+            UserManager<ApplicationUser> userManager,
+            IMomoService momoService)
         {
             _context = context;
             _config = config;
+            _userManager = userManager;
+            _momoService = momoService;
+        }
+
+        public async Task<IActionResult> Momo(int orderId)
+        {
+            try
+            {
+                var order = await GetCurrentUserOrder(orderId);
+                if (order == null)
+                    return NotFound("Đơn hàng không tồn tại");
+
+                var redirectUrl = BuildAbsoluteUrl(nameof(MomoReturn));
+                var ipnUrl = BuildAbsoluteUrl(nameof(MomoIpn));
+                var response = await _momoService.CreatePaymentMomo(order, redirectUrl, ipnUrl);
+
+                if (response.ResultCode != 0 && response.ErrorCode != 0)
+                {
+                    TempData["ErrorMessage"] = $"MoMo không tạo được giao dịch: {response.Message ?? response.LocalMessage}";
+                    return RedirectToAction("MyOrders", "Order");
+                }
+
+                if (string.IsNullOrWhiteSpace(response.PayUrl))
+                {
+                    TempData["ErrorMessage"] = "MoMo không trả về link thanh toán.";
+                    return RedirectToAction("MyOrders", "Order");
+                }
+
+                return Redirect(response.PayUrl);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("MyOrders", "Order");
+            }
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> MomoReturn()
+        {
+            var order = await FindMomoOrderFromRequest();
+            if (order == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy đơn hàng MoMo.";
+                return RedirectToAction("MyOrders", "Order");
+            }
+
+            var resultCode = Request.Query["resultCode"].ToString();
+            order.Status = resultCode == "0" ? OrderStatuses.Paid : OrderStatuses.Failed;
+            order.PaymentDate = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            TempData[resultCode == "0" ? "SuccessMessage" : "ErrorMessage"] =
+                resultCode == "0" ? "Thanh toán MoMo thành công." : $"Thanh toán MoMo thất bại: {Request.Query["message"]}";
+
+            return RedirectToAction("OrderSuccess", "Order", new { id = order.Id });
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> MomoIpn()
+        {
+            using var reader = new StreamReader(Request.Body);
+            var body = await reader.ReadToEndAsync();
+            using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(body) ? "{}" : body);
+            var root = document.RootElement;
+
+            var order = await FindMomoOrder(root.TryGetProperty("orderId", out var orderIdElement)
+                ? orderIdElement.GetString()
+                : null);
+
+            if (order == null)
+                return Ok(new { resultCode = 1, message = "Order not found" });
+
+            var resultCode = root.TryGetProperty("resultCode", out var resultCodeElement)
+                ? resultCodeElement.GetInt32()
+                : 1;
+
+            if (!OrderStatuses.IsFinalPaymentStatus(order.Status))
+            {
+                order.Status = resultCode == 0 ? OrderStatuses.Paid : OrderStatuses.Failed;
+                order.PaymentDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(new { resultCode = 0, message = "Confirm Success" });
+        }
+
+        public async Task<IActionResult> Card(int orderId)
+        {
+            var order = await GetCurrentUserOrder(orderId);
+            if (order == null)
+                return NotFound("Đơn hàng không tồn tại");
+
+            order.Status = OrderStatuses.Paid;
+            order.PaymentDate = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Thanh toán thẻ demo thành công.";
+            return RedirectToAction("OrderSuccess", "Order", new { id = order.Id });
         }
 
         /// <summary>
@@ -73,7 +186,7 @@ namespace WebBanHangOnline.Controllers
                 var order = await _context.Orders
                     .Include(o => o.OrderDetails)
                     .ThenInclude(d => d.ProductVariant)
-                    .FirstOrDefaultAsync(o => o.Id == orderId);
+                    .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == _userManager.GetUserId(User));
 
                 if (order == null)
                 {
@@ -92,9 +205,13 @@ namespace WebBanHangOnline.Controllers
 
                 // Kiểm tra cấu hình
                 if (string.IsNullOrEmpty(tmnCode) || string.IsNullOrEmpty(hashSecret) || 
-                    string.IsNullOrEmpty(vnpUrl) || string.IsNullOrEmpty(returnUrl))
+                    string.IsNullOrEmpty(vnpUrl))
                 {
                     return BadRequest("Cấu hình VNPay chưa đầy đủ");
+                }
+                if (string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    returnUrl = BuildAbsoluteUrl(nameof(VnPayReturn));
                 }
 
                 // Tạo mã giao dịch duy nhất
@@ -141,6 +258,7 @@ namespace WebBanHangOnline.Controllers
         /// <summary>
         /// URL callback nhận kết quả từ VNPay
         /// </summary>
+        [AllowAnonymous]
         public async Task<IActionResult> VnPayReturn()
         {
             try
@@ -219,7 +337,7 @@ namespace WebBanHangOnline.Controllers
 
                 // Cập nhật trạng thái đơn hàng
                 bool isSuccess = responseCode == "00";
-                order.Status = isSuccess ? "Paid" : "Failed";
+                order.Status = isSuccess ? OrderStatuses.Paid : OrderStatuses.Failed;
                 order.PaymentDate = DateTime.Now;
 
                 // KHÔNG dùng Notes vì model chưa có trường này
@@ -250,6 +368,7 @@ namespace WebBanHangOnline.Controllers
         /// Xử lý IPN từ VNPay (cập nhật tự động)
         /// </summary>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> VnPayIpn()
         {
             try
@@ -310,7 +429,7 @@ namespace WebBanHangOnline.Controllers
                 }
 
                 // Kiểm tra trạng thái đơn hàng (tránh cập nhật trùng)
-                if (order.Status == "Paid" || order.Status == "Failed")
+                if (OrderStatuses.IsFinalPaymentStatus(order.Status))
                 {
                     return Ok(new { RspCode = "02", Message = "Order already confirmed" });
                 }
@@ -320,14 +439,14 @@ namespace WebBanHangOnline.Controllers
                 
                 if (responseCode == "00")
                 {
-                    order.Status = "Paid";
+                    order.Status = OrderStatuses.Paid;
                     order.PaymentDate = DateTime.Now;
                     await _context.SaveChangesAsync();
                     return Ok(new { RspCode = "00", Message = "Confirm Success" });
                 }
                 else
                 {
-                    order.Status = "Failed";
+                    order.Status = OrderStatuses.Failed;
                     order.PaymentDate = DateTime.Now;
                     await _context.SaveChangesAsync();
                     return Ok(new { RspCode = "02", Message = "Payment failed" });
@@ -349,6 +468,42 @@ namespace WebBanHangOnline.Controllers
                 .OrderBy(kv => kv.Key, StringComparer.Ordinal);
 
             return string.Join("&", orderedData.Select(kv => $"{kv.Key}={kv.Value}"));
+        }
+
+        private async Task<Order?> GetCurrentUserOrder(int orderId)
+        {
+            var userId = _userManager.GetUserId(User);
+            return await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(d => d.ProductVariant)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+        }
+
+        private string BuildAbsoluteUrl(string actionName)
+        {
+            return Url.Action(
+                action: actionName,
+                controller: "Payment",
+                values: null,
+                protocol: Request.Scheme,
+                host: Request.Host.ToString()) ?? string.Empty;
+        }
+
+        private async Task<Order?> FindMomoOrderFromRequest()
+        {
+            var orderId = Request.Query["orderId"].ToString();
+            return await FindMomoOrder(orderId);
+        }
+
+        private async Task<Order?> FindMomoOrder(string? momoOrderId)
+        {
+            if (string.IsNullOrWhiteSpace(momoOrderId))
+                return null;
+
+            var orderIdText = momoOrderId.Split('_')[0];
+            return int.TryParse(orderIdText, out var orderId)
+                ? await _context.Orders.FindAsync(orderId)
+                : null;
         }
 
         private string BuildEncodedQueryString(IDictionary<string, string> data)

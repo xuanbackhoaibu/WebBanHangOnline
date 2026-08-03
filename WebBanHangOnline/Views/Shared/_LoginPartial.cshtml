@@ -1,6 +1,9 @@
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@{
+    string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
+}
 
 @if (SignInManager.IsSignedIn(User))
 {
@@ -19,15 +22,16 @@
                 <a class="dropdown-item"
                    asp-area="Identity"
                    asp-page="/Account/Manage/Index">
-                    Tài khoản của tôi
+                    @T("Tài khoản của tôi", "My account")
                 </a>
             </li>
 
             <li>
                 <a class="dropdown-item"
+                   asp-area=""
                    asp-controller="Order"
                    asp-action="MyOrders">
-                    Đơn mua
+                    @T("Đơn mua", "My orders")
                 </a>
             </li>
 
@@ -36,11 +40,11 @@
             <li>
                 <form asp-area="Identity"
                       asp-page="/Account/Logout"
-                      asp-route-returnUrl="@Url.Action("Index","Home")"
+                      asp-route-returnUrl="@Url.Action("Index","Home", new { area = "" })"
                       method="post">
                     <button type="submit"
                             class="dropdown-item text-danger">
-                        Đăng xuất
+                        @T("Đăng xuất", "Sign out")
                     </button>
                 </form>
             </li>
@@ -54,7 +58,7 @@ else
            asp-area="Identity"
            asp-page="/Account/Login">
             <i class="bi bi-box-arrow-in-right me-1"></i>
-            Đăng nhập
+            @T("Đăng nhập", "Sign in")
         </a>
     </li>
 
@@ -63,7 +67,7 @@ else
            asp-area="Identity"
            asp-page="/Account/Register">
             <i class="bi bi-person-plus me-1"></i>
-            Đăng ký
+            @T("Đăng ký", "Register")
         </a>
     </li>
 }

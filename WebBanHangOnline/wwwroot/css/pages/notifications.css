@@ -1,0 +1,37 @@
+.notifications-page .notification-card {
+  border: 1px solid #eee;
+  background: #fff;
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.notifications-page .notification-card:hover {
+  border-color: #ee4d2d;
+  box-shadow: 0 14px 32px rgba(42, 34, 28, 0.09);
+  transform: translateY(-4px);
+}
+
+.notifications-page .notification-card .card-header {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notifications-page .notification-card.flash .card-header {
+  background-color: #ee4d2d;
+}
+
+.notifications-page .notification-card.promo .card-header {
+  background-color: #f7c948;
+}
+
+.notifications-page .notification-card.news .card-header {
+  background-color: #4da6ff;
+}
+
+.notifications-page .notification-copy {
+  max-height: 40px;
+  font-size: 14px;
+  line-height: 1.2;
+}

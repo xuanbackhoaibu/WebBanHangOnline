@@ -27,6 +27,16 @@ namespace WebBanHangOnline.Controllers
             string? sort,
             int page = 1)
         {
+            var displayKeyword = keyword?.Trim();
+            var hasActiveFilter =
+                !string.IsNullOrWhiteSpace(displayKeyword) ||
+                categoryId.HasValue ||
+                minPrice.HasValue ||
+                maxPrice.HasValue ||
+                !string.IsNullOrWhiteSpace(size) ||
+                !string.IsNullOrWhiteSpace(color) ||
+                !string.IsNullOrWhiteSpace(sort);
+
             var query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Variants)
@@ -35,30 +45,30 @@ namespace WebBanHangOnline.Controllers
                 .AsQueryable();
 
             // Search
-            if (!string.IsNullOrWhiteSpace(keyword))
+            if (!string.IsNullOrWhiteSpace(displayKeyword))
             {
-                keyword = keyword.Trim().ToLower();
+                var searchKeyword = displayKeyword.ToLower();
 
                 // ===== ĐỒ NAM =====
-                if (keyword.Contains("nam"))
+                if (searchKeyword.Contains("nam"))
                 {
                     query = query.Where(p =>
                         EF.Functions.Like(p.Category.Name, "%Đồ Nam%"));
                 }
                 // ===== ĐỒ NỮ =====
-                else if (keyword.Contains("nữ") || keyword.Contains("nu"))
+                else if (searchKeyword.Contains("nữ") || searchKeyword.Contains("nu"))
                 {
                     query = query.Where(p =>
                         EF.Functions.Like(p.Category.Name, "%Đồ Nữ%"));
                 }
                 // ===== BÉ TRAI =====
-                else if (keyword.Contains("bé trai") || keyword.Contains("be trai") || keyword.Contains("trai"))
+                else if (searchKeyword.Contains("bé trai") || searchKeyword.Contains("be trai") || searchKeyword.Contains("trai"))
                 {
                     query = query.Where(p =>
                         EF.Functions.Like(p.Category.Name, "%Bé trai%"));
                 }
                 // ===== BÉ GÁI =====
-                else if (keyword.Contains("bé gái") || keyword.Contains("be gai") || keyword.Contains("gái") || keyword.Contains("gai"))
+                else if (searchKeyword.Contains("bé gái") || searchKeyword.Contains("be gai") || searchKeyword.Contains("gái") || searchKeyword.Contains("gai"))
                 {
                     query = query.Where(p =>
                         EF.Functions.Like(p.Category.Name, "%Bé Gái%"));
@@ -67,7 +77,7 @@ namespace WebBanHangOnline.Controllers
                 else
                 {
                     query = query.Where(p =>
-                        EF.Functions.Like(p.Name, $"%{keyword}%"));
+                        EF.Functions.Like(p.Name, $"%{searchKeyword}%"));
                 }
             }
             
@@ -112,7 +122,9 @@ namespace WebBanHangOnline.Controllers
 
             ViewBag.Page = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)PAGE_SIZE);
-            ViewBag.Keyword = keyword;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.HasActiveFilter = hasActiveFilter;
+            ViewBag.Keyword = displayKeyword;
             ViewBag.CategoryId = categoryId;
             ViewBag.MinPrice = minPrice;
             ViewBag.MaxPrice = maxPrice;

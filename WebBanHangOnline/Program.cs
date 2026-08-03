@@ -9,7 +9,9 @@ using WebBanHangOnline.Data;
 using WebBanHangOnline.Hubs;
 using WebBanHangOnline.Models;
 using WebBanHangOnline.Models.Momo;
+using WebBanHangOnline.Services;
 using WebBanHangOnline.Services.Momo;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +26,10 @@ options.UseSqlServer(connectionString));
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<ChatBotController>();
+builder.Services.AddHttpClient();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddTransient<IEmailSender, LocalEmailSender>();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
@@ -35,7 +39,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>();
 // Connect momo
 builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
-builder.Services.AddScoped<IMomoService, MomoService>();
+builder.Services.AddHttpClient<IMomoService, MomoService>();
 // ===============================
 // 2️⃣ MVC + Razor Pages
 // ===============================
@@ -109,12 +113,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseRouting();
-
-app.UseSession();
-app.UseAuthentication();
-app.UseAuthorization();
-
 // ===============================
 // 6️⃣ LOCALIZATION PIPELINE
 // ===============================
@@ -128,8 +126,24 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("vi"),
     SupportedCultures = supportedCultures,
-    SupportedUICultures = supportedCultures
+    SupportedUICultures = supportedCultures,
+    RequestCultureProviders =
+    [
+        new QueryStringRequestCultureProvider
+        {
+            QueryStringKey = "lang",
+            UIQueryStringKey = "lang"
+        },
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    ]
 });
+
+app.UseRouting();
+
+app.UseSession();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // ===============================
 // 7️⃣ ROUTES

@@ -106,13 +106,16 @@ public class OrderController : Controller
         string address,
         string phone,
         string paymentMethod,
-        List<int> selectedItems)
+        List<int> selectedItems,
+        int? variantId,
+        int quantity = 1)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
             return Challenge();
 
-        var cart = await GetUserCart(user.Id, selectedItems);
+        var cart = await GetCheckoutItems(user.Id, selectedItems, variantId, quantity);
+        var isBuyNow = variantId.HasValue;
 
         if (!cart.Any())
             return RedirectToAction("Index", "Cart");
@@ -124,9 +127,7 @@ public class OrderController : Controller
         if (string.IsNullOrWhiteSpace(paymentMethod))
             return BadRequest("Vui lòng chọn phương thức thanh toán.");
 
-        var validMethods = new[] { "COD", "VNPay", "Momo", "VietQR", "Card" };
-
-        if (!validMethods.Contains(paymentMethod))
+        if (!PaymentMethods.All.Contains(paymentMethod))
             return BadRequest("Phương thức thanh toán không hợp lệ.");
 
         address = string.IsNullOrWhiteSpace(address)
@@ -181,8 +182,8 @@ public class OrderController : Controller
                 UserId = user.Id,
                 ShippingAddress = address,
                 PhoneNumber = phone,
-                TotalAmount = cart.Sum(x => x.ProductVariant.Product.Price * x.Quantity),
-                Status = "Pending",
+                TotalAmount = cart.Sum(x => GetItemPrice(x) * x.Quantity),
+                Status = OrderStatuses.Pending,
                 OrderDate = DateTime.Now,
                 PaymentMethod = paymentMethod
             };
@@ -198,14 +199,16 @@ public class OrderController : Controller
                     OrderId = order.Id,
                     ProductVariantId = item.ProductVariantId,
                     Quantity = item.Quantity,
-                    Price = item.ProductVariant.Product.Price
+                    Price = GetItemPrice(item)
                 });
 
                 item.ProductVariant.Stock -= item.Quantity;
             }
 
-            // 🔹 Xóa đúng sản phẩm đã đặt
-            _context.CartItems.RemoveRange(cart);
+            if (!isBuyNow)
+            {
+                _context.CartItems.RemoveRange(cart);
+            }
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -214,24 +217,24 @@ public class OrderController : Controller
 
             switch (paymentMethod)
             {
-                case "VNPay":
+                case PaymentMethods.VnPay:
                     return RedirectToAction("VNPay", "Payment",
                         new { orderId = order.Id });
 
-                case "Momo":
+                case PaymentMethods.Momo:
                     return RedirectToAction("Momo", "Payment",
                         new { orderId = order.Id });
 
-                case "VietQR":
+                case PaymentMethods.VietQr:
                     return RedirectToAction("VietQR", "Payment",
                         new { orderId = order.Id });
 
-                case "Card":
+                case PaymentMethods.Card:
                     return RedirectToAction("Card", "Payment",
                         new { orderId = order.Id });
 
                 default: // COD
-                    order.Status = "Confirmed";
+                    order.Status = OrderStatuses.Confirmed;
                     order.PaymentDate = DateTime.Now;
                     await _context.SaveChangesAsync();
                     return RedirectToAction("OrderSuccess",
@@ -250,11 +253,13 @@ public class OrderController : Controller
     // =========================================================
     public async Task<IActionResult> OrderSuccess(int id)
     {
+        var userId = _userManager.GetUserId(User);
+
         var order = await _context.Orders
             .Include(o => o.OrderDetails)
                 .ThenInclude(d => d.ProductVariant)
                     .ThenInclude(v => v.Product)
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
 
         if (order == null)
             return NotFound();
@@ -297,7 +302,7 @@ public class OrderController : Controller
         if (order == null)
             return NotFound();
 
-        if (order.Status != "Pending")
+        if (order.Status != OrderStatuses.Pending)
             return BadRequest("Chỉ có thể hủy đơn đang chờ xác nhận.");
 
         // 🔄 hoàn lại stock
@@ -306,7 +311,7 @@ public class OrderController : Controller
             item.ProductVariant.Stock += item.Quantity;
         }
 
-        order.Status = "Cancelled";
+        order.Status = OrderStatuses.Cancelled;
 
         await _context.SaveChangesAsync();
 
@@ -332,6 +337,45 @@ public class OrderController : Controller
         }
 
         return await query.ToListAsync();
+    }
+
+    private async Task<List<CartItem>> GetCheckoutItems(
+        string userId,
+        List<int>? selectedItems,
+        int? variantId,
+        int quantity)
+    {
+        if (variantId.HasValue)
+        {
+            var variant = await _context.ProductVariants
+                .Include(v => v.Product)
+                .FirstOrDefaultAsync(v => v.Id == variantId.Value);
+
+            if (variant == null || quantity <= 0)
+            {
+                return new List<CartItem>();
+            }
+
+            return new List<CartItem>
+            {
+                new CartItem
+                {
+                    UserId = userId,
+                    ProductVariantId = variant.Id,
+                    ProductVariant = variant,
+                    Quantity = quantity
+                }
+            };
+        }
+
+        return await GetUserCart(userId, selectedItems);
+    }
+
+    private static decimal GetItemPrice(CartItem item)
+    {
+        return item.ProductVariant.Price > 0
+            ? item.ProductVariant.Price
+            : item.ProductVariant.Product.FinalPrice;
     }
 
     private void SetUserInfoToViewBag(ApplicationUser user)

@@ -39,7 +39,7 @@
     {
         <tr>
             <!-- Thumbnail + ảnh phụ -->
-            <td style="width:220px;">
+            <td class="admin-product-actions">
                 <img src="@(!string.IsNullOrEmpty(p.Thumbnail) ? p.Thumbnail : "/images/no-image.png")"
                      alt="@p.Name"
                      width="80"
@@ -70,7 +70,7 @@
             </td>
 
             <td>
-                @p.Price.ToString("N0") đ
+                @p.Price.ToString("N0") VND
             </td>
 
             <!-- QUẢN LÝ VARIANT -->

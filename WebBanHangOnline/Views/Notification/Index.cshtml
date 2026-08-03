@@ -3,7 +3,11 @@
     ViewData["Title"] = "Thông báo";
 }
 
-<div class="container my-4">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/notifications.css" asp-append-version="true" />
+}
+
+<div class="container my-4 notifications-page">
     <h3 class="mb-3">📢 Thông báo</h3>
 
     <div class="mb-3">
@@ -28,7 +32,7 @@
                             @note.Title
                         </div>
                         <div class="card-body p-2">
-                            <p class="mb-1 text-truncate" style="max-height: 40px;">@note.Content</p>
+                            <p class="mb-1 text-truncate notification-copy">@note.Content</p>
                             <small class="text-muted">@note.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                         </div>
                     </div>
@@ -37,13 +41,3 @@
         }
     </div>
 </div>
-
-<style>
-.notification-card { background: #fff; border: 1px solid #eee; transition: .3s; cursor: pointer; }
-.notification-card:hover { transform: translateY(-4px); border-color: #ee4d2d; }
-.notification-card .card-header { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.notification-card.flash .card-header { background-color: #ee4d2d; }
-.notification-card.promo .card-header { background-color: #f7c948; }
-.notification-card.news .card-header { background-color: #4da6ff; }
-.notification-card .card-body p { font-size: 14px; line-height: 1.2; }
-</style>

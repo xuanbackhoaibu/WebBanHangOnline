@@ -29,26 +29,37 @@
                 </span>
             </td>
             <td>
-                <a asp-action="UpdateStatus"
-                   asp-route-id="@r.SupportRequestId"
-                   asp-route-status="InProgress"
-                   class="btn btn-sm btn-info">
+                <a href="#"
+                   class="btn btn-sm btn-info"
+                   onclick="event.preventDefault(); document.getElementById('request-progress-@r.SupportRequestId').submit();">
                     Đang xử lý
                 </a>
+                <form id="request-progress-@r.SupportRequestId" asp-action="UpdateStatus" method="post" class="d-none">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@r.SupportRequestId" />
+                    <input type="hidden" name="status" value="InProgress" />
+                </form>
 
-                <a asp-action="UpdateStatus"
-                   asp-route-id="@r.SupportRequestId"
-                   asp-route-status="Done"
-                   class="btn btn-sm btn-success">
+                <a href="#"
+                   class="btn btn-sm btn-success"
+                   onclick="event.preventDefault(); document.getElementById('request-done-@r.SupportRequestId').submit();">
                     Hoàn thành
                 </a>
+                <form id="request-done-@r.SupportRequestId" asp-action="UpdateStatus" method="post" class="d-none">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@r.SupportRequestId" />
+                    <input type="hidden" name="status" value="Done" />
+                </form>
 
-                <a asp-action="DeleteRequest"
-                   asp-route-id="@r.SupportRequestId"
+                <a href="#"
                    class="btn btn-sm btn-danger"
-                   onclick="return confirm('Xoá yêu cầu này?')">
+                   onclick="event.preventDefault(); if (confirm('Xoá yêu cầu này?')) document.getElementById('delete-request-@r.SupportRequestId').submit();">
                     Xoá
                 </a>
+                <form id="delete-request-@r.SupportRequestId" asp-action="DeleteRequest" method="post" class="d-none">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@r.SupportRequestId" />
+                </form>
             </td>
         </tr>
     }

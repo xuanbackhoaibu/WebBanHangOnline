@@ -2,422 +2,11 @@
 Layout = "_AdminLayout";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<style>
-    * {
-        font-family: 'Inter', sans-serif;
-    }
-
-    .dashboard-header {
-        margin-bottom: 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .dashboard-header h2 {
-        font-weight: 600;
-        color: #1e293b;
-        font-size: 2rem;
-        margin: 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .date-picker {
-        background: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .date-picker:hover {
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        border-color: #667eea;
-    }
-
-    .date-picker i {
-        color: #667eea;
-    }
-
-    .refresh-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        width: 10px;
-        height: 10px;
-        background: #10b981;
-        border-radius: 50%;
-        display: none;
-    }
-
-    .date-picker.refreshing .refresh-badge {
-        display: block;
-        animation: pulse 1s infinite;
-    }
-
-    @@keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.5); opacity: 0.7; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: 20px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-        border: 1px solid rgba(226, 232, 240, 0.6);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-    }
-
-    .stat-icon.orders { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-    .stat-icon.revenue { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
-    .stat-icon.users { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
-    .stat-icon.products { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
-
-    .stat-content h5 {
-        color: #64748b;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.5rem;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-trend {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.85rem;
-        color: #64748b;
-    }
-
-    .charts-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .chart-card {
-        background: white;
-        border-radius: 20px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        border: 1px solid rgba(226, 232, 240, 0.6);
-        height: 400px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .chart-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-        gap: 1rem;
-        flex-shrink: 0;
-    }
-
-    .chart-header h4 {
-        font-weight: 600;
-        color: #1e293b;
-        margin: 0;
-        font-size: 1.2rem;
-    }
-
-    .chart-container {
-        flex: 1;
-        position: relative;
-        min-height: 0;
-        width: 100%;
-    }
-
-    .chart-container canvas {
-        width: 100% !important;
-        height: 100% !important;
-        max-height: 300px;
-    }
-
-    .recent-orders {
-        background: white;
-        border-radius: 20px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        border: 1px solid rgba(226, 232, 240, 0.6);
-    }
-
-    .table-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .table-header h4 {
-        font-weight: 600;
-        color: #1e293b;
-        margin: 0;
-    }
-
-    .view-all {
-        color: #667eea;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        background: #f8fafc;
-        transition: all 0.3s ease;
-    }
-
-    .view-all:hover {
-        background: #667eea;
-        color: white;
-    }
-
-    .order-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .order-table tr {
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .order-table td {
-        padding: 1rem 0;
-        color: #334155;
-    }
-
-    .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 30px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        display: inline-block;
-    }
-
-    .status-delivered, .status-completed, .status-paid { background: #d1fae5; color: #065f46; }
-    .status-pending, .status-waiting { background: #fff3cd; color: #856404; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; }
-    .status-processing { background: #e0f2fe; color: #0369a1; }
-
-    .avatar-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-    }
-
-    .user-info {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .user-name {
-        font-weight: 600;
-        color: #1e293b;
-    }
-
-    .user-email {
-        font-size: 0.8rem;
-        color: #64748b;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-    }
-
-    .btn-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        background: #f1f5f9;
-        color: #475569;
-    }
-
-    .btn-icon:hover {
-        background: #667eea;
-        color: white;
-        transform: scale(1.05);
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 3rem;
-        color: #64748b;
-    }
-
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        color: #cbd5e1;
-    }
-
-    /* Style cho debug panel */
-    .debug-panel {
-        background: #1e293b;
-        color: #fff;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 12px;
-        font-family: monospace;
-        font-size: 14px;
-        border: 2px solid #ef4444;
-    }
-
-    .debug-panel h3 {
-        color: #ef4444;
-        margin-top: 0;
-        margin-bottom: 15px;
-        font-size: 18px;
-    }
-
-    .debug-panel h4 {
-        color: #f59e0b;
-        margin: 15px 0 5px 0;
-        font-size: 16px;
-    }
-
-    .debug-panel pre {
-        background: #0f172a;
-        padding: 10px;
-        border-radius: 8px;
-        overflow-x: auto;
-        color: #10b981;
-        margin: 5px 0;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-
-    .debug-panel .success { color: #10b981; }
-    .debug-panel .error { color: #ef4444; }
-    .debug-panel .warning { color: #f59e0b; }
-
-    /* Auto refresh indicator */
-    .auto-refresh-indicator {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        background: #10b981;
-        border-radius: 50%;
-        margin-left: 5px;
-        animation: blink 1s infinite;
-    }
-
-    @@keyframes blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
-    }
-
-    @@media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .charts-row {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @@media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .order-table {
-            display: block;
-            overflow-x: auto;
-        }
-
-        .chart-card {
-            height: 350px;
-        }
-    }
-</style>
-
-
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/pages/admin-dashboard.css" asp-append-version="true" />
+}
 @{
 // Tính toán các chỉ số phụ với kiểm tra null
 var totalOrders = 0;
@@ -443,7 +32,7 @@ catch
     <div class="date-picker" id="refreshButton">
         <i class="far fa-calendar-alt"></i>
         <span>@DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))</span>
-        <i class="fas fa-sync-alt ms-2" style="font-size: 0.8rem;"></i>
+        <i class="fas fa-sync-alt ms-2 admin-icon-sm"></i>
         <span class="refresh-badge"></span>
     </div>
 </div>
@@ -469,7 +58,7 @@ catch
         </div>
         <div class="stat-content">
             <h5>Tổng doanh thu</h5>
-            <div class="stat-value" id="totalRevenue">@String.Format("{0:N0}", totalRevenue) đ</div>
+            <div class="stat-value" id="totalRevenue">@String.Format("{0:N0}", totalRevenue) VND</div>
             <div class="stat-trend">
                 <i class="fas fa-chart-line"></i>
                 <span>Đã thanh toán</span>
@@ -509,7 +98,7 @@ catch
 <div class="charts-row">
     <div class="chart-card">
         <div class="chart-header">
-            <h4><i class="fas fa-chart-line me-2" style="color: #667eea;"></i>Doanh thu 7 ngày gần nhất</h4>
+            <h4><i class="fas fa-chart-line me-2 admin-icon-blue"></i>Doanh thu 7 ngày gần nhất</h4>
         </div>
         <div class="chart-container" id="revenueChartContainer">
             <canvas id="revenueChart"></canvas>
@@ -518,7 +107,7 @@ catch
 
     <div class="chart-card">
         <div class="chart-header">
-            <h4><i class="fas fa-chart-pie me-2" style="color: #f093fb;"></i>Phân bố đơn hàng</h4>
+            <h4><i class="fas fa-chart-pie me-2 admin-icon-pink"></i>Phân bố đơn hàng</h4>
         </div>
         <div class="chart-container" id="orderDistributionContainer">
             <canvas id="orderDistributionChart"></canvas>
@@ -528,7 +117,7 @@ catch
 
 <div class="recent-orders">
     <div class="table-header">
-        <h4><i class="fas fa-history me-2" style="color: #667eea;"></i>Đơn hàng gần đây</h4>
+        <h4><i class="fas fa-history me-2 admin-icon-blue"></i>Đơn hàng gần đây</h4>
         <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="view-all">
             Xem tất cả <i class="fas fa-arrow-right"></i>
         </a>
@@ -660,11 +249,11 @@ catch
                 @try
                 {
                 decimal amount = order.TotalAmount is decimal ? (decimal)order.TotalAmount : 0;
-                @String.Format("{0:N0}", amount) <span>đ</span>
+                @String.Format("{0:N0}", amount) <span>VND</span>
                 }
                 catch
                 {
-                <span>0 đ</span>
+                <span>0 VND</span>
                 }
             </td>
             <td><span class="status-badge @statusClass">@statusText</span></td>
@@ -726,7 +315,7 @@ catch
                 currency: 'VND'
             }).format(value);
         } catch (e) {
-            return value + ' đ';
+            return value + ' VND';
         }
     }
 
@@ -858,7 +447,7 @@ catch
                                     const value = context.raw || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                    return `${label}: ${value} đơn (${percentage}%)`;
+                                    return `${label}: ${value} VNDơn (${percentage}%)`;
                                 }
                             }
                         }
