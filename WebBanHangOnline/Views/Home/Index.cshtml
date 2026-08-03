@@ -3,6 +3,11 @@
     ViewData["Title"] = WebBanHangOnline.Helpers.CatalogTextHelper.T("Trang chủ", "Home");
     string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
     string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
+    var trendProducts = Model
+        .Where(product => product.IsActive && !string.IsNullOrWhiteSpace(product.Thumbnail))
+        .OrderBy(_ => Guid.NewGuid())
+        .Take(3)
+        .ToList();
 }
 
 @section Styles {
@@ -281,30 +286,50 @@
 <section class="blog container">
     <h4 class="text-center mb-4">@T("Xu hướng thời trang", "Fashion trends")</h4>
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="blog-card">
-                <img src="/images/blog1.jpg" class="img-fluid blog-img" alt="Blog 1" loading="lazy">
-                <div class="blog-body">
-                    <h6>Beauty life style classic</h6>
+        @foreach (var trend in trendProducts)
+        {
+            <div class="col-md-4">
+                <a asp-controller="Product"
+                   asp-action="Details"
+                   asp-route-id="@trend.ProductId"
+                   asp-route-slug="@trend.Slug"
+                   class="blog-card trend-card">
+                    <img src="@trend.Thumbnail" class="img-fluid blog-img" alt="@D(trend.Name)" loading="lazy">
+                    <div class="blog-body">
+                        <span>@D(trend.Category?.Name)</span>
+                        <h6>@D(trend.Name)</h6>
+                    </div>
+                </a>
+            </div>
+        }
+
+        @if (!trendProducts.Any())
+        {
+            <div class="col-md-4">
+                <div class="blog-card">
+                    <img src="/images/blog1.jpg" class="img-fluid blog-img" alt="Blog 1" loading="lazy">
+                    <div class="blog-body">
+                        <h6>Beauty life style classic</h6>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="blog-card">
-                <img src="/images/blog2.jpg" class="img-fluid blog-img" alt="Blog 2" loading="lazy">
-                <div class="blog-body">
-                    <h6>The need of life with vip style</h6>
+            <div class="col-md-4">
+                <div class="blog-card">
+                    <img src="/images/blog2.jpg" class="img-fluid blog-img" alt="Blog 2" loading="lazy">
+                    <div class="blog-body">
+                        <h6>The need of life with vip style</h6>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="blog-card">
-                <img src="/images/blog3.jpg" class="img-fluid blog-img" alt="Blog 3" loading="lazy">
-                <div class="blog-body">
-                    <h6>There is someone standing behind you</h6>
+            <div class="col-md-4">
+                <div class="blog-card">
+                    <img src="/images/blog3.jpg" class="img-fluid blog-img" alt="Blog 3" loading="lazy">
+                    <div class="blog-body">
+                        <h6>There is someone standing behind you</h6>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 </section>
 

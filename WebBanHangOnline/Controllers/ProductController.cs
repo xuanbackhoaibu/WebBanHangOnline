@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Models;
 
 namespace WebBanHangOnline.Controllers
 {
@@ -151,6 +152,7 @@ namespace WebBanHangOnline.Controllers
                 .Include(p => p.Category)
                 .Include(p => p.Variants)
                 .Include(p => p.Images) // ⚠️ gallery ảnh
+                .Include(p => p.Reviews)
                 .FirstOrDefaultAsync(p => p.ProductId == id && p.IsActive);
 
             if (product == null)
@@ -166,6 +168,47 @@ namespace WebBanHangOnline.Controllers
                 .ToListAsync();
 
             return View(product);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReview(int productId, int rating, string? comment)
+        {
+            var product = await _context.Products
+                .AsNoTracking()
+                .FirstOrDefaultAsync(item => item.ProductId == productId && item.IsActive);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            rating = Math.Clamp(rating, 1, 5);
+            var cleanComment = comment?.Trim();
+
+            if (string.IsNullOrWhiteSpace(cleanComment))
+            {
+                TempData["ReviewError"] = "Vui lòng nhập nội dung đánh giá.";
+                return RedirectToAction(nameof(Details), new { id = productId, slug = product.Slug });
+            }
+
+            var userName = User.Identity?.IsAuthenticated == true
+                ? User.Identity.Name ?? "Khách hàng"
+                : "Khách hàng";
+
+            _context.Reviews.Add(new Review
+            {
+                ProductId = productId,
+                UserName = userName,
+                Rating = rating,
+                Comment = cleanComment.Length > 500 ? cleanComment[..500] : cleanComment,
+                CreatedAt = DateTime.Now
+            });
+
+            await _context.SaveChangesAsync();
+            TempData["ReviewSuccess"] = "Cảm ơn bạn đã đánh giá sản phẩm.";
+
+            return RedirectToAction(nameof(Details), new { id = productId, slug = product.Slug });
         }
     }
 }

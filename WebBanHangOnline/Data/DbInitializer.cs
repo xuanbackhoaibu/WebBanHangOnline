@@ -82,6 +82,7 @@ namespace WebBanHangOnline.Data
         private static async Task SeedFashionStoreDataAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             await EnsureFashionColumnsAsync(context);
+            await EnsureReviewTableAsync(context);
 
             if (!await context.SupportFaqs.AnyAsync())
             {
@@ -108,6 +109,7 @@ namespace WebBanHangOnline.Data
             }
 
             await SeedCatalogProductsAsync(context);
+            await SeedProductReviewsAsync(context);
 
             await SeedDemoCustomerAndOrderAsync(context, userManager);
         }
@@ -242,6 +244,43 @@ namespace WebBanHangOnline.Data
             string Description,
             IReadOnlyCollection<string> Colors);
 
+        private static async Task SeedProductReviewsAsync(ApplicationDbContext context)
+        {
+            if (await context.Reviews.AnyAsync())
+            {
+                return;
+            }
+
+            var products = await context.Products
+                .OrderBy(product => product.ProductId)
+                .Take(8)
+                .ToListAsync();
+
+            var reviewTemplates = new[]
+            {
+                new { UserName = "Minh Anh", Rating = 5, Comment = "Sản phẩm đẹp, chất vải mềm và form đúng mô tả." },
+                new { UserName = "Hoàng Nam", Rating = 5, Comment = "Giao nhanh, đóng gói cẩn thận, mặc rất vừa." },
+                new { UserName = "Thu Hà", Rating = 4, Comment = "Màu đẹp, đường may ổn, sẽ ủng hộ shop tiếp." }
+            };
+
+            foreach (var product in products)
+            {
+                foreach (var template in reviewTemplates)
+                {
+                    context.Reviews.Add(new Review
+                    {
+                        ProductId = product.ProductId,
+                        UserName = template.UserName,
+                        Rating = template.Rating,
+                        Comment = template.Comment,
+                        CreatedAt = DateTime.Now.AddDays(-template.Rating)
+                    });
+                }
+            }
+
+            await context.SaveChangesAsync();
+        }
+
         private static async Task EnsureFashionColumnsAsync(ApplicationDbContext context)
         {
             await context.Database.ExecuteSqlRawAsync(@"
@@ -253,6 +292,27 @@ IF COL_LENGTH('Products', 'FlashSaleStart') IS NULL
 
 IF COL_LENGTH('Products', 'FlashSaleEnd') IS NULL
     ALTER TABLE Products ADD FlashSaleEnd datetime2 NULL;
+");
+        }
+
+        private static async Task EnsureReviewTableAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[Reviews]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [Reviews] (
+        [ReviewId] int NOT NULL IDENTITY,
+        [ProductId] int NOT NULL,
+        [UserName] nvarchar(max) NOT NULL,
+        [Rating] int NOT NULL,
+        [Comment] nvarchar(max) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_Reviews] PRIMARY KEY ([ReviewId]),
+        CONSTRAINT [FK_Reviews_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([ProductId]) ON DELETE CASCADE
+    );
+
+    CREATE INDEX [IX_Reviews_ProductId] ON [Reviews] ([ProductId]);
+END
 ");
         }
 

@@ -84,32 +84,37 @@ public class CatalogApiController : ControllerBase
             .Include(item => item.Category)
             .Include(item => item.Images)
             .Include(item => item.Variants)
+            .Include(item => item.Reviews)
             .Where(item => item.IsActive)
-            .Select(item => new
-            {
-                id = item.ProductId,
-                item.Name,
-                item.Slug,
-                item.Description,
-                category = item.Category == null ? null : item.Category.Name,
-                price = item.Price,
-                finalPrice = item.FinalPrice,
-                item.Thumbnail,
-                images = item.Images.Select(image => image.ImageUrl),
-                variants = item.Variants.Select(variant => new
-                {
-                    id = variant.Id,
-                    variant.Size,
-                    variant.Color,
-                    variant.Stock,
-                    variant.Price
-                }),
-                averageRating = 0,
-                reviewCount = 0
-            })
-            .FirstOrDefaultAsync(item => item.id == id);
+            .FirstOrDefaultAsync(item => item.ProductId == id);
 
-        return product == null ? NotFound(new { message = "Product not found" }) : Ok(product);
+        if (product == null)
+        {
+            return NotFound(new { message = "Product not found" });
+        }
+
+        return Ok(new
+        {
+            id = product.ProductId,
+            product.Name,
+            product.Slug,
+            product.Description,
+            category = product.Category == null ? null : product.Category.Name,
+            price = product.Price,
+            finalPrice = product.FinalPrice,
+            product.Thumbnail,
+            images = product.Images.Select(image => image.ImageUrl),
+            variants = product.Variants.Select(variant => new
+            {
+                id = variant.Id,
+                variant.Size,
+                variant.Color,
+                variant.Stock,
+                variant.Price
+            }),
+            averageRating = product.AverageRating,
+            reviewCount = product.ReviewCount
+        });
     }
 
     [HttpGet("categories")]
