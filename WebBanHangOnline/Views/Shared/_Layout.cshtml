@@ -11,6 +11,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Site CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -23,8 +26,9 @@
     <div class="coutura-topbar">
         <div class="container d-flex justify-content-between align-items-center small">
 
-            <div class="d-flex gap-3">
-                <span>Giao hàng toàn quốc</span>
+            <div class="d-flex gap-3 align-items-center">
+                <span><i class="bi bi-truck"></i> Giao hàng toàn quốc</span>
+                <span class="d-none d-md-inline"><i class="bi bi-shield-check"></i> Đổi trả trong 7 ngày</span>
             </div>
 
             <div class="d-flex align-items-center gap-4">
@@ -71,7 +75,7 @@
             <a asp-controller="Home"
                asp-action="Index"
                class="coutura-logo">
-                xuanbac<span>.</span>
+                XuanBac<span>.</span>
             </a>
 
             <!-- SEARCH -->
@@ -93,11 +97,11 @@
             <!-- ICONS -->
             <div class="header-icons d-flex align-items-center gap-3">
 
-                <a href="#" class="icon-btn">
+                <a asp-controller="Product" asp-action="Index" class="icon-btn" title="Tìm kiếm">
                     <i class="bi bi-search"></i>
                 </a>
 
-                <a href="#" class="icon-btn">
+                <a asp-controller="Product" asp-action="Index" class="icon-btn" title="Yêu thích">
                     <i class="bi bi-heart"></i>
                 </a>
 
@@ -189,7 +193,7 @@
     </nav>
 
     <!-- ================= MAIN ================= -->
-    <div class="container my-5">
+    <div class="container site-shell">
         <main role="main">
             @RenderBody()
         </main>

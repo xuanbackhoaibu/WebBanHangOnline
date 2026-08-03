@@ -5,8 +5,12 @@ decimal total = 0;
 var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4">📦 Xác nhận đơn hàng</h2>
+<div class="checkout-page">
+    <div class="checkout-heading">
+        <span class="catalog-kicker">Checkout</span>
+        <h1>Xác nhận đơn hàng</h1>
+        <p>Kiểm tra thông tin nhận hàng, sản phẩm và phương thức thanh toán trước khi đặt hàng.</p>
+    </div>
 
     <form asp-action="PlaceOrder" method="post">
         @Html.AntiForgeryToken()
@@ -33,7 +37,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
             <div class="col-md-8">
 
                 <!-- ================= ĐỊA CHỈ ================= -->
-                <div class="card mb-4 shadow-sm border-danger">
+                <div class="card checkout-card mb-4 border-0">
                     <div class="card-header bg-white fw-bold text-danger">
                         📍 Địa chỉ nhận hàng
                     </div>
@@ -115,7 +119,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                 </div>
 
                 <!-- ================= SẢN PHẨM ================= -->
-                <div class="card shadow-sm">
+                <div class="card checkout-card border-0">
                     <div class="card-header bg-light fw-bold">
                         🛍 Sản phẩm trong đơn hàng
                     </div>
@@ -164,7 +168,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
             <!-- ================= RIGHT ================= -->
             <div class="col-md-4">
 
-                <div class="card mb-4 shadow-sm">
+                <div class="card checkout-card mb-4 border-0">
                     <div class="card-header bg-light fw-bold">
                         💳 Phương thức thanh toán
                     </div>
@@ -186,7 +190,7 @@ var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
                     </div>
                 </div>
 
-                <div class="card shadow-sm">
+                <div class="card checkout-card checkout-total border-0">
                     <div class="card-body">
 
                         <h5 class="d-flex justify-content-between">

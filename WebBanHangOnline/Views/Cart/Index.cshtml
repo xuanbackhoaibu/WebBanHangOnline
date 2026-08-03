@@ -1,17 +1,30 @@
 @model List<CartItem>
 
-<div class="container">
-    <h3 class="mb-4">🛒 Giỏ hàng của bạn</h3>
+<div class="cart-page">
+    <div class="cart-heading">
+        <div>
+            <span class="catalog-kicker">Shopping cart</span>
+            <h1>Giỏ hàng của bạn</h1>
+            <p>Chọn sản phẩm muốn thanh toán, kiểm tra số lượng và tiến hành đặt hàng.</p>
+        </div>
+        <a asp-controller="Product" asp-action="Index" class="catalog-cart-link">
+            <i class="bi bi-arrow-left"></i>
+            Tiếp tục mua sắm
+        </a>
+    </div>
 
     @if (!Model.Any())
     {
-    <div class="alert alert-warning">
-        Giỏ hàng trống
+    <div class="empty-state">
+        <i class="bi bi-bag"></i>
+        <h3>Giỏ hàng đang trống</h3>
+        <p>Khám phá bộ sưu tập mới và thêm sản phẩm bạn thích vào giỏ.</p>
+        <a asp-controller="Product" asp-action="Index" class="btn btn-filter">Mua sắm ngay</a>
     </div>
     }
     else
     {
-    <div class="table-responsive bg-white rounded shadow-sm">
+    <div class="table-responsive cart-table-card">
         <table class="table align-middle mb-0">
             <thead class="table-light">
             <tr>
@@ -120,6 +133,7 @@
         <div class="col-md-6"></div>
 
         <div class="col-md-6 text-end">
+            <div class="cart-summary">
             <h4>
                 Tổng tiền đã chọn:
                 <span class="text-danger fw-bold" id="selectedTotal">
@@ -132,6 +146,7 @@
                     disabled>
                 Tiến hành đặt hàng
             </button>
+            </div>
         </div>
     </div>
     }

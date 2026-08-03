@@ -8,8 +8,16 @@
 <!-- ================= HERO ================= -->
 <section class="hero container">
     <div class="hero-content">
-        <small class="hero-kicker">XUANBAC</small>
-        <h1>Autumn<br />& Winter 2026</h1>
+        <small class="hero-kicker">XUANBAC FASHION</small>
+        <h1>Bộ sưu tập mới cho phong cách mỗi ngày</h1>
+        <p class="hero-copy">
+            Thời trang nam, nữ và trẻ em với trải nghiệm mua sắm nhanh, rõ ràng và dễ lựa chọn.
+        </p>
+        <div class="hero-proof">
+            <span><i class="bi bi-lightning-charge-fill"></i> Flash sale</span>
+            <span><i class="bi bi-box-seam"></i> Có sẵn tồn kho</span>
+            <span><i class="bi bi-credit-card"></i> Nhiều thanh toán</span>
+        </div>
 
         <div class="hero-actions">
             <a asp-controller="Product"
@@ -23,7 +31,7 @@
             </a>
         </div>
     </div>
-    <img src="/images/l.jpg" class="hero-img" alt="Hero banner" loading="lazy" />
+    <img src="/images/l.jpg" class="hero-img" alt="Bộ sưu tập thời trang XuanBac" loading="lazy" />
 </section>
 
 <!-- ================= WOMEN ================= -->
@@ -33,7 +41,8 @@
             <img src="/images/women-banner.jpg" class="img-fluid">
         </div>
         <div class="col-lg-7">
-            <h4 class="section-title"> THỜI TRANG NỮ </h4>
+            <p class="section-eyebrow">For women</p>
+            <h4 class="section-title">Thời trang nữ</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
@@ -80,7 +89,8 @@
 <section class="section container">
     <div class="row align-items-center">
         <div class="col-lg-7">
-            <h4 class="section-title">THỜI TRANG NAM </h4>
+            <p class="section-eyebrow">For men</p>
+            <h4 class="section-title">Thời trang nam</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
@@ -117,7 +127,8 @@
             <img src="/images/boys-banner.jpg" class="img-fluid">
         </div>
         <div class="col-lg-7">
-            <h4 class="section-title">THỜI TRANG BÉ TRAI</h4>
+            <p class="section-eyebrow">For boys</p>
+            <h4 class="section-title">Thời trang bé trai</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
@@ -148,7 +159,8 @@
 <section class="section container">
     <div class="row align-items-center">
         <div class="col-lg-7">
-            <h4 class="section-title">THỜI TRANG BÉ GÁI</h4>
+            <p class="section-eyebrow">For girls</p>
+            <h4 class="section-title">Thời trang bé gái</h4>
             <div class="row g-4">
                 @foreach (var p in Model
                               .Where(x => x.Category != null 
