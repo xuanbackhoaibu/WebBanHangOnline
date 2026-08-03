@@ -120,6 +120,13 @@ namespace WebBanHangOnline.Controllers
                 .Where(c => c.IsActive)
                 .ToListAsync();
 
+            ViewBag.Colors = await _context.ProductVariants
+                .Where(variant => variant.Product.IsActive && variant.Color != "")
+                .Select(variant => variant.Color)
+                .Distinct()
+                .OrderBy(colorName => colorName)
+                .ToListAsync();
+
             ViewBag.Page = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)PAGE_SIZE);
             ViewBag.TotalItems = totalItems;

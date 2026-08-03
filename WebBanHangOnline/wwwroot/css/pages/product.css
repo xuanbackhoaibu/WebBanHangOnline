@@ -54,7 +54,7 @@
 
 .filter-main-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(170px, 220px) minmax(170px, 220px) auto auto;
+  grid-template-columns: minmax(260px, 1fr) repeat(2, minmax(160px, 220px)) repeat(3, auto);
   gap: 10px;
   align-items: center;
 }
@@ -284,9 +284,18 @@
   font-weight: 800;
 }
 
+.catalog-pagination .page-link:hover,
+.catalog-pagination .page-link:focus {
+  border-color: rgba(217, 79, 61, 0.34);
+  background: #fff5f2;
+  color: var(--xb-accent);
+  box-shadow: none;
+}
+
 .catalog-pagination .active .page-link {
-  border-color: var(--xb-ink);
-  background: var(--xb-ink);
+  border-color: rgba(217, 79, 61, 0.42);
+  background: #fff0ec;
+  color: var(--xb-accent);
 }
 
 @media (max-width: 991px) {

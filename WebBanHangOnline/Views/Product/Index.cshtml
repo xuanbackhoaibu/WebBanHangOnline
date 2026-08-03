@@ -6,6 +6,7 @@
     var hasActiveFilter = ViewBag.HasActiveFilter == true;
     var hasAdvancedFilter = ViewBag.MinPrice != null || ViewBag.MaxPrice != null || !string.IsNullOrWhiteSpace(ViewBag.Size as string) || !string.IsNullOrWhiteSpace(ViewBag.Color as string);
     var totalItems = ViewBag.TotalItems ?? Model.Count();
+    var colorOptions = ViewBag.Colors as IEnumerable<string> ?? Enumerable.Empty<string>();
     string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
     string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
 }
@@ -68,6 +69,14 @@
                 <i class="bi bi-sliders"></i>
                 @T("Nâng cao", "More")
             </button>
+
+            @if (hasActiveFilter)
+            {
+                <a asp-action="Index" class="btn btn-clear-filter">
+                    <i class="bi bi-x-circle"></i>
+                    @T("Bỏ lọc", "Reset")
+                </a>
+            }
         </div>
 
         <div class="catalog-quick-categories">
@@ -108,9 +117,10 @@
                 <label class="filter-label">@T("Màu", "Color")</label>
                 <select name="color" class="form-select">
                     <option value="">@T("Tất cả", "All")</option>
-                    <option value="Đen" selected="@(ViewBag.Color == "Đen")">@D("Đen")</option>
-                    <option value="Trắng" selected="@(ViewBag.Color == "Trắng")">@D("Trắng")</option>
-                    <option value="Xanh" selected="@(ViewBag.Color == "Xanh")">@D("Xanh")</option>
+                    @foreach (var colorOption in colorOptions)
+                    {
+                        <option value="@colorOption" selected="@(ViewBag.Color == colorOption)">@D(colorOption)</option>
+                    }
                 </select>
             </div>
             <div class="advanced-filter-actions">

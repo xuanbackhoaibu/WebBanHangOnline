@@ -84,7 +84,6 @@ public class CatalogApiController : ControllerBase
             .Include(item => item.Category)
             .Include(item => item.Images)
             .Include(item => item.Variants)
-            .Include(item => item.Reviews)
             .Where(item => item.IsActive)
             .Select(item => new
             {
@@ -105,8 +104,8 @@ public class CatalogApiController : ControllerBase
                     variant.Stock,
                     variant.Price
                 }),
-                averageRating = item.AverageRating,
-                reviewCount = item.ReviewCount
+                averageRating = 0,
+                reviewCount = 0
             })
             .FirstOrDefaultAsync(item => item.id == id);
 

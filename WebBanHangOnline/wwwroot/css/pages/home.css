@@ -34,6 +34,15 @@
   letter-spacing: 0.2px;
 }
 
+.home-page .category-banner {
+  width: 100%;
+  height: 520px;
+  border-radius: 18px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
+  object-fit: cover;
+  object-position: center;
+}
+
 .home-page .product-card {
   position: relative;
   overflow: hidden;
@@ -222,9 +231,18 @@
     width: 100%;
     margin: 20px 0 0;
   }
+
+  .home-page .category-banner {
+    height: 420px;
+    margin-bottom: 22px;
+  }
 }
 
 @media (max-width: 576px) {
+  .home-page .category-banner {
+    height: 320px;
+  }
+
   .home-page .hero-actions {
     display: grid;
   }
