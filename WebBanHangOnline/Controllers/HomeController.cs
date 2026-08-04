@@ -17,8 +17,29 @@ public class HomeController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(int? categoryId)
+    public async Task<IActionResult> Welcome()
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        var products = await _context.Products
+            .Where(product => product.IsActive && !string.IsNullOrWhiteSpace(product.Thumbnail))
+            .OrderBy(product => product.ProductId)
+            .Take(10)
+            .ToListAsync();
+
+        return View(products);
+    }
+
+    public async Task<IActionResult> Index(int? categoryId, bool enterShop = false)
+    {
+        if (User.Identity?.IsAuthenticated != true && !enterShop)
+        {
+            return RedirectToAction(nameof(Welcome));
+        }
+
         // Lấy danh sách danh mục để hiển thị filter
         ViewBag.Categories = await _context.Categories
             .Where(c => c.IsActive)

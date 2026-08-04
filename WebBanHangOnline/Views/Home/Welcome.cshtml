@@ -1,0 +1,217 @@
+@model List<WebBanHangOnline.Models.Product>
+@{
+    Layout = null;
+    var title = WebBanHangOnline.Helpers.CatalogTextHelper.T("Chào mừng", "Welcome");
+    string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
+    string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
+    var heroProducts = Model
+        .Where(product => product.IsActive && !string.IsNullOrWhiteSpace(product.Thumbnail))
+        .Take(10)
+        .ToList();
+
+    var fallbackImages = new[]
+    {
+        "/images/products/3e322809-1097-468a-8d36-c1c118ca9952.webp",
+        "/images/products/c585b184-79a3-40f5-9d35-8e5bdd9db19e.webp",
+        "/images/products/c3bc6230-25f9-4637-8659-7d824922f2ef.webp",
+        "/images/products/c40ccd42-a351-4eb2-9a7a-2204c7fd7ee5.webp",
+        "/images/products/ebfc157b-4fa8-47c1-8437-32849bdc462a.webp",
+        "/images/products/cbfde535-3951-4782-88d1-e490867ecfcc.webp"
+    };
+    var carouselProducts = heroProducts.Any()
+        ? heroProducts
+        : fallbackImages.Select((image, index) => new WebBanHangOnline.Models.Product
+        {
+            Name = $"XuanBac Look {index + 1}",
+            Thumbnail = image,
+            Price = 0
+        }).ToList();
+}
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - XuanBac Fashion</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/pages/intro.css" asp-append-version="true" />
+</head>
+<body class="intro-body">
+    <main class="intro-page" data-intro-page>
+        <div class="intro-cursor" data-intro-cursor aria-hidden="true"></div>
+        <div class="intro-cursor-dot" data-intro-cursor-dot aria-hidden="true"></div>
+        <div class="intro-progress" aria-hidden="true">
+            <span data-intro-progress></span>
+        </div>
+        <canvas class="intro-particles" data-intro-particles aria-hidden="true"></canvas>
+        <div class="intro-core" aria-hidden="true">
+            <span></span>
+        </div>
+        <div class="intro-fluid intro-fluid-cyan" data-intro-fluid aria-hidden="true"></div>
+        <div class="intro-fluid intro-fluid-violet" data-intro-fluid aria-hidden="true"></div>
+        <div class="intro-fluid intro-fluid-gold" data-intro-fluid aria-hidden="true"></div>
+        <div class="intro-ribbon intro-ribbon-left" aria-hidden="true"></div>
+        <div class="intro-ribbon intro-ribbon-right" aria-hidden="true"></div>
+        <div class="intro-grain" aria-hidden="true"></div>
+
+        <nav class="intro-nav" aria-label="@T("Điều hướng màn chờ", "Intro navigation")">
+            <a asp-controller="Home" asp-action="Welcome" class="intro-logo">XuanBac<span>.</span></a>
+            <div class="intro-menu">
+                <a asp-controller="Product" asp-action="Index">@T("Sản phẩm", "Shop")</a>
+                <a asp-controller="Home" asp-action="Index" asp-route-enterShop="true">@T("Bộ sưu tập", "Collection")</a>
+                <a asp-area="Identity" asp-page="/Account/Login">@T("Đăng nhập", "Login")</a>
+                <a class="intro-contact" asp-area="Identity" asp-page="/Account/Register">@T("Đăng ký", "Contact")</a>
+            </div>
+        </nav>
+
+        <div class="intro-section-nav" aria-label="@T("Điều hướng từng phần", "Section navigation")">
+            <button type="button" data-intro-section-link="hero" class="is-active">@T("Hero", "Hero")</button>
+            <button type="button" data-intro-section-link="stack">@T("3D", "3D")</button>
+            <button type="button" data-intro-section-link="filter">@T("Lọc", "Filter")</button>
+        </div>
+
+        <section id="intro-hero" class="intro-hero" data-intro-section="hero" data-intro-carousel aria-label="@T("Bộ sưu tập anti-gravity 3D", "Anti-gravity 3D collection")">
+            <div class="intro-copy" data-intro-reveal>
+                <span class="intro-kicker">@T("Bạn đang tìm phong cách nào?", "What are you looking for?")</span>
+                <h1 aria-label="@T("ANTI-GRAVITY FASHION", "ANTI-GRAVITY FASHION")">
+                    <span>@T("ANTI-", "ANTI-")</span>
+                    <span>@T("GRAVITY", "GRAVITY")</span>
+                    <span>@T("FASHION", "FASHION")</span>
+                </h1>
+                <p>
+                    @T("Lướt qua các thẻ sản phẩm nổi trong không gian, chọn vibe rồi vào cửa hàng.",
+                        "Glide through floating product cards, pick a vibe, then enter the shop.")
+                </p>
+                <div class="intro-actions">
+                    <a class="btn intro-primary"
+                       asp-controller="Home"
+                       asp-action="Index"
+                       asp-route-enterShop="true">
+                        @T("Vào cửa hàng", "Enter shop")
+                    </a>
+                    <a class="btn intro-secondary"
+                       asp-area="Identity"
+                       asp-page="/Account/Login">
+                        @T("Đăng nhập", "Sign in")
+                    </a>
+                </div>
+            </div>
+
+            <div class="intro-discovery" data-intro-reveal data-intro-section="filter">
+                <label for="intro-search">@T("Tìm sản phẩm", "Search products")</label>
+                <div class="intro-search-shell">
+                    <input id="intro-search"
+                           type="search"
+                           autocomplete="off"
+                           data-intro-search
+                           placeholder="@T("Tìm vibe, tên sản phẩm...", "Search vibe, product name...")"
+                           aria-label="@T("Tìm sản phẩm trong màn chờ", "Search products in intro")" />
+                </div>
+                <div class="intro-filter-chips" aria-label="@T("Bộ lọc nhanh", "Quick filters")">
+                    <button type="button" class="is-active" data-intro-filter="all">@T("Tất cả", "All")</button>
+                    <button type="button" data-intro-filter="new">@T("Mới", "New")</button>
+                    <button type="button" data-intro-filter="hot">@T("Nổi bật", "Hot")</button>
+                </div>
+                <p class="intro-empty" data-intro-empty hidden>@T("Không tìm thấy sản phẩm phù hợp.", "No matching products.")</p>
+            </div>
+
+            <div class="intro-stage">
+                <div class="intro-energy" aria-hidden="true"></div>
+                <div class="intro-orbit" data-intro-orbit>
+                    @for (var i = 0; i < carouselProducts.Count; i++)
+                    {
+                        var product = carouselProducts[i];
+                        var activeClass = i == 0 ? " is-active" : "";
+                        <a class="intro-card@activeClass"
+                           data-intro-card
+                           data-card-index="@i"
+                           data-name="@D(product.Name)"
+                           data-image="@product.Thumbnail"
+                           data-price="@(product.Price > 0 ? $"{product.Price:N0} VND" : T("Bộ sưu tập mới", "New collection"))"
+                           data-category="@(i % 3 == 0 ? "hot" : "new")"
+                           data-keywords="@($"{D(product.Name)} {(i % 3 == 0 ? "hot" : "new")}")"
+                           aria-label="@T("Mở chi tiết", "Open details"): @D(product.Name)"
+                           asp-controller="Product"
+                           asp-action="Details"
+                           asp-route-id="@product.ProductId"
+                           asp-route-slug="@product.Slug">
+                            <img src="@product.Thumbnail" alt="@D(product.Name)" draggable="false">
+                            <span>@D(product.Name)</span>
+                            <div class="intro-card-meta" aria-hidden="true">
+                                <strong>@(product.Price > 0 ? $"{product.Price:N0} VND" : T("Bộ sưu tập mới", "New collection"))</strong>
+                                <small>@T("Nhấn để xem nhanh", "Press to preview")</small>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <div class="intro-product-caption">
+                <span data-intro-caption-name>@D(carouselProducts.FirstOrDefault()?.Name)</span>
+                <strong data-intro-caption-price>
+                    @(carouselProducts.FirstOrDefault()?.Price > 0
+                        ? $"{carouselProducts.First().Price:N0} VND"
+                        : T("Bộ sưu tập mới", "New collection"))
+                </strong>
+            </div>
+
+            <div class="intro-controls" aria-label="@T("Điều khiển bộ sưu tập", "Collection controls")">
+                <button type="button" class="intro-control" data-intro-prev aria-label="@T("Trước", "Previous")">
+                    <span aria-hidden="true">‹</span>
+                </button>
+                <button type="button" class="intro-control" data-intro-next aria-label="@T("Sau", "Next")">
+                    <span aria-hidden="true">›</span>
+                </button>
+            </div>
+
+            <div class="intro-scroll-indicator" aria-hidden="true">
+                <span></span>
+            </div>
+        </section>
+
+        <section id="intro-stack" class="intro-story" data-intro-section="stack">
+            <div class="intro-story-copy" data-intro-reveal>
+                <span>@T("Tương tác trực tiếp", "Direct interaction")</span>
+                <h2>@T("Kéo, xoay, chọn và xem sản phẩm ngay trong không gian 3D.", "Drag, rotate, select and preview products in the 3D space.")</h2>
+                <p>@T("Cuộn trang để thay đổi chiều sâu của cụm card, rê chuột để điều khiển ánh sáng và dùng bàn phím để mở chi tiết.", "Scroll to change card depth, move the pointer to steer light, and use the keyboard to open details.")</p>
+            </div>
+        </section>
+
+        <section id="intro-filter" class="intro-story intro-story-end" data-intro-section="filter">
+            <div class="intro-story-copy" data-intro-reveal>
+                <span>@T("Tìm vibe nhanh", "Find a vibe fast")</span>
+                <h2>@T("Bộ lọc và tìm kiếm phản hồi tức thì, không tải lại trang.", "Filters and search respond instantly without reloading.")</h2>
+                <p>@T("Nếu không có kết quả, màn chờ hiển thị trạng thái rỗng rõ ràng và giữ nguyên nhịp chuyển động.", "When nothing matches, the intro shows a clear empty state while keeping the motion system intact.")</p>
+            </div>
+        </section>
+
+        <div class="intro-detail" data-intro-detail hidden role="dialog" aria-modal="true" aria-labelledby="intro-detail-title">
+            <div class="intro-detail-backdrop" data-intro-detail-close></div>
+            <section class="intro-detail-panel" tabindex="-1">
+                <button type="button" class="intro-detail-close" data-intro-detail-close aria-label="@T("Đóng chi tiết", "Close details")">×</button>
+                <div class="intro-detail-media">
+                    <img data-intro-detail-image src="" alt="" />
+                </div>
+                <div class="intro-detail-content">
+                    <span class="intro-detail-kicker">@T("XuanBac preview", "XuanBac preview")</span>
+                    <h2 id="intro-detail-title" data-intro-detail-name></h2>
+                    <strong data-intro-detail-price></strong>
+                    <div class="intro-detail-tabs" role="tablist" aria-label="@T("Thông tin chi tiết", "Detail information")">
+                        <button type="button" class="is-active" role="tab" aria-selected="true" data-intro-tab="style">@T("Phong cách", "Style")</button>
+                        <button type="button" role="tab" aria-selected="false" data-intro-tab="motion">@T("Chuyển động", "Motion")</button>
+                    </div>
+                    <div class="intro-detail-tab is-active" data-intro-tab-panel="style">
+                        <p>@T("Card đang chọn được phóng to như một mảnh kính nổi, giữ đúng ánh sáng cyan, violet và gold của video tham chiếu.", "The selected card expands like floating glass while preserving cyan, violet and gold lighting from the reference video.")</p>
+                    </div>
+                    <div class="intro-detail-tab" data-intro-tab-panel="motion">
+                        <p>@T("Bạn có thể kéo ngang, dùng phím mũi tên, nhấn Escape để đóng và Tab để di chuyển focus.", "You can drag horizontally, use arrow keys, press Escape to close and Tab through focusable controls.")</p>
+                    </div>
+                    <a class="btn intro-primary intro-detail-link" data-intro-detail-link href="#">@T("Xem sản phẩm", "View product")</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="~/js/intro-showcase.js" asp-append-version="true"></script>
+</body>
+</html>

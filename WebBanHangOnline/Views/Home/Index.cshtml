@@ -8,6 +8,11 @@
         .OrderBy(_ => Guid.NewGuid())
         .Take(3)
         .ToList();
+    var heroProducts = Model
+        .Where(product => product.IsActive && !string.IsNullOrWhiteSpace(product.Thumbnail))
+        .OrderBy(product => product.ProductId)
+        .Take(5)
+        .ToList();
 }
 
 @section Styles {
@@ -17,13 +22,13 @@
 <div class="home-page">
 
 <!-- ================= HERO ================= -->
-<section class="hero container">
+<section class="hero hero-3d container" data-hero-3d>
     <div class="hero-content">
         <small class="hero-kicker">XUANBAC FASHION</small>
-        <h1>@T("Bộ sưu tập mới cho phong cách mỗi ngày", "New collections for everyday style")</h1>
+        <h1>@T("Sàn diễn 3D cho phong cách mỗi ngày", "3D runway for everyday style")</h1>
         <p class="hero-copy">
-            @T("Thời trang nam, nữ và trẻ em với trải nghiệm mua sắm nhanh, rõ ràng và dễ lựa chọn.",
-                "Fashion for men, women and kids with a fast, clear and easy shopping experience.")
+            @T("Khám phá sản phẩm theo cách sống động, nhanh và dễ chọn hơn.",
+                "Explore products in a vivid, faster and easier way.")
         </p>
         <div class="hero-proof">
             <span><i class="bi bi-lightning-charge-fill"></i> Flash sale</span>
@@ -43,7 +48,34 @@
             </a>
         </div>
     </div>
-    <img src="/images/products/3e322809-1097-468a-8d36-c1c118ca9952.webp" class="hero-img" alt="Bộ sưu tập thời trang XuanBac" loading="lazy" />
+    <div class="hero-stage" aria-label="@T("Trình diễn sản phẩm 3D", "3D product showcase")">
+        <div class="hero-orbit">
+            <div class="hero-product hero-product-main">
+                <img src="@(heroProducts.ElementAtOrDefault(0)?.Thumbnail ?? "/images/products/3e322809-1097-468a-8d36-c1c118ca9952.webp")"
+                     alt="@T("Sản phẩm nổi bật XuanBac", "Featured XuanBac product")">
+            </div>
+            <div class="hero-product hero-product-back">
+                <img src="@(heroProducts.ElementAtOrDefault(1)?.Thumbnail ?? "/images/products/c585b184-79a3-40f5-9d35-8e5bdd9db19e.webp")"
+                     alt="@T("Sản phẩm thời trang", "Fashion product")">
+            </div>
+            <div class="hero-product hero-product-left">
+                <img src="@(heroProducts.ElementAtOrDefault(2)?.Thumbnail ?? "/images/products/c3bc6230-25f9-4637-8659-7d824922f2ef.webp")"
+                     alt="@T("Sản phẩm thời trang", "Fashion product")">
+            </div>
+            <div class="hero-product hero-product-right">
+                <img src="@(heroProducts.ElementAtOrDefault(3)?.Thumbnail ?? "/images/products/c40ccd42-a351-4eb2-9a7a-2204c7fd7ee5.webp")"
+                     alt="@T("Sản phẩm thời trang", "Fashion product")">
+            </div>
+            <div class="hero-product hero-product-mini">
+                <img src="@(heroProducts.ElementAtOrDefault(4)?.Thumbnail ?? "/images/products/ebfc157b-4fa8-47c1-8437-32849bdc462a.webp")"
+                     alt="@T("Sản phẩm thời trang", "Fashion product")">
+            </div>
+            <div class="hero-runway">
+                <span>@T("Bộ sưu tập mới", "New collection")</span>
+                <strong>@T("Xem chi tiết sản phẩm", "View product details")</strong>
+            </div>
+        </div>
+    </div>
 </section>
 
 <!-- ================= WOMEN ================= -->
@@ -346,5 +378,23 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
         document.getElementById(btn.dataset.tab).classList.add("active");
     });
 });
+
+const hero3d = document.querySelector("[data-hero-3d]");
+const heroOrbit = hero3d?.querySelector(".hero-orbit");
+
+if (hero3d && heroOrbit && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    hero3d.addEventListener("pointermove", event => {
+        const rect = hero3d.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        heroOrbit.style.setProperty("--tilt-x", `${(-y * 8).toFixed(2)}deg`);
+        heroOrbit.style.setProperty("--tilt-y", `${(x * 10).toFixed(2)}deg`);
+    });
+
+    hero3d.addEventListener("pointerleave", () => {
+        heroOrbit.style.setProperty("--tilt-x", "0deg");
+        heroOrbit.style.setProperty("--tilt-y", "0deg");
+    });
+}
 </script>
 }
