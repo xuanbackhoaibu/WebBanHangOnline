@@ -2,74 +2,207 @@
 
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
+    var orderStatuses = ViewBag.OrderStatuses as IEnumerable<string> ?? Enumerable.Empty<string>();
+    var paymentStatuses = ViewBag.PaymentStatuses as IEnumerable<string> ?? Enumerable.Empty<string>();
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+
+    string BadgeClass(string value)
+    {
+        value = value ?? string.Empty;
+        if (value == "Paid" || value == "Completed") return "text-bg-success";
+        if (value == "Unpaid" || value == "Pending") return "text-bg-warning";
+        if (value == "Cancelled" || value == "Failed") return "text-bg-danger";
+        if (value == "Shipping" || value == "Confirmed") return "text-bg-info";
+        if (value == "Refunded") return "text-bg-secondary";
+        return "text-bg-warning";
+    }
+
+    string StatusText(string value)
+    {
+        return value switch
+        {
+            "Pending" => "Chờ xử lý",
+            "Confirmed" => "Đã xác nhận",
+            "Shipping" => "Đang giao",
+            "Completed" => "Hoàn thành",
+            "Cancelled" => "Đã hủy",
+            "Unpaid" => "Chưa thanh toán",
+            "Paid" => "Đã thanh toán",
+            "Failed" => "Thất bại",
+            "Refunded" => "Đã hoàn tiền",
+            _ => value
+        };
+    }
+
+    string OrderCode(int id) => $"ORD{id:D6}";
 }
 
-<h2><i class="bi bi-box-seam"></i> Quản lý đơn hàng</h2>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+        <h2 class="mb-1"><i class="bi bi-box-seam"></i> Quản lý đơn hàng</h2>
+        <div class="text-muted small">Lọc nhanh đơn hàng theo mã, khách, ngày và trạng thái.</div>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-2 px-3">
+                <div class="text-muted small">Kết quả</div>
+                <strong>@ViewBag.TotalFilteredOrders đơn</strong>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-2 px-3">
+                <div class="text-muted small">Doanh thu</div>
+                <strong>@String.Format("{0:N0}", ViewBag.TotalFilteredRevenue) VND</strong>
+            </div>
+        </div>
+    </div>
+</div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Mã</th>
-            <th>Khách</th>
-            <th>Tổng tiền</th>
-            <th>Trạng thái</th>
-            <th>Thao tác</th>
-        </tr>
-    </thead>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
-    <tbody>
-    @foreach (var o in Model)
-    {
-        <tr>
-            <td>#@o.Id</td>
-            <td>@o.User?.Email</td>
-            <td>@o.TotalAmount.ToString("N0") VND</td>
-            <td>@o.Status</td>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
 
-            <td>
-                <!-- XEM CHI TIẾT -->
-                <a asp-area="Admin"
-                   asp-controller="Order"
-                   asp-action="Details"
-                   asp-route-id="@o.Id"
-                   class="btn btn-primary btn-sm">
-                    Xem
+<form method="get" class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="search"
+                       name="search"
+                       value="@ViewBag.Search"
+                       class="form-control"
+                       placeholder="Mã đơn, email, tên, SĐT" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" name="from" value="@ViewBag.From" class="form-control" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" name="to" value="@ViewBag.To" class="form-control" />
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Trạng thái đơn</label>
+                <select name="status" class="form-select">
+                    <option value="">Tất cả</option>
+                    @foreach (var status in orderStatuses)
+                    {
+                        <option value="@status" selected="@(ViewBag.Status == status)">@StatusText(status)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Thanh toán</label>
+                <select name="paymentStatus" class="form-select">
+                    <option value="">Tất cả</option>
+                    @foreach (var status in paymentStatuses)
+                    {
+                        <option value="@status" selected="@(ViewBag.PaymentStatus == status)">@StatusText(status)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-lg-1 col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100" title="Lọc">
+                    <i class="bi bi-funnel"></i>
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary" title="Xóa lọc">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
+            </div>
+        </div>
+    </div>
+</form>
 
-                <!-- GIAO -->
-                <form asp-area="Admin"
-                      asp-controller="Order"
-                      asp-action="UpdateStatus"
-                      method="post"
-                      class="d-inline">
-                    <input type="hidden" name="id" value="@o.Id" />
-                    <input type="hidden" name="status" value="Shipping" />
-                    <button class="btn btn-warning btn-sm">Giao</button>
-                </form>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã</th>
+                    <th>Khách</th>
+                    <th>Ngày đặt</th>
+                    <th>SĐT</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái đơn</th>
+                    <th>Thanh toán</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>#@OrderCode(o.Id)</strong>
+                        </td>
+                        <td>
+                            <div>@(o.User?.FullName ?? o.User?.UserName ?? "Khách vãng lai")</div>
+                            <div class="text-muted small">@o.User?.Email</div>
+                        </td>
+                        <td>@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@(!string.IsNullOrWhiteSpace(o.PhoneNumber) ? o.PhoneNumber : "-")</td>
+                        <td>@o.TotalAmount.ToString("N0") VND</td>
+                        <td><span class="badge @BadgeClass(o.Status)">@StatusText(o.Status)</span></td>
+                        <td><span class="badge @BadgeClass(o.PaymentStatus)">@StatusText(o.PaymentStatus)</span></td>
+                        <td>
+                            <div class="d-flex justify-content-end gap-1">
+                                <a asp-area="Admin"
+                                   asp-controller="Order"
+                                   asp-action="Details"
+                                   asp-route-id="@o.Id"
+                                   class="btn btn-outline-primary btn-sm"
+                                   title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
 
-                <!-- HOÀN THÀNH -->
-                <form asp-area="Admin"
-                      asp-controller="Order"
-                      asp-action="UpdateStatus"
-                      method="post"
-                      class="d-inline">
-                    <input type="hidden" name="id" value="@o.Id" />
-                    <input type="hidden" name="status" value="Completed" />
-                    <button class="btn btn-success btn-sm"><i class="bi bi-check2"></i></button>
-                </form>
+                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
+                                    <input type="hidden" name="id" value="@o.Id" />
+                                    <input type="hidden" name="status" value="Shipping" />
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button class="btn btn-outline-warning btn-sm" title="Chuyển sang đang giao">
+                                        <i class="bi bi-truck"></i>
+                                    </button>
+                                </form>
 
-                <!-- HỦY -->
-                <form asp-area="Admin"
-                      asp-controller="Order"
-                      asp-action="UpdateStatus"
-                      method="post"
-                      class="d-inline">
-                    <input type="hidden" name="id" value="@o.Id" />
-                    <input type="hidden" name="status" value="Cancelled" />
-                    <button class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i></button>
-                </form>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
+                                    <input type="hidden" name="id" value="@o.Id" />
+                                    <input type="hidden" name="status" value="Completed" />
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button class="btn btn-outline-success btn-sm" title="Hoàn thành">
+                                        <i class="bi bi-check2"></i>
+                                    </button>
+                                </form>
+
+                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
+                                    <input type="hidden" name="id" value="@o.Id" />
+                                    <input type="hidden" name="status" value="Cancelled" />
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button class="btn btn-outline-danger btn-sm" title="Hủy">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        Không tìm thấy đơn hàng phù hợp.
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

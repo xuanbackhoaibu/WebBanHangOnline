@@ -49,6 +49,11 @@ namespace WebBanHangOnline.Data
                 .Property(o => o.TotalAmount)
                 .HasPrecision(18, 2);
 
+            builder.Entity<Order>()
+                .Property(o => o.PaymentStatus)
+                .HasMaxLength(32)
+                .HasDefaultValue(PaymentStatuses.Unpaid);
+
             builder.Entity<OrderDetail>()
                 .Property(od => od.Price)
                 .HasPrecision(18, 2);
@@ -88,6 +93,26 @@ namespace WebBanHangOnline.Data
                 .HasIndex(review => new { review.ProductId, review.UserId })
                 .IsUnique()
                 .HasFilter("[UserId] IS NOT NULL");
+
+            builder.Entity<WishlistItem>()
+                .Property(item => item.UserId)
+                .HasMaxLength(450);
+
+            builder.Entity<WishlistItem>()
+                .HasOne(item => item.Product)
+                .WithMany(product => product.WishlistItems)
+                .HasForeignKey(item => item.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<WishlistItem>()
+                .HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(item => item.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<WishlistItem>()
+                .HasIndex(item => new { item.UserId, item.ProductId })
+                .IsUnique();
 
             // =========================
             // SEED DATA CHO CATEGORY

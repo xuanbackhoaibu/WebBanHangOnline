@@ -204,6 +204,12 @@ namespace WebBanHangOnline.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)")
+                        .HasDefaultValue("Unpaid");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -706,11 +712,15 @@ namespace WebBanHangOnline.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("WishlistItemId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId", "ProductId")
+                        .IsUnique();
 
                     b.ToTable("WishlistItems");
                 });
@@ -868,6 +878,12 @@ namespace WebBanHangOnline.Migrations
 
             modelBuilder.Entity("WebBanHangOnline.Models.WishlistItem", b =>
                 {
+                    b.HasOne("WebBanHangOnline.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("WebBanHangOnline.Models.Product", "Product")
                         .WithMany("WishlistItems")
                         .HasForeignKey("ProductId")

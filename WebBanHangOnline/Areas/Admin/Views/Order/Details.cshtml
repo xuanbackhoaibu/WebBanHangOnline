@@ -8,6 +8,8 @@
 
 <p><strong>Khách:</strong> @Model.User?.UserName</p>
 <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+<p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
+<p><strong>Trạng thái thanh toán:</strong> @Model.PaymentStatus</p>
 <p><strong>Tổng tiền:</strong> <span class="text-danger fw-bold">
     @String.Format("{0:N0} VND", Model.TotalAmount)
 </span></p>

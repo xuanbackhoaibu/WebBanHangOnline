@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Models;
 
 namespace WebBanHangOnline.Areas.Admin.Controllers
 {
@@ -22,21 +23,13 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             {
                 // ==================== TRẠNG THÁI ĐƯỢC TÍNH DOANH THU ====================
                 // Mở rộng thêm các trạng thái tính doanh thu
-                var validStatus = new[] { 
-                    "Paid", 
-                    "Completed", 
-                    "Đã giao", 
-                    "Delivered",
-                    "Đã hoàn thành",
-                    "Hoàn thành",
-                    "Đã thanh toán"
-                };
+                var validStatus = OrderStatuses.RevenueStatuses;
 
                 // ==================== THỐNG KÊ CƠ BẢN ====================
                 ViewBag.TotalOrders = await _context.Orders.CountAsync();
 
                 ViewBag.TotalRevenue = await _context.Orders
-                    .Where(o => validStatus.Contains(o.Status))
+                    .Where(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
                     .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
 
                 ViewBag.TotalUsers = await _context.Users.CountAsync();
@@ -55,7 +48,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ViewBag.TodayOrders = todayOrders.Count;
                 
                 ViewBag.TodayRevenue = todayOrders
-                    .Where(o => validStatus.Contains(o.Status))
+                    .Where(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
                     .Sum(o => o.TotalAmount);
 
                 // ==================== DOANH THU 7 NGÀY ====================
@@ -75,7 +68,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
                     // Tính doanh thu từ các đơn hợp lệ
                     var revenue = ordersInDay
-                        .Where(o => validStatus.Contains(o.Status))
+                        .Where(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
                         .Sum(o => o.TotalAmount);
 
                     revenueLabels.Add(start.ToString("dd/MM"));
@@ -86,7 +79,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                     {
                         Ngay = start.ToString("dd/MM/yyyy"),
                         SoDon = ordersInDay.Count,
-                        DonHopLe = ordersInDay.Count(o => validStatus.Contains(o.Status)),
+                        DonHopLe = ordersInDay.Count(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid),
                         DoanhThu = revenue
                     });
                 }
@@ -94,6 +87,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ViewBag.ChartLabels = revenueLabels;
                 ViewBag.ChartData = revenueData;
                 ViewBag.RevenueDetail = revenueDetail; // Thêm để debug
+                ViewBag.CurrentRevenueMonth = DateTime.Today.ToString("yyyy-MM");
 
                 // ==================== PHÂN BỐ TRẠNG THÁI ====================
                 var orderStatusStats = await _context.Orders
@@ -109,11 +103,64 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ViewBag.OrderStatusLabels = orderStatusStats.Select(x => x.Status).ToList();
                 ViewBag.OrderStatusData = orderStatusStats.Select(x => x.Count).ToList();
 
+                var paymentStatusStats = await _context.Orders
+                    .GroupBy(o => o.PaymentStatus)
+                    .Select(g => new
+                    {
+                        Status = g.Key,
+                        Count = g.Count()
+                    })
+                    .OrderByDescending(x => x.Count)
+                    .ToListAsync();
+
+                ViewBag.PaymentStatusLabels = paymentStatusStats.Select(x => x.Status).ToList();
+                ViewBag.PaymentStatusData = paymentStatusStats.Select(x => x.Count).ToList();
+
+                var paidOrderDetails = await _context.OrderDetails
+                    .Include(od => od.Order)
+                    .Include(od => od.ProductVariant)
+                        .ThenInclude(v => v.Product)
+                            .ThenInclude(p => p.Category)
+                    .Where(od => validStatus.Contains(od.Order.Status) || od.Order.PaymentStatus == PaymentStatuses.Paid)
+                    .ToListAsync();
+
+                var categorySales = paidOrderDetails
+                    .GroupBy(od => od.ProductVariant.Product.Category != null
+                        ? od.ProductVariant.Product.Category.Name
+                        : "Khác")
+                    .Select(g => new
+                    {
+                        Category = g.Key,
+                        Revenue = g.Sum(od => od.Price * od.Quantity)
+                    })
+                    .OrderByDescending(x => x.Revenue)
+                    .Take(6)
+                    .ToList();
+
+                ViewBag.CategorySalesLabels = categorySales.Select(x => x.Category).ToList();
+                ViewBag.CategorySalesData = categorySales.Select(x => x.Revenue).ToList();
+
+                var lowStockVariants = await _context.ProductVariants
+                    .Include(v => v.Product)
+                    .Where(v => v.Product.IsActive)
+                    .OrderBy(v => v.Stock)
+                    .Take(6)
+                    .Select(v => new
+                    {
+                        ProductName = v.Product.Name,
+                        v.Size,
+                        v.Color,
+                        v.Stock
+                    })
+                    .ToListAsync();
+
+                ViewBag.LowStockVariants = lowStockVariants;
+
                 // ==================== ĐƠN HÀNG GẦN NHẤT ====================
                 var recentOrders = await _context.Orders
                     .Include(o => o.User)
                     .OrderByDescending(o => o.OrderDate)
-                    .Take(10)
+                    .Take(5)
                     .Select(o => new
                     {
                         o.Id,
@@ -124,8 +171,9 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                         CustomerEmail = o.User != null ? o.User.Email : "",
                         o.TotalAmount,
                         o.Status,
+                        o.PaymentStatus,
                         OrderDate = o.OrderDate,
-                        IsValidRevenue = validStatus.Contains(o.Status) // Đánh dấu đơn được tính doanh thu
+                        IsValidRevenue = validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid
                     })
                     .ToListAsync();
 
@@ -135,7 +183,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 // Tổng đơn theo trạng thái
                 ViewBag.TotalPending = await _context.Orders.CountAsync(o => o.Status.Contains("Chờ") || o.Status.Contains("Pending"));
                 ViewBag.TotalProcessing = await _context.Orders.CountAsync(o => o.Status.Contains("xử lý") || o.Status.Contains("Processing"));
-                ViewBag.TotalCompleted = await _context.Orders.CountAsync(o => validStatus.Contains(o.Status));
+                ViewBag.TotalCompleted = await _context.Orders.CountAsync(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid);
                 ViewBag.TotalCancelled = await _context.Orders.CountAsync(o => o.Status.Contains("hủy") || o.Status.Contains("Cancel"));
 
                 return View();
@@ -157,10 +205,132 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ViewBag.ChartData = new List<decimal>();
                 ViewBag.OrderStatusLabels = new List<string>();
                 ViewBag.OrderStatusData = new List<int>();
+                ViewBag.PaymentStatusLabels = new List<string>();
+                ViewBag.PaymentStatusData = new List<int>();
+                ViewBag.CategorySalesLabels = new List<string>();
+                ViewBag.CategorySalesData = new List<decimal>();
+                ViewBag.LowStockVariants = new List<object>();
                 ViewBag.RecentOrders = new List<object>();
                 
                 return View();
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDashboardData(string revenueMode = "7days", string? month = null)
+        {
+            var validStatus = OrderStatuses.RevenueStatuses;
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+
+            var revenueLabels = new List<string>();
+            var revenueData = new List<decimal>();
+
+            if (string.Equals(revenueMode, "month", StringComparison.OrdinalIgnoreCase))
+            {
+                var selectedMonth = TryParseMonth(month) ?? new DateTime(today.Year, today.Month, 1);
+                var daysInMonth = DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month);
+
+                for (int day = 1; day <= daysInMonth; day++)
+                {
+                    var start = new DateTime(selectedMonth.Year, selectedMonth.Month, day);
+                    var end = start.AddDays(1);
+
+                    var revenue = await _context.Orders
+                        .Where(o => o.OrderDate >= start && o.OrderDate < end)
+                        .Where(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
+                        .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+                    revenueLabels.Add(start.ToString("dd/MM"));
+                    revenueData.Add(revenue);
+                }
+            }
+            else
+            {
+                for (int i = 6; i >= 0; i--)
+                {
+                    var start = DateTime.Today.AddDays(-i);
+                    var end = start.AddDays(1);
+
+                    var revenue = await _context.Orders
+                        .Where(o => o.OrderDate >= start && o.OrderDate < end)
+                        .Where(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
+                        .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+                    revenueLabels.Add(start.ToString("dd/MM"));
+                    revenueData.Add(revenue);
+                }
+            }
+
+            var statusStats = await _context.Orders
+                .GroupBy(o => o.Status)
+                .Select(g => new { Label = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .ToListAsync();
+
+            var paymentStats = await _context.Orders
+                .GroupBy(o => o.PaymentStatus)
+                .Select(g => new { Label = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .ToListAsync();
+
+            var paidOrderDetails = await _context.OrderDetails
+                .Include(od => od.Order)
+                .Include(od => od.ProductVariant)
+                    .ThenInclude(v => v.Product)
+                        .ThenInclude(p => p.Category)
+                .Where(od => validStatus.Contains(od.Order.Status) || od.Order.PaymentStatus == PaymentStatuses.Paid)
+                .ToListAsync();
+
+            var categorySales = paidOrderDetails
+                .GroupBy(od => od.ProductVariant.Product.Category != null
+                    ? od.ProductVariant.Product.Category.Name
+                    : "Khác")
+                .Select(g => new
+                {
+                    Label = g.Key,
+                    Revenue = g.Sum(od => od.Price * od.Quantity)
+                })
+                .OrderByDescending(x => x.Revenue)
+                .Take(6)
+                .ToList();
+
+            return Json(new
+            {
+                success = true,
+                totalOrders = await _context.Orders.CountAsync(),
+                totalRevenue = await _context.Orders
+                    .Where(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
+                    .SumAsync(o => (decimal?)o.TotalAmount) ?? 0,
+                totalUsers = await _context.Users.CountAsync(),
+                totalProducts = await _context.Products.CountAsync(),
+                todayOrders = await _context.Orders.CountAsync(o => o.OrderDate >= today && o.OrderDate < tomorrow),
+                revenueLabels,
+                revenueData,
+                statusLabels = statusStats.Select(x => x.Label).ToList(),
+                statusData = statusStats.Select(x => x.Count).ToList(),
+                paymentLabels = paymentStats.Select(x => x.Label).ToList(),
+                paymentData = paymentStats.Select(x => x.Count).ToList(),
+                categoryLabels = categorySales.Select(x => x.Label).ToList(),
+                categoryData = categorySales.Select(x => x.Revenue).ToList()
+            });
+        }
+
+        private static DateTime? TryParseMonth(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            return DateTime.TryParseExact(
+                value,
+                "yyyy-MM",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out var month)
+                ? new DateTime(month.Year, month.Month, 1)
+                : null;
         }
     }
 }

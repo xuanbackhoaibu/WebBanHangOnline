@@ -82,7 +82,9 @@ namespace WebBanHangOnline.Data
         private static async Task SeedFashionStoreDataAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             await EnsureFashionColumnsAsync(context);
+            await EnsureOrderPaymentStatusAsync(context);
             await EnsureReviewTableAsync(context);
+            await EnsureWishlistTableAsync(context);
 
             if (!await context.SupportFaqs.AnyAsync())
             {
@@ -292,6 +294,30 @@ IF COL_LENGTH('Products', 'FlashSaleEnd') IS NULL
 ");
         }
 
+        private static async Task EnsureOrderPaymentStatusAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF COL_LENGTH('Orders', 'PaymentStatus') IS NULL
+    ALTER TABLE [Orders] ADD [PaymentStatus] nvarchar(32) NOT NULL CONSTRAINT [DF_Orders_PaymentStatus] DEFAULT N'Unpaid';
+
+EXEC(N'
+UPDATE [Orders]
+SET [PaymentStatus] =
+    CASE
+        WHEN [Status] = N''Paid'' THEN N''Paid''
+        WHEN [Status] = N''Failed'' THEN N''Failed''
+        WHEN [Status] = N''Refunded'' THEN N''Refunded''
+        WHEN [PaymentMethod] = N''COD'' AND [Status] IN (N''Confirmed'', N''Completed'') THEN N''Paid''
+        ELSE [PaymentStatus]
+    END;
+');
+
+UPDATE [Orders]
+SET [Status] = N'Confirmed'
+WHERE [Status] IN (N'Paid', N'Failed', N'Refunded');
+");
+        }
+
         private static async Task EnsureReviewTableAsync(ApplicationDbContext context)
         {
             await context.Database.ExecuteSqlRawAsync(@"
@@ -326,6 +352,49 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Reviews_UserId' AND ob
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Reviews_ProductId_UserId' AND object_id = OBJECT_ID(N'[Reviews]'))
     EXEC(N'CREATE UNIQUE INDEX [IX_Reviews_ProductId_UserId] ON [Reviews] ([ProductId], [UserId]) WHERE [UserId] IS NOT NULL');
+");
+        }
+
+        private static async Task EnsureWishlistTableAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[WishlistItems]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [WishlistItems] (
+        [WishlistItemId] int NOT NULL IDENTITY,
+        [UserId] nvarchar(450) NOT NULL,
+        [ProductId] int NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_WishlistItems] PRIMARY KEY ([WishlistItemId]),
+        CONSTRAINT [FK_WishlistItems_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_WishlistItems_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([ProductId]) ON DELETE CASCADE
+    );
+
+    CREATE INDEX [IX_WishlistItems_ProductId] ON [WishlistItems] ([ProductId]);
+    CREATE UNIQUE INDEX [IX_WishlistItems_UserId_ProductId] ON [WishlistItems] ([UserId], [ProductId]);
+END
+
+IF COL_LENGTH('WishlistItems', 'UserId') IS NOT NULL
+BEGIN
+    IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_WishlistItems_UserId_ProductId' AND object_id = OBJECT_ID(N'[WishlistItems]'))
+        DROP INDEX [IX_WishlistItems_UserId_ProductId] ON [WishlistItems];
+
+    ALTER TABLE [WishlistItems] ALTER COLUMN [UserId] nvarchar(450) NOT NULL;
+END
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_WishlistItems_ProductId' AND object_id = OBJECT_ID(N'[WishlistItems]'))
+    CREATE INDEX [IX_WishlistItems_ProductId] ON [WishlistItems] ([ProductId]);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_WishlistItems_UserId_ProductId' AND object_id = OBJECT_ID(N'[WishlistItems]'))
+    CREATE UNIQUE INDEX [IX_WishlistItems_UserId_ProductId] ON [WishlistItems] ([UserId], [ProductId]);
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_WishlistItems_AspNetUsers_UserId' AND parent_object_id = OBJECT_ID(N'[WishlistItems]'))
+    ALTER TABLE [WishlistItems] ADD CONSTRAINT [FK_WishlistItems_AspNetUsers_UserId]
+        FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE;
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_WishlistItems_Products_ProductId' AND parent_object_id = OBJECT_ID(N'[WishlistItems]'))
+    ALTER TABLE [WishlistItems] ADD CONSTRAINT [FK_WishlistItems_Products_ProductId]
+        FOREIGN KEY ([ProductId]) REFERENCES [Products] ([ProductId]) ON DELETE CASCADE;
 ");
         }
 
@@ -390,6 +459,7 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Reviews_ProductId_User
                     PhoneNumber = "0900000001",
                     Status = "Completed",
                     PaymentMethod = "COD",
+                    PaymentStatus = PaymentStatuses.Paid,
                     PaymentDate = DateTime.Now,
                     OrderDetails = variants.Select(variant => new OrderDetail
                     {

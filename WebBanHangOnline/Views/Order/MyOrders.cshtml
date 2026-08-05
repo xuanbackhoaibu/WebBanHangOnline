@@ -14,6 +14,7 @@
     string ProgressClass(string? status) => status switch
     {
         "Pending" => "progress-25",
+        "Confirmed" => "progress-45",
         "Shipping" => "progress-70",
         "Completed" => "progress-100",
         "Cancelled" => "progress-cancel",
@@ -23,10 +24,19 @@
     string StatusText(string? status) => status switch
     {
         "Pending" => "Chờ xác nhận",
+        "Confirmed" => "Đã xác nhận",
         "Shipping" => "Đang giao",
         "Completed" => "Đã giao",
         "Cancelled" => "Đã hủy",
         _ => status ?? "Không rõ"
+    };
+
+    string PaymentStatusText(string? status) => status switch
+    {
+        "Paid" => "Đã thanh toán",
+        "Failed" => "Thanh toán thất bại",
+        "Refunded" => "Đã hoàn tiền",
+        _ => "Chưa thanh toán"
     };
 }
 
@@ -50,6 +60,7 @@
     <div class="orders-filter" aria-label="Lọc đơn hàng">
         <button type="button" class="orders-filter-btn active" data-status="all">Tất cả</button>
         <button type="button" class="orders-filter-btn" data-status="Pending">Chờ xác nhận</button>
+        <button type="button" class="orders-filter-btn" data-status="Confirmed">Đã xác nhận</button>
         <button type="button" class="orders-filter-btn" data-status="Shipping">Đang giao</button>
         <button type="button" class="orders-filter-btn" data-status="Completed">Đã giao</button>
         <button type="button" class="orders-filter-btn" data-status="Cancelled">Đã hủy</button>
@@ -76,7 +87,7 @@
                 <header class="orders-header">
                     <div>
                         <div class="orders-id">Đơn hàng #@order.Id</div>
-                        <div class="orders-date">@order.OrderDate.ToString("dd/MM/yyyy")</div>
+                        <div class="orders-date">@order.OrderDate.ToString("dd/MM/yyyy") · @PaymentStatusText(order.PaymentStatus)</div>
                     </div>
                     <div class="orders-status @StatusClass(order.Status)">
                         @StatusText(order.Status)

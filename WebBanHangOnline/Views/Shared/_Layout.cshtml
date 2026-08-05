@@ -87,7 +87,8 @@
                     <a class="dropdown-toggle text-decoration-none"
                        href="javascript:void(0)"
                        data-bs-toggle="dropdown">
-                        <i class="bi bi-globe"></i> @(isEnglish ? "English" : "Tiếng Việt")
+                        <span class="language-flag" aria-hidden="true">@(isEnglish ? "🇬🇧" : "🇻🇳")</span>
+                        @(isEnglish ? "English" : "Tiếng Việt")
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
@@ -97,6 +98,7 @@
                                asp-action="SetLanguage"
                                asp-route-culture="vi"
                                asp-route-returnUrl="@returnUrl">
+                                <span class="language-flag" aria-hidden="true">🇻🇳</span>
                                 Tiếng Việt
                             </a>
                         </li>
@@ -107,6 +109,7 @@
                                asp-action="SetLanguage"
                                asp-route-culture="en"
                                asp-route-returnUrl="@returnUrl">
+                                <span class="language-flag" aria-hidden="true">🇬🇧</span>
                                 English
                             </a>
                         </li>

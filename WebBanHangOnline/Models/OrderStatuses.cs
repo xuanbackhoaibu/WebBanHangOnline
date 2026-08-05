@@ -13,9 +13,8 @@ public static class OrderStatuses
 
     public static readonly string[] RevenueStatuses =
     {
-        Paid,
-        Completed,
-        Confirmed
+        Confirmed,
+        Completed
     };
 
     public static readonly string[] AdminEditableStatuses =
@@ -29,6 +28,6 @@ public static class OrderStatuses
 
     public static bool IsFinalPaymentStatus(string status)
     {
-        return status is Paid or Failed or Refunded;
+        return PaymentStatuses.IsFinal(status);
     }
 }

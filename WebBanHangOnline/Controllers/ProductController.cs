@@ -349,7 +349,8 @@ namespace WebBanHangOnline.Controllers
             return await _context.Orders
                 .AnyAsync(order =>
                     order.UserId == userId &&
-                    OrderStatuses.RevenueStatuses.Contains(order.Status) &&
+                    (OrderStatuses.RevenueStatuses.Contains(order.Status) ||
+                        order.PaymentStatus == PaymentStatuses.Paid) &&
                     order.OrderDetails.Any(detail => detail.ProductVariant.ProductId == productId));
         }
 

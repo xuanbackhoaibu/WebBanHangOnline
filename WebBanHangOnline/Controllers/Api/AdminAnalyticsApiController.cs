@@ -30,7 +30,9 @@ public class AdminAnalyticsApiController : ControllerBase
 
         var revenueQuery = _context.Orders
             .AsNoTracking()
-            .Where(order => OrderStatuses.RevenueStatuses.Contains(order.Status));
+            .Where(order =>
+                OrderStatuses.RevenueStatuses.Contains(order.Status) ||
+                order.PaymentStatus == PaymentStatuses.Paid);
 
         var summary = new
         {
@@ -67,6 +69,7 @@ public class AdminAnalyticsApiController : ControllerBase
             {
                 date = order.OrderDate.Date,
                 order.Status,
+                order.PaymentStatus,
                 order.TotalAmount
             })
             .ToListAsync();
@@ -77,9 +80,11 @@ public class AdminAnalyticsApiController : ControllerBase
             {
                 date = date.ToString("yyyy-MM-dd"),
                 orderCount = orders.Count(order => order.date == date),
-                paidOrderCount = orders.Count(order => order.date == date && OrderStatuses.RevenueStatuses.Contains(order.Status)),
+                paidOrderCount = orders.Count(order => order.date == date &&
+                    (OrderStatuses.RevenueStatuses.Contains(order.Status) || order.PaymentStatus == PaymentStatuses.Paid)),
                 revenue = orders
-                    .Where(order => order.date == date && OrderStatuses.RevenueStatuses.Contains(order.Status))
+                    .Where(order => order.date == date &&
+                        (OrderStatuses.RevenueStatuses.Contains(order.Status) || order.PaymentStatus == PaymentStatuses.Paid))
                     .Sum(order => order.TotalAmount)
             });
 

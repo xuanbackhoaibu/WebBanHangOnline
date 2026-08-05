@@ -13,9 +13,9 @@ public class PaymentWebhookDemoController : ControllerBase
 {
     private static readonly string[] AllowedStatuses =
     {
-        OrderStatuses.Paid,
-        OrderStatuses.Failed,
-        OrderStatuses.Refunded
+        PaymentStatuses.Paid,
+        PaymentStatuses.Failed,
+        PaymentStatuses.Refunded
     };
     private readonly ApplicationDbContext _context;
 
@@ -57,18 +57,23 @@ public class PaymentWebhookDemoController : ControllerBase
             });
         }
 
-        if (OrderStatuses.IsFinalPaymentStatus(order.Status))
+        if (PaymentStatuses.IsFinal(order.PaymentStatus))
         {
             return Ok(new
             {
                 message = "Order already finalized",
                 orderId = order.Id,
                 order.Status,
+                order.PaymentStatus,
                 order.PaymentDate
             });
         }
 
-        order.Status = request.Status;
+        order.PaymentStatus = request.Status;
+        if (request.Status == PaymentStatuses.Paid && order.Status == OrderStatuses.Pending)
+        {
+            order.Status = OrderStatuses.Confirmed;
+        }
         order.PaymentDate = DateTime.Now;
         await _context.SaveChangesAsync();
 
@@ -77,6 +82,7 @@ public class PaymentWebhookDemoController : ControllerBase
             message = "Payment status updated",
             orderId = order.Id,
             order.Status,
+            order.PaymentStatus,
             order.PaymentMethod,
             order.TotalAmount,
             order.PaymentDate,
@@ -90,7 +96,7 @@ public class DemoPaymentWebhookRequest
 {
     public int OrderId { get; set; }
     public decimal Amount { get; set; }
-    public string Status { get; set; } = OrderStatuses.Paid;
+    public string Status { get; set; } = PaymentStatuses.Paid;
     public string Provider { get; set; } = "DemoGateway";
     public string TransactionCode { get; set; } = string.Empty;
 }

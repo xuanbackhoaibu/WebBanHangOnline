@@ -18,12 +18,81 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         }
 
         // GET: Admin/Order
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search,
+            string? status,
+            string? paymentStatus,
+            DateTime? from,
+            DateTime? to)
         {
-            var orders = await _context.Orders
+            var query = _context.Orders
                 .Include(o => o.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var keyword = search.Trim();
+                var normalizedOrderCode = keyword
+                    .TrimStart('#')
+                    .Replace("ORD", string.Empty, StringComparison.OrdinalIgnoreCase)
+                    .TrimStart('0');
+                var hasOrderId = int.TryParse(
+                    string.IsNullOrWhiteSpace(normalizedOrderCode) ? "0" : normalizedOrderCode,
+                    out var orderId);
+
+                query = query.Where(o =>
+                    (hasOrderId && o.Id == orderId) ||
+                    (o.User != null && (
+                        (o.User.Email ?? string.Empty).Contains(keyword) ||
+                        (o.User.UserName ?? string.Empty).Contains(keyword) ||
+                        (o.User.FullName ?? string.Empty).Contains(keyword))) ||
+                    (o.PhoneNumber ?? string.Empty).Contains(keyword));
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(o => o.Status == status);
+            }
+
+            if (!string.IsNullOrWhiteSpace(paymentStatus))
+            {
+                query = query.Where(o => o.PaymentStatus == paymentStatus);
+            }
+
+            var fromDate = from?.Date;
+            var toExclusive = to?.Date.AddDays(1);
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(o => o.OrderDate >= fromDate.Value);
+            }
+
+            if (toExclusive.HasValue)
+            {
+                query = query.Where(o => o.OrderDate < toExclusive.Value);
+            }
+
+            var orders = await query
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
+
+            ViewBag.Search = search;
+            ViewBag.Status = status;
+            ViewBag.PaymentStatus = paymentStatus;
+            ViewBag.From = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.To = to?.Date.ToString("yyyy-MM-dd");
+            ViewBag.OrderStatuses = OrderStatuses.AdminEditableStatuses;
+            ViewBag.PaymentStatuses = new[]
+            {
+                PaymentStatuses.Unpaid,
+                PaymentStatuses.Paid,
+                PaymentStatuses.Failed,
+                PaymentStatuses.Refunded
+            };
+            ViewBag.TotalFilteredOrders = orders.Count;
+            ViewBag.TotalFilteredRevenue = orders
+                .Where(o => OrderStatuses.RevenueStatuses.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
+                .Sum(o => o.TotalAmount);
 
             return View(orders);
         }
@@ -46,12 +115,12 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         // POST: Admin/Order/UpdateStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus(int id, string status)
+        public async Task<IActionResult> UpdateStatus(int id, string status, string? returnUrl = null)
         {
             if (!OrderStatuses.AdminEditableStatuses.Contains(status))
             {
                 TempData["ErrorMessage"] = "Trạng thái không hợp lệ";
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectAfterUpdate(id, returnUrl);
             }
 
             var order = await _context.Orders.FindAsync(id);
@@ -67,6 +136,16 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             catch (DbUpdateException ex)
             {
                 TempData["ErrorMessage"] = "Không thể cập nhật trạng thái: " + ex.Message;
+            }
+
+            return RedirectAfterUpdate(id, returnUrl);
+        }
+
+        private IActionResult RedirectAfterUpdate(int id, string? returnUrl)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
             }
 
             return RedirectToAction(nameof(Details), new { id });

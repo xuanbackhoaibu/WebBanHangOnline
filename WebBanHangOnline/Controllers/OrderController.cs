@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Services;
 
 [Authorize]
 public class OrderController : Controller
@@ -166,13 +167,15 @@ public class OrderController : Controller
 
         try
         {
-            // 🔹 Check tồn kho
+            // 🔹 Check tồn kho trên dữ liệu mới nhất
             foreach (var item in cart)
             {
-                if (item.ProductVariant.Stock < item.Quantity)
+                await _context.Entry(item.ProductVariant).ReloadAsync();
+
+                if (!InventoryService.CanReserve(item.ProductVariant, item.Quantity))
                 {
                     return BadRequest(
-                        $"Sản phẩm {item.ProductVariant.Product.Name} không đủ số lượng.");
+                        $"Sản phẩm {item.ProductVariant.Product?.Name ?? "này"} không đủ số lượng.");
                 }
             }
 
@@ -185,7 +188,8 @@ public class OrderController : Controller
                 TotalAmount = cart.Sum(x => GetItemPrice(x) * x.Quantity),
                 Status = OrderStatuses.Pending,
                 OrderDate = DateTime.Now,
-                PaymentMethod = paymentMethod
+                PaymentMethod = paymentMethod,
+                PaymentStatus = PaymentStatuses.Unpaid
             };
 
             _context.Orders.Add(order);
@@ -202,7 +206,7 @@ public class OrderController : Controller
                     Price = GetItemPrice(item)
                 });
 
-                item.ProductVariant.Stock -= item.Quantity;
+                InventoryService.Reserve(item.ProductVariant, item.Quantity);
             }
 
             if (!isBuyNow)
@@ -235,6 +239,7 @@ public class OrderController : Controller
 
                 default: // COD
                     order.Status = OrderStatuses.Confirmed;
+                    order.PaymentStatus = PaymentStatuses.Paid;
                     order.PaymentDate = DateTime.Now;
                     await _context.SaveChangesAsync();
                     return RedirectToAction("OrderSuccess",
@@ -308,7 +313,7 @@ public class OrderController : Controller
         // 🔄 hoàn lại stock
         foreach (var item in order.OrderDetails)
         {
-            item.ProductVariant.Stock += item.Quantity;
+            InventoryService.Release(item.ProductVariant, item.Quantity);
         }
 
         order.Status = OrderStatuses.Cancelled;

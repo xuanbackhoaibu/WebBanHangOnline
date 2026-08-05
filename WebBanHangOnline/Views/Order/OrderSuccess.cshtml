@@ -3,7 +3,6 @@
 @{
     string StatusClass(string? status) => status switch
     {
-        "Paid" => "success",
         "Completed" => "success",
         "Shipping" => "shipping",
         "Cancelled" => "cancelled",
@@ -13,11 +12,19 @@
     string StatusText(string? status) => status switch
     {
         "Pending" => "Chờ thanh toán",
-        "Paid" => "Đã thanh toán",
+        "Confirmed" => "Đã xác nhận",
         "Shipping" => "Đang giao",
         "Completed" => "Hoàn thành",
         "Cancelled" => "Đã hủy",
         _ => status ?? "Đang xử lý"
+    };
+
+    string PaymentStatusText(string? status) => status switch
+    {
+        "Paid" => "Đã thanh toán",
+        "Failed" => "Thanh toán thất bại",
+        "Refunded" => "Đã hoàn tiền",
+        _ => "Chưa thanh toán"
     };
 }
 
@@ -65,6 +72,10 @@
                         <span>Thanh toán</span>
                         <strong>@(Model.PaymentMethod ?? "COD")</strong>
                     </div>
+                    <div>
+                        <span>Trạng thái thanh toán</span>
+                        <strong>@PaymentStatusText(Model.PaymentStatus)</strong>
+                    </div>
                 </div>
             </section>
 
@@ -81,7 +92,7 @@
                         <span></span>
                         <strong>Đã đặt</strong>
                     </div>
-                    <div class="timeline-step @(Model.Status != "Pending" ? "active" : "")">
+                    <div class="timeline-step @(Model.PaymentStatus == "Paid" || Model.PaymentMethod == "COD" ? "active" : "")">
                         <span></span>
                         <strong>Thanh toán</strong>
                     </div>

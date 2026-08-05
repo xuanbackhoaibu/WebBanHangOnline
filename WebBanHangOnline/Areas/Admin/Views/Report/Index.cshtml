@@ -7,15 +7,18 @@
 <form method="get" class="row mb-3">
     <div class="col-md-4">
         <label>Từ ngày</label>
-        <input type="date" name="from" class="form-control" />
+        <input type="date" name="from" class="form-control" value="@ViewBag.From" />
     </div>
     <div class="col-md-4">
         <label>Đến ngày</label>
-        <input type="date" name="to" class="form-control" />
+        <input type="date" name="to" class="form-control" value="@ViewBag.To" />
     </div>
     <div class="col-md-4 d-flex align-items-end">
-        <button class="btn btn-primary me-2">Lọc</button>
-        <a asp-action="ExportExcel" class="btn btn-success">Xuất Excel</a>
+        <button type="submit" class="btn btn-primary me-2">Lọc</button>
+        <a asp-action="ExportExcel"
+           asp-route-from="@ViewBag.From"
+           asp-route-to="@ViewBag.To"
+           class="btn btn-success">Xuất Excel</a>
     </div>
 </form>
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Services;
 
 [Authorize]
 public class CartController : Controller
@@ -49,6 +50,7 @@ public class CartController : Controller
 
         // ✅ 1. KIỂM TRA VARIANT TỒN TẠI (FIX FK)
         var variant = await _context.ProductVariants
+            .Include(v => v.Product)
             .FirstOrDefaultAsync(v => v.Id == variantId);
 
         if (variant == null)
@@ -61,6 +63,12 @@ public class CartController : Controller
             .FirstOrDefaultAsync(c =>
                 c.UserId == userId &&
                 c.ProductVariantId == variantId);
+
+        var requestedQuantity = (cartItem?.Quantity ?? 0) + quantity;
+        if (!InventoryService.CanReserve(variant, requestedQuantity))
+        {
+            return BadRequest($"Sản phẩm {variant.Product?.Name ?? "này"} chỉ còn {variant.Stock} sản phẩm.");
+        }
 
         if (cartItem == null)
         {
@@ -95,10 +103,17 @@ public class CartController : Controller
         var userId = _userManager.GetUserId(User);
 
         var item = await _context.CartItems
+            .Include(c => c.ProductVariant)
+                .ThenInclude(v => v.Product)
             .FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
 
         if (item == null)
             return NotFound();
+
+        if (!InventoryService.CanReserve(item.ProductVariant, quantity))
+        {
+            return BadRequest($"Sản phẩm {item.ProductVariant.Product?.Name ?? "này"} chỉ còn {item.ProductVariant.Stock} sản phẩm.");
+        }
 
         item.Quantity = quantity;
         await _context.SaveChangesAsync();

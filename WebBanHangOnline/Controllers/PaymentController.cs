@@ -59,6 +59,7 @@ namespace WebBanHangOnline.Controllers
                 return NotFound();
 
             order.Status = OrderStatuses.Confirmed;
+            order.PaymentStatus = PaymentStatuses.Paid;
             order.PaymentDate = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -121,7 +122,11 @@ namespace WebBanHangOnline.Controllers
             }
 
             var resultCode = Request.Query["resultCode"].ToString();
-            order.Status = resultCode == "0" ? OrderStatuses.Paid : OrderStatuses.Failed;
+            order.PaymentStatus = resultCode == "0" ? PaymentStatuses.Paid : PaymentStatuses.Failed;
+            if (resultCode == "0" && order.Status == OrderStatuses.Pending)
+            {
+                order.Status = OrderStatuses.Confirmed;
+            }
             order.PaymentDate = DateTime.Now;
             await _context.SaveChangesAsync();
 
@@ -151,9 +156,13 @@ namespace WebBanHangOnline.Controllers
                 ? resultCodeElement.GetInt32()
                 : 1;
 
-            if (!OrderStatuses.IsFinalPaymentStatus(order.Status))
+            if (!PaymentStatuses.IsFinal(order.PaymentStatus))
             {
-                order.Status = resultCode == 0 ? OrderStatuses.Paid : OrderStatuses.Failed;
+                order.PaymentStatus = resultCode == 0 ? PaymentStatuses.Paid : PaymentStatuses.Failed;
+                if (resultCode == 0 && order.Status == OrderStatuses.Pending)
+                {
+                    order.Status = OrderStatuses.Confirmed;
+                }
                 order.PaymentDate = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
@@ -167,7 +176,11 @@ namespace WebBanHangOnline.Controllers
             if (order == null)
                 return NotFound("Đơn hàng không tồn tại");
 
-            order.Status = OrderStatuses.Paid;
+            order.PaymentStatus = PaymentStatuses.Paid;
+            if (order.Status == OrderStatuses.Pending)
+            {
+                order.Status = OrderStatuses.Confirmed;
+            }
             order.PaymentDate = DateTime.Now;
             await _context.SaveChangesAsync();
 
@@ -337,7 +350,11 @@ namespace WebBanHangOnline.Controllers
 
                 // Cập nhật trạng thái đơn hàng
                 bool isSuccess = responseCode == "00";
-                order.Status = isSuccess ? OrderStatuses.Paid : OrderStatuses.Failed;
+                order.PaymentStatus = isSuccess ? PaymentStatuses.Paid : PaymentStatuses.Failed;
+                if (isSuccess && order.Status == OrderStatuses.Pending)
+                {
+                    order.Status = OrderStatuses.Confirmed;
+                }
                 order.PaymentDate = DateTime.Now;
 
                 // KHÔNG dùng Notes vì model chưa có trường này
@@ -429,7 +446,7 @@ namespace WebBanHangOnline.Controllers
                 }
 
                 // Kiểm tra trạng thái đơn hàng (tránh cập nhật trùng)
-                if (OrderStatuses.IsFinalPaymentStatus(order.Status))
+                if (PaymentStatuses.IsFinal(order.PaymentStatus))
                 {
                     return Ok(new { RspCode = "02", Message = "Order already confirmed" });
                 }
@@ -439,14 +456,18 @@ namespace WebBanHangOnline.Controllers
                 
                 if (responseCode == "00")
                 {
-                    order.Status = OrderStatuses.Paid;
+                    order.PaymentStatus = PaymentStatuses.Paid;
+                    if (order.Status == OrderStatuses.Pending)
+                    {
+                        order.Status = OrderStatuses.Confirmed;
+                    }
                     order.PaymentDate = DateTime.Now;
                     await _context.SaveChangesAsync();
                     return Ok(new { RspCode = "00", Message = "Confirm Success" });
                 }
                 else
                 {
-                    order.Status = OrderStatuses.Failed;
+                    order.PaymentStatus = PaymentStatuses.Failed;
                     order.PaymentDate = DateTime.Now;
                     await _context.SaveChangesAsync();
                     return Ok(new { RspCode = "02", Message = "Payment failed" });

@@ -22,19 +22,26 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         // 📊 Trang báo cáo
         public async Task<IActionResult> Index(DateTime? from, DateTime? to)
         {
+            var fromDate = from?.Date;
+            var toExclusive = to?.Date.AddDays(1);
+
             var query = _context.Orders
-                .Where(o => OrderStatuses.RevenueStatuses.Contains(o.Status));
+                .Where(o =>
+                    OrderStatuses.RevenueStatuses.Contains(o.Status) ||
+                    o.PaymentStatus == PaymentStatuses.Paid);
 
-            if (from.HasValue)
-                query = query.Where(o => o.OrderDate >= from.Value);
+            if (fromDate.HasValue)
+                query = query.Where(o => o.OrderDate >= fromDate.Value);
 
-            if (to.HasValue)
-                query = query.Where(o => o.OrderDate <= to.Value);
+            if (toExclusive.HasValue)
+                query = query.Where(o => o.OrderDate < toExclusive.Value);
 
             var orders = await query.ToListAsync();
 
             ViewBag.TotalRevenue = orders.Sum(o => o.TotalAmount);
             ViewBag.TotalOrders = orders.Count;
+            ViewBag.From = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.To = to?.Date.ToString("yyyy-MM-dd");
 
             return View();
         }
@@ -62,14 +69,19 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         // 📤 Xuất Excel
         public async Task<IActionResult> ExportExcel(DateTime? from, DateTime? to)
         {
+            var fromDate = from?.Date;
+            var toExclusive = to?.Date.AddDays(1);
+
             var query = _context.Orders
-                .Where(o => OrderStatuses.RevenueStatuses.Contains(o.Status));
+                .Where(o =>
+                    OrderStatuses.RevenueStatuses.Contains(o.Status) ||
+                    o.PaymentStatus == PaymentStatuses.Paid);
 
-            if (from.HasValue)
-                query = query.Where(o => o.OrderDate >= from.Value);
+            if (fromDate.HasValue)
+                query = query.Where(o => o.OrderDate >= fromDate.Value);
 
-            if (to.HasValue)
-                query = query.Where(o => o.OrderDate <= to.Value);
+            if (toExclusive.HasValue)
+                query = query.Where(o => o.OrderDate < toExclusive.Value);
 
             var orders = await query.ToListAsync();
 
@@ -79,7 +91,8 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             sheet.Cell(1, 1).Value = "Mã đơn";
             sheet.Cell(1, 2).Value = "Ngày";
             sheet.Cell(1, 3).Value = "Tổng tiền";
-            sheet.Cell(1, 4).Value = "Trạng thái";
+            sheet.Cell(1, 4).Value = "Trạng thái đơn";
+            sheet.Cell(1, 5).Value = "Trạng thái thanh toán";
 
             int row = 2;
             foreach (var o in orders)
@@ -88,6 +101,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 sheet.Cell(row, 2).Value = o.OrderDate.ToString("dd/MM/yyyy");
                 sheet.Cell(row, 3).Value = o.TotalAmount;
                 sheet.Cell(row, 4).Value = o.Status;
+                sheet.Cell(row, 5).Value = o.PaymentStatus;
                 row++;
             }
 
