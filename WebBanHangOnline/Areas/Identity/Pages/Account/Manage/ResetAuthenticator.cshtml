@@ -10,7 +10,7 @@
 <h3>@ViewData["Title"]</h3>
 
 <div class="alert alert-warning">
-    <strong>⚠ Cảnh báo bảo mật</strong>
+    <strong><i class="bi bi-exclamation-triangle"></i> Cảnh báo bảo mật</strong>
     <ul class="mb-0 mt-2">
         <li>Ứng dụng xác thực (Google Authenticator, Microsoft Authenticator, …) sẽ ngừng hoạt động.</li>
         <li>2FA sẽ bị tắt cho đến khi bạn cấu hình lại.</li>
@@ -21,6 +21,6 @@
 <form method="post"
       onsubmit="return confirm('Bạn có chắc chắn muốn reset khóa xác thực? Bạn sẽ phải cấu hình lại 2FA!');">
     <button type="submit" class="btn btn-danger">
-        🔄 Reset khóa xác thực
+        <i class="bi bi-arrow-repeat"></i> Reset khóa xác thực
     </button>
 </form>

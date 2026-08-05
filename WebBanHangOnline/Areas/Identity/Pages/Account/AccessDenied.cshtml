@@ -4,32 +4,27 @@
     ViewData["Title"] = "Truy cập bị từ chối";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 text-center">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-5">
-                    <h1 class="text-danger mb-3">🚫 Truy cập bị từ chối</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+}
 
-                    <p class="text-muted mb-4">
-                        Bạn không có quyền truy cập vào chức năng hoặc tài nguyên này.
-                    </p>
-
-                    <div class="d-grid gap-2">
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary">
-                            ⬅ Quay về trang chủ
-                        </a>
-
-                        <a asp-page="/Account/Login" class="btn btn-outline-secondary">
-                            Đăng nhập bằng tài khoản khác
-                        </a>
-                    </div>
-                </div>
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card-body text-center">
+            <div class="auth-icon">
+                <i class="bi bi-shield-lock"></i>
             </div>
-
-            <small class="text-muted d-block mt-3">
-                Nếu bạn cho rằng đây là lỗi, vui lòng liên hệ quản trị viên hệ thống.
-            </small>
+            <div class="auth-head">
+                <h1>Truy cập bị từ chối</h1>
+                <p>Bạn không có quyền mở chức năng này. Hãy đăng nhập bằng tài khoản phù hợp hoặc quay lại trang chủ.</p>
+            </div>
+            <div class="auth-link-row">
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="auth-submit">
+                    <i class="bi bi-arrow-left"></i>
+                    Quay về trang chủ
+                </a>
+                <a asp-page="/Account/Login">Đăng nhập tài khoản khác</a>
+            </div>
         </div>
     </div>
 </div>

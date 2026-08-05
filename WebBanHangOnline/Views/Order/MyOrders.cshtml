@@ -35,7 +35,17 @@
 }
 
 <div class="orders-page">
-    <h1 class="orders-title">Đơn hàng của tôi</h1>
+    <div class="orders-hero">
+        <div>
+            <span class="catalog-kicker">Orders</span>
+            <h1 class="orders-title">Đơn hàng của tôi</h1>
+            <p>Theo dõi trạng thái, xem lại sản phẩm đã mua và tiếp tục mua sắm khi cần.</p>
+        </div>
+        <a asp-area="" asp-controller="Product" asp-action="Index" class="orders-shop-link">
+            Mua sắm tiếp
+            <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
 
     <div class="orders-filter" aria-label="Lọc đơn hàng">
         <button type="button" class="orders-filter-btn active" data-status="all">Tất cả</button>
@@ -98,7 +108,7 @@
                                     }
                                     @if (!string.IsNullOrWhiteSpace(item.ProductVariant?.Size))
                                     {
-                                        <span> | Size: @item.ProductVariant.Size</span>
+                                        <span>Size: @item.ProductVariant.Size</span>
                                     }
                                 </div>
                                 <div class="orders-product-meta">Số lượng: @item.Quantity</div>

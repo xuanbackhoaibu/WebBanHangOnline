@@ -158,37 +158,6 @@
   animation: heroFloat 7.2s ease-in-out -4s infinite;
 }
 
-.home-page .hero-runway {
-  position: absolute;
-  right: 2%;
-  bottom: 38px;
-  left: 8%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  min-height: 72px;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 16px;
-  background: rgba(18, 20, 23, 0.58);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.24);
-  color: #fff;
-  padding: 16px 18px;
-  transform: translateZ(46px) rotateX(6deg);
-}
-
-.home-page .hero-runway span {
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.home-page .hero-runway strong {
-  font-size: 15px;
-}
-
 @keyframes heroFloat {
   0%,
   100% {
@@ -390,10 +359,10 @@
 .home-page .hero-content h1 {
   margin: 0;
   color: #17181b;
-  font-size: clamp(42px, 5.3vw, 76px);
-  font-weight: 900;
+  font-size: clamp(34px, 4.4vw, 60px);
+  font-weight: 820;
   letter-spacing: 0;
-  line-height: 0.96;
+  line-height: 1.08;
 }
 
 .home-page .hero-copy {
@@ -426,12 +395,25 @@
 
 .home-page .hero-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-wrap: nowrap;
+  gap: 10px;
   margin-top: 22px;
 }
 
 .home-page .hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  border-radius: 999px !important;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0.66rem 0.92rem !important;
   white-space: nowrap;
   box-shadow: 0 12px 30px rgba(217, 79, 61, 0.2);
 }
@@ -509,7 +491,7 @@
   }
 
   .home-page .hero-content h1 {
-    font-size: 40px;
+    font-size: 32px;
   }
 
   .home-page .hero-copy {
@@ -551,23 +533,21 @@
     height: 130px;
   }
 
-  .home-page .hero-runway {
-    right: 2%;
-    left: 2%;
-    min-height: 62px;
-    padding: 12px;
-  }
-
-  .home-page .hero-runway span {
-    display: none;
-  }
-
   .home-page .category-banner {
     height: 320px;
   }
 
   .home-page .hero-actions {
-    display: grid;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .home-page .hero-btn {
+    width: auto;
+    min-width: 0;
+    min-height: 34px;
+    font-size: 10.5px;
+    padding: 0.56rem 0.5rem !important;
   }
 
   .home-page .sale-box {

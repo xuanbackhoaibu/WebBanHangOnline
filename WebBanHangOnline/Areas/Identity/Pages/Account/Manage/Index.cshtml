@@ -5,15 +5,8 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
-}
-
-<div class="container mt-5">
-    <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-body p-5">
-
-            <h3 class="fw-bold mb-4">Hồ sơ cá nhân </h3>
+    <div class="account-card">
+        <div class="account-card-body">
 
             <partial name="_StatusMessage" for="StatusMessage" />
 
@@ -25,15 +18,15 @@
                 <div class="row">
 
                     <!-- LEFT: Avatar -->
-                    <div class="col-md-4 text-center border-end">
+                    <div class="col-md-4 text-center account-avatar-panel">
 
                         <img src="@(Model.CurrentAvatar ?? "/images/default-avatar.png")"
-                             class="rounded-circle shadow mb-3 account-avatar"
+                            class="account-avatar"
                              width="160"
                              height="160" />
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Chọn ảnh </label>
+                            <label class="form-label fw-semibold">Chọn ảnh</label>
                             <input asp-for="Input.Avatar"
                                    type="file"
                                    class="form-control" />
@@ -84,10 +77,10 @@
 
                             <!-- Gender -->
                             <div class="col-md-6">
-                                <label class="form-label">Giới tính </label>
+                                <label class="form-label">Giới tính</label>
                                 <select asp-for="Input.Gender"
                                         class="form-select">
-                                    <option value="">-- Chọn giới tính  --</option>
+                                    <option value="">Chọn giới tính</option>
                                     <option value="Male">Nam</option>
                                     <option value="Female">Nữ</option>
                                     <option value="Other">Khác</option>
@@ -127,8 +120,8 @@
                         <!-- Save Button -->
                         <div class="mt-4 text-end">
                             <button type="submit"
-                                    class="btn btn-primary px-5 rounded-pill shadow-sm">
-                                lưu
+                                    class="account-save-btn">
+                                Lưu thay đổi
                             </button>
                         </div>
 
@@ -139,7 +132,6 @@
 
         </div>
     </div>
-</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

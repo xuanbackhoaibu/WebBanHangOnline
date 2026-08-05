@@ -28,7 +28,7 @@
         @* Download *@
         <form asp-page="DownloadPersonalData" method="post" class="mb-3">
             <button type="submit" class="btn btn-primary">
-                📥 Tải dữ liệu cá nhân
+                <i class="bi bi-download"></i> Tải dữ liệu cá nhân
             </button>
         </form>
 
@@ -36,7 +36,7 @@
         <a asp-page="DeletePersonalData"
            class="btn btn-danger"
            onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác!');">
-            ❌ Xóa tài khoản
+            <i class="bi bi-trash3"></i> Xóa tài khoản
         </a>
 
     </div>

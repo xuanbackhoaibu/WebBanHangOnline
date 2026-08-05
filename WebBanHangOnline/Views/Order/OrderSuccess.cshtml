@@ -1,147 +1,168 @@
 @model Order
 
+@{
+    string StatusClass(string? status) => status switch
+    {
+        "Paid" => "success",
+        "Completed" => "success",
+        "Shipping" => "shipping",
+        "Cancelled" => "cancelled",
+        _ => "pending"
+    };
+
+    string StatusText(string? status) => status switch
+    {
+        "Pending" => "Chờ thanh toán",
+        "Paid" => "Đã thanh toán",
+        "Shipping" => "Đang giao",
+        "Completed" => "Hoàn thành",
+        "Cancelled" => "Đã hủy",
+        _ => status ?? "Đang xử lý"
+    };
+}
+
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/order-success.css" asp-append-version="true" />
 }
 
-<div class="container mt-5 order-success-page">
-
-    <!-- HEADER -->
-    <div class="text-center mb-4">
-        <h1 class="text-success fw-bold">🎉 Đặt hàng thành công!</h1>
-        <p class="text-muted">Cảm ơn bạn đã mua hàng ❤️</p>
-    </div>
-
-    <!-- ORDER INFO -->
-    <div class="card shadow-sm rounded-4 mb-4">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
-                <h5>Mã đơn: <span class="text-primary">#@Model.Id</span></h5>
-                <p class="mb-1">
-                    📅 @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")
-                </p>
-
-                <p>
-                    Trạng thái:
-                    @if (Model.Status == "Pending")
-                    {
-                        <span class="badge bg-warning text-dark">Chờ thanh toán</span>
-                    }
-                    else if (Model.Status == "Paid")
-                    {
-                        <span class="badge bg-success">Đã thanh toán</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">@Model.Status</span>
-                    }
-                </p>
-            </div>
-
-            <div class="text-end">
-                <h3 class="text-danger fw-bold">
-                    @Model.TotalAmount.ToString("N0") VND
-                </h3>
-            </div>
+<div class="order-success-page">
+    <section class="success-hero">
+        <div class="success-mark">
+            <i class="bi bi-check2"></i>
         </div>
-    </div>
-
-    <!-- TIMELINE -->
-    <div class="card shadow-sm rounded-4 mb-4">
-        <div class="card-body">
-            <h5 class="mb-3">📦 Trạng thái đơn hàng</h5>
-
-            <div class="timeline">
-                <div class="step active">📝 Đã đặt</div>
-
-                <div class="step @(Model.Status != "Pending" ? "active" : "")">
-                    💳 Thanh toán
-                </div>
-
-                <div class="step @(Model.Status == "Shipping" || Model.Status == "Completed" ? "active" : "")">
-                    🚚 Giao hàng
-                </div>
-
-                <div class="step @(Model.Status == "Completed" ? "active" : "")">
-                    ✅ Hoàn thành
-                </div>
-            </div>
+        <div>
+            <span class="catalog-kicker">Order confirmed</span>
+            <h1>Đặt hàng thành công</h1>
+            <p>Cảm ơn bạn đã chọn XuanBac. Đơn hàng đang được chuẩn bị và có thể theo dõi trong mục đơn hàng.</p>
         </div>
-    </div>
+        <div class="success-total">
+            <span>Tổng thanh toán</span>
+            <strong>@Model.TotalAmount.ToString("N0") VND</strong>
+        </div>
+    </section>
 
-    <!-- PRODUCT LIST -->
-    <div class="card shadow-sm rounded-4 mb-4">
-        <div class="card-body">
-            <h5 class="mb-3">🛒 Sản phẩm</h5>
-
-            @foreach (var item in Model.OrderDetails)
-            {
-                <div class="d-flex align-items-center border-bottom py-3">
-
-                    <!-- IMAGE -->
-                    <img src="@(item.ProductVariant.Product.Thumbnail ?? "/images/no-image.png")"
-                         class="rounded order-success-img" />
-
-                    <!-- INFO -->
-                    <div class="ms-3 flex-grow-1">
-                        <h6 class="mb-1 fw-bold">
-                            @item.ProductVariant.Product.Name
-                        </h6>
-
-                        <small class="text-muted">
-                            Size: @item.ProductVariant.Size |
-                            Màu: @item.ProductVariant.Color
-                        </small><br />
-
-                        <small>Số lượng: x @item.Quantity</small>
+    <div class="success-layout">
+        <main class="success-main">
+            <section class="success-card order-overview">
+                <div class="success-section-head">
+                    <div>
+                        <i class="bi bi-receipt"></i>
+                        <span>Thông tin đơn hàng</span>
                     </div>
+                    <span class="success-status @StatusClass(Model.Status)">@StatusText(Model.Status)</span>
+                </div>
 
-                    <!-- PRICE -->
-                    <div class="text-end">
-                        <div class="text-danger fw-bold">
-                            @item.Price.ToString("N0") VND
-                        </div>
+                <div class="order-overview-grid">
+                    <div>
+                        <span>Mã đơn</span>
+                        <strong>#@Model.Id</strong>
+                    </div>
+                    <div>
+                        <span>Ngày đặt</span>
+                        <strong>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                    </div>
+                    <div>
+                        <span>Thanh toán</span>
+                        <strong>@(Model.PaymentMethod ?? "COD")</strong>
                     </div>
                 </div>
-            }
-        </div>
+            </section>
+
+            <section class="success-card">
+                <div class="success-section-head">
+                    <div>
+                        <i class="bi bi-box-seam"></i>
+                        <span>Trạng thái đơn hàng</span>
+                    </div>
+                </div>
+
+                <div class="success-timeline">
+                    <div class="timeline-step active">
+                        <span></span>
+                        <strong>Đã đặt</strong>
+                    </div>
+                    <div class="timeline-step @(Model.Status != "Pending" ? "active" : "")">
+                        <span></span>
+                        <strong>Thanh toán</strong>
+                    </div>
+                    <div class="timeline-step @(Model.Status == "Shipping" || Model.Status == "Completed" ? "active" : "")">
+                        <span></span>
+                        <strong>Giao hàng</strong>
+                    </div>
+                    <div class="timeline-step @(Model.Status == "Completed" ? "active" : "")">
+                        <span></span>
+                        <strong>Hoàn thành</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="success-card">
+                <div class="success-section-head">
+                    <div>
+                        <i class="bi bi-bag-check"></i>
+                        <span>Sản phẩm</span>
+                    </div>
+                </div>
+
+                <div class="success-products">
+                    @foreach (var item in Model.OrderDetails)
+                    {
+                        <article class="success-product">
+                            <img src="@(item.ProductVariant.Product.Thumbnail ?? "/images/no-image.png")"
+                                 alt="@item.ProductVariant.Product.Name"
+                                 loading="lazy" />
+                            <div>
+                                <h3>@item.ProductVariant.Product.Name</h3>
+                                <div class="success-product-meta">
+                                    <span>Size @item.ProductVariant.Size</span>
+                                    <span>@item.ProductVariant.Color</span>
+                                    <span>x @item.Quantity</span>
+                                </div>
+                            </div>
+                            <strong>@item.Price.ToString("N0") VND</strong>
+                        </article>
+                    }
+                </div>
+            </section>
+        </main>
+
+        <aside class="success-side">
+            <section class="success-card shipping-card">
+                <div class="success-section-head">
+                    <div>
+                        <i class="bi bi-geo-alt"></i>
+                        <span>Địa chỉ nhận hàng</span>
+                    </div>
+                </div>
+                <div class="shipping-copy">
+                    <strong>@(Model.User?.UserName ?? "Khách hàng")</strong>
+                    <span>@Model.PhoneNumber</span>
+                    <p>@Model.ShippingAddress</p>
+                </div>
+            </section>
+
+            <section class="success-card success-actions">
+                <a asp-action="MyOrders" class="success-btn secondary">
+                    <i class="bi bi-list-check"></i>
+                    Xem đơn hàng
+                </a>
+
+                @if (Model.Status == "Pending")
+                {
+                    <a asp-controller="Payment"
+                       asp-action="VNPay"
+                       asp-route-orderId="@Model.Id"
+                       class="success-btn primary">
+                        <i class="bi bi-credit-card"></i>
+                        Thanh toán VNPay
+                    </a>
+                }
+            </section>
+        </aside>
     </div>
 
-    <!-- SHIPPING INFO -->
-    <div class="card shadow-sm rounded-4 mb-4">
-        <div class="card-body">
-            <h5>📍 Địa chỉ nhận hàng</h5>
-            <p class="mb-1"><strong>@Model.User?.UserName</strong></p>
-            <p class="mb-1">@Model.PhoneNumber</p>
-            <p class="text-muted">@Model.ShippingAddress</p>
-        </div>
-    </div>
-
-    <!-- ACTION -->
-    <div class="text-center mt-4">
-
-        <a asp-action="MyOrders" class="btn btn-outline-primary btn-lg me-2">
-            📦 Xem đơn hàng
-        </a>
-
-        @if (Model.Status == "Pending")
-        {
-            <a asp-controller="Payment"
-               asp-action="VNPay"
-               asp-route-orderId="@Model.Id"
-               class="btn btn-danger btn-lg">
-                💳 Thanh toán VNPay
-            </a>
-        }
-    </div>
-
-</div>
-
-<!-- TOAST -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div class="toast show bg-success text-white">
-        <div class="toast-body">
-            ✅ Đặt hàng thành công!
-        </div>
+    <div class="success-toast">
+        <i class="bi bi-check-circle"></i>
+        Đơn hàng đã được ghi nhận
     </div>
 </div>

@@ -10,21 +10,21 @@
     <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
 }
 
-<div class="container d-flex justify-content-center align-items-center auth-shell">
-    <div class="card shadow border-0 auth-card">
-        <div class="card-body p-4">
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card-body">
+            <div class="auth-head">
+                <div class="auth-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+                <span class="catalog-kicker">Account</span>
+                <h3>Đăng ký tài khoản</h3>
+                <p>Tạo tài khoản để lưu địa chỉ, theo dõi đơn và mua hàng nhanh hơn.</p>
+            </div>
 
-            <!-- Tiêu đề -->
-            <h3 class="text-center fw-bold mb-2">Đăng ký tài khoản</h3>
-            <p class="text-center text-muted mb-4">
-                Tạo tài khoản mới tại <strong>Web Bán Hàng Online</strong>
-            </p>
-
-            <!-- Form register -->
             <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div asp-validation-summary="ModelOnly" class="auth-alert"></div>
 
-                <!-- Email -->
                 <div class="form-floating mb-3">
                     <input asp-for="Input.Email"
                            class="form-control"
@@ -34,7 +34,6 @@
                     <span asp-validation-for="Input.Email" class="text-danger"></span>
                 </div>
 
-                <!-- Password -->
                 <div class="form-floating mb-3">
                     <input asp-for="Input.Password"
                            class="form-control"
@@ -44,7 +43,6 @@
                     <span asp-validation-for="Input.Password" class="text-danger"></span>
                 </div>
 
-                <!-- Confirm Password -->
                 <div class="form-floating mb-4">
                     <input asp-for="Input.ConfirmPassword"
                            class="form-control"
@@ -54,12 +52,10 @@
                     <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                 </div>
 
-                <!-- Button -->
-                <button type="submit" class="btn btn-primary w-100 mb-3">
+                <button type="submit" class="auth-submit">
                     Đăng ký
                 </button>
 
-                <!-- Login link -->
                 <div class="text-center">
                     <span class="small">Đã có tài khoản?</span>
                     <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">
@@ -68,7 +64,6 @@
                 </div>
             </form>
 
-            <!-- External register (nếu có) -->
             @if ((Model.ExternalLogins?.Count ?? 0) > 0)
             {
                 <hr />

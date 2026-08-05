@@ -79,15 +79,19 @@
                             <!-- THU HỒI CLIENT -->
                             <form asp-action="RevokeClient" method="post">
                                 <input type="hidden" name="id" value="@user.Id" />
-                                <button class="btn btn-sm btn-secondary">↩ Thu hồi Client</button>
+                                <button class="btn btn-sm btn-secondary">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Thu hồi Client
+                                </button>
                             </form>
                         }
 
                         <!-- XOÁ USER -->
                         <form asp-action="Delete" method="post"
                               onsubmit="return confirm('Bạn chắc chắn muốn xoá user này?')">
-                            <input type="hidden" name="id" value="@user `.Id" />
-                            <button class="btn btn-sm btn-danger">🗑 Xoá</button>
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash3"></i> Xoá
+                            </button>
                         </form>
                     }
                     else

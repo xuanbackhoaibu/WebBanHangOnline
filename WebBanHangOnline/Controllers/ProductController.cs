@@ -26,7 +26,8 @@ namespace WebBanHangOnline.Controllers
             decimal? maxPrice,
             string? size,
             string? color,
-            string? sort,
+            bool sale = false,
+            string? sort = null,
             int page = 1)
         {
             var displayKeyword = keyword?.Trim();
@@ -37,12 +38,14 @@ namespace WebBanHangOnline.Controllers
                 maxPrice.HasValue ||
                 !string.IsNullOrWhiteSpace(size) ||
                 !string.IsNullOrWhiteSpace(color) ||
+                sale ||
                 !string.IsNullOrWhiteSpace(sort);
 
             var query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Variants)
                 .Include(p => p.Images) // ⚠️ để lấy ảnh
+                .Include(p => p.Reviews)
                 .Where(p => p.IsActive)
                 .AsQueryable();
 
@@ -101,11 +104,23 @@ namespace WebBanHangOnline.Controllers
             if (!string.IsNullOrEmpty(color))
                 query = query.Where(p => p.Variants.Any(v => v.Color == color));
 
+            if (sale)
+            {
+                query = query.Where(p =>
+                    p.FlashSalePrice.HasValue &&
+                    p.FlashSaleStart.HasValue &&
+                    p.FlashSaleEnd.HasValue &&
+                    DateTime.Now >= p.FlashSaleStart.Value &&
+                    DateTime.Now <= p.FlashSaleEnd.Value);
+            }
+
             // Sort
             query = sort switch
             {
                 "price_asc" => query.OrderBy(p => p.Price),
                 "price_desc" => query.OrderByDescending(p => p.Price),
+                "rating" => query.OrderByDescending(p => p.Reviews.Any() ? p.Reviews.Average(review => review.Rating) : 0),
+                "stock" => query.OrderByDescending(p => p.Variants.Sum(variant => variant.Stock)),
                 "newest" => query.OrderByDescending(p => p.ProductId),
                 _ => query.OrderByDescending(p => p.ProductId)
             };
@@ -117,6 +132,14 @@ namespace WebBanHangOnline.Controllers
                 .Skip((page - 1) * PAGE_SIZE)
                 .Take(PAGE_SIZE)
                 .ToListAsync();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            ViewBag.WishlistProductIds = string.IsNullOrWhiteSpace(userId)
+                ? new HashSet<int>()
+                : await _context.WishlistItems
+                    .Where(item => item.UserId == userId)
+                    .Select(item => item.ProductId)
+                    .ToHashSetAsync();
 
             ViewBag.Categories = await _context.Categories
                 .Where(c => c.IsActive)
@@ -139,9 +162,15 @@ namespace WebBanHangOnline.Controllers
             ViewBag.MaxPrice = maxPrice;
             ViewBag.Size = size;
             ViewBag.Color = color;
+            ViewBag.Sale = sale;
             ViewBag.Sort = sort;
 
             return View(products);
+        }
+
+        public IActionResult Sale()
+        {
+            return RedirectToAction(nameof(Index), new { sale = true, sort = "newest" });
         }
 
         // ============================
@@ -183,6 +212,8 @@ namespace WebBanHangOnline.Controllers
             ViewBag.UserReview = userReview;
             ViewBag.CanReview = !string.IsNullOrWhiteSpace(userId) && hasPurchased && userReview == null;
             ViewBag.ReviewGateMessage = GetReviewGateMessage(userId, hasPurchased, userReview != null);
+            ViewBag.IsWishlisted = !string.IsNullOrWhiteSpace(userId)
+                && await _context.WishlistItems.AnyAsync(item => item.UserId == userId && item.ProductId == id);
 
             return View(product);
         }

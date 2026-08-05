@@ -1,77 +1,57 @@
 ﻿@page
 @model LoginWith2faModel
 @{
-    ViewData["Title"] = "Xác thực hai lớp (2FA)";
+    ViewData["Title"] = "Xác thực hai lớp";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+}
 
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-
-                    <h3 class="text-center mb-3">
-                        🔐 Xác thực hai lớp
-                    </h3>
-
-                    <p class="text-muted text-center mb-4">
-                        Tài khoản của bạn được bảo vệ bằng ứng dụng xác thực.
-                        <br />
-                        Vui lòng nhập mã xác thực để tiếp tục đăng nhập.
-                    </p>
-
-                    <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-                        <input asp-for="RememberMe" type="hidden" />
-
-                        <div asp-validation-summary="ModelOnly"
-                             class="text-danger mb-3"
-                             role="alert">
-                        </div>
-
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.TwoFactorCode"
-                                   class="form-control"
-                                   autocomplete="off"
-                                   placeholder="Nhập mã xác thực" />
-                            <label asp-for="Input.TwoFactorCode">
-                                Mã xác thực (6 chữ số)
-                            </label>
-                            <span asp-validation-for="Input.TwoFactorCode"
-                                  class="text-danger">
-                            </span>
-                        </div>
-
-                        <div class="form-check mb-3">
-                            <input asp-for="Input.RememberMachine"
-                                   class="form-check-input" />
-                            <label asp-for="Input.RememberMachine"
-                                   class="form-check-label">
-                                Ghi nhớ trình duyệt này
-                            </label>
-                        </div>
-
-                        <button type="submit"
-                                class="w-100 btn btn-lg btn-primary">
-                            Đăng nhập
-                        </button>
-                    </form>
-
-                    <hr class="my-4" />
-
-                    <p class="text-center mb-0">
-                        Không có quyền truy cập ứng dụng xác thực?
-                        <br />
-                        <a id="recovery-code-login"
-                           asp-page="./LoginWithRecoveryCode"
-                           asp-route-returnUrl="@Model.ReturnUrl">
-                            👉 Đăng nhập bằng mã khôi phục
-                        </a>
-                    </p>
-
-                </div>
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card-body">
+            <div class="auth-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div class="auth-head">
+                <h1>Xác thực hai lớp</h1>
+                <p>Nhập mã từ ứng dụng xác thực để hoàn tất đăng nhập an toàn.</p>
             </div>
 
+            <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
+                <input asp-for="RememberMe" type="hidden" />
+                <div asp-validation-summary="ModelOnly" class="auth-alert mb-3" role="alert"></div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.TwoFactorCode"
+                           class="form-control"
+                           autocomplete="off"
+                           placeholder="Nhập mã xác thực" />
+                    <label asp-for="Input.TwoFactorCode">Mã xác thực</label>
+                    <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="Input.RememberMachine" class="form-check-input" />
+                    <label asp-for="Input.RememberMachine" class="form-check-label">
+                        Ghi nhớ trình duyệt này
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-submit">
+                    Đăng nhập
+                </button>
+            </form>
+
+            <div class="auth-link-row">
+                <a id="recovery-code-login"
+                   asp-page="./LoginWithRecoveryCode"
+                   asp-route-returnUrl="@Model.ReturnUrl">
+                    <i class="bi bi-key"></i>
+                    Dùng mã khôi phục
+                </a>
+            </div>
         </div>
     </div>
 </div>

@@ -9,6 +9,8 @@
     var isEnglish = currentCulture == "en";
     var returnUrl = Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString;
     var cartCount = 0;
+    var wishlistCount = 0;
+    var cartPreviewItems = new List<CartItem>();
 
     if (User.Identity?.IsAuthenticated == true)
     {
@@ -16,6 +18,16 @@
         cartCount = await LayoutDbContext.CartItems
             .Where(item => item.UserId == layoutUserId)
             .SumAsync(item => (int?)item.Quantity) ?? 0;
+        wishlistCount = await LayoutDbContext.WishlistItems
+            .Where(item => item.UserId == layoutUserId)
+            .CountAsync();
+        cartPreviewItems = await LayoutDbContext.CartItems
+            .Where(item => item.UserId == layoutUserId)
+            .Include(item => item.ProductVariant)
+                .ThenInclude(variant => variant.Product)
+            .OrderByDescending(item => item.Id)
+            .Take(3)
+            .ToListAsync();
     }
 
     string T(string vi, string en) => isEnglish ? en : vi;
@@ -39,6 +51,7 @@
 
     <!-- Site CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebBanHangOnline.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
     @RenderSection("Styles", required: false)
@@ -84,7 +97,7 @@
                                asp-action="SetLanguage"
                                asp-route-culture="vi"
                                asp-route-returnUrl="@returnUrl">
-                                🇻🇳 Tiếng Việt
+                                Tiếng Việt
                             </a>
                         </li>
                         <li>
@@ -94,7 +107,7 @@
                                asp-action="SetLanguage"
                                asp-route-culture="en"
                                asp-route-returnUrl="@returnUrl">
-                                🇬🇧 English
+                                English
                             </a>
                         </li>
                     </ul>
@@ -146,22 +159,73 @@
                     <i class="bi bi-search"></i>
                 </a>
 
-                <a asp-area="" asp-controller="Product" asp-action="Index" class="icon-btn" title="@T("Yêu thích", "Wishlist")">
+                <a asp-area=""
+                   asp-controller="Wishlist"
+                   asp-action="Index"
+                   class="icon-btn position-relative"
+                   title="@T($"Yêu thích: {wishlistCount} sản phẩm", $"Wishlist: {wishlistCount} items")">
                     <i class="bi bi-heart"></i>
+                    @if (wishlistCount > 0)
+                    {
+                        <span class="cart-badge wishlist-badge">@wishlistCount</span>
+                    }
                 </a>
 
                 <!-- CART -->
-                <a asp-area=""
-                   asp-controller="Cart"
-                   asp-action="Index"
-                   class="icon-btn position-relative"
-                   title="@T($"Giỏ hàng: {cartCount} sản phẩm", $"Cart: {cartCount} items")">
-                    <i class="bi bi-cart3"></i>
-                    @if (cartCount > 0)
-                    {
-                        <span class="cart-badge">@cartCount</span>
-                    }
-                </a>
+                <div class="dropdown mini-cart-wrap">
+                    <a asp-area=""
+                       asp-controller="Cart"
+                       asp-action="Index"
+                       class="icon-btn position-relative"
+                       data-bs-toggle="dropdown"
+                       data-bs-auto-close="outside"
+                       title="@T($"Giỏ hàng: {cartCount} sản phẩm", $"Cart: {cartCount} items")">
+                        <i class="bi bi-cart3"></i>
+                        @if (cartCount > 0)
+                        {
+                            <span class="cart-badge">@cartCount</span>
+                        }
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end mini-cart-menu">
+                        <div class="mini-cart-head">
+                            <strong>@T("Giỏ hàng", "Cart")</strong>
+                            <span>@cartCount @T("sản phẩm", "items")</span>
+                        </div>
+                        @if (cartPreviewItems.Any())
+                        {
+                            <div class="mini-cart-list">
+                                @foreach (var item in cartPreviewItems)
+                                {
+                                    var product = item.ProductVariant?.Product;
+                                    <a asp-area=""
+                                       asp-controller="Product"
+                                       asp-action="Details"
+                                       asp-route-id="@product?.ProductId"
+                                       asp-route-slug="@product?.Slug"
+                                       class="mini-cart-item">
+                                        <img src="@(product?.Thumbnail ?? "/images/no-image.png")" alt="@(product?.Name ?? "Product")" />
+                                        <span>
+                                            <strong>@(product?.Name ?? T("Sản phẩm", "Product"))</strong>
+                                            <small>@item.Quantity x @((item.ProductVariant?.Price ?? product?.FinalPrice ?? 0).ToString("N0")) VND</small>
+                                        </span>
+                                    </a>
+                                }
+                            </div>
+                            <a asp-area="" asp-controller="Cart" asp-action="Index" class="mini-cart-cta">
+                                @T("Xem giỏ hàng", "View cart")
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="mini-cart-empty">
+                                <i class="bi bi-bag"></i>
+                                <span>@T("Giỏ hàng đang trống", "Your cart is empty")</span>
+                                <a asp-area="" asp-controller="Product" asp-action="Index">@T("Mua sắm ngay", "Shop now")</a>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -186,6 +250,24 @@
                        asp-controller="Product"
                        asp-action="Index">
                         @T("Sản phẩm", "Products")
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       asp-area=""
+                       asp-controller="Product"
+                       asp-action="Sale">
+                        @T("Ưu đãi", "Sale")
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       asp-area=""
+                       asp-controller="Home"
+                       asp-action="About">
+                        @T("Giới thiệu", "About")
                     </a>
                 </li>
 
@@ -262,7 +344,7 @@
                 <div class="social">
                     <a href="https://www.facebook.com/xuan.bac0706">Facebook</a>
                     <a href="https://www.instagram.com/bc_pupyw">Instagram</a>
-                    <a href="#">TikTok</a>
+                    <a href="https://www.tiktok.com/">TikTok</a>
                 </div>
             </div>
 
@@ -281,10 +363,10 @@
             <div class="footer-col">
                 <h6>@T("Hỗ trợ", "Support")</h6>
                 <ul>
-                    <li><a href="#">@T("Hỏi đáp", "FAQ")</a></li>
-                    <li><a href="#">@T("Giao hàng", "Delivery")</a></li>
-                    <li><a href="#">@T("Thanh toán", "Payment")</a></li>
-                    <li><a href="#">@T("Đổi trả", "Returns")</a></li>
+                    <li><a asp-area="" asp-controller="Support" asp-action="Index">@T("Hỏi đáp", "FAQ")</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Privacy">@T("Giao hàng", "Delivery")</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Privacy">@T("Thanh toán", "Payment")</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Privacy">@T("Đổi trả", "Returns")</a></li>
                 </ul>
             </div>
 
@@ -311,6 +393,33 @@
             © 2026 XuanBac Fashion. All rights reserved.
         </div>
     </footer>
+
+    <nav class="mobile-shop-nav" aria-label="@T("Điều hướng nhanh", "Quick navigation")">
+        <a asp-area="" asp-controller="Home" asp-action="Index">
+            <i class="bi bi-house"></i>
+            <span>@T("Trang chủ", "Home")</span>
+        </a>
+        <a asp-area="" asp-controller="Product" asp-action="Index">
+            <i class="bi bi-grid"></i>
+            <span>@T("Sản phẩm", "Products")</span>
+        </a>
+        <a asp-area="" asp-controller="Wishlist" asp-action="Index" class="position-relative">
+            <i class="bi bi-heart"></i>
+            <span>@T("Yêu thích", "Wishlist")</span>
+            @if (wishlistCount > 0)
+            {
+                <b>@wishlistCount</b>
+            }
+        </a>
+        <a asp-area="" asp-controller="Cart" asp-action="Index" class="position-relative">
+            <i class="bi bi-cart3"></i>
+            <span>@T("Giỏ hàng", "Cart")</span>
+            @if (cartCount > 0)
+            {
+                <b>@cartCount</b>
+            }
+        </a>
+    </nav>
 
     @RenderSection("Scripts", required: false)
 
@@ -353,6 +462,7 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/chatbot.js" asp-append-version="true"></script>
 </body>
 </html>

@@ -7,14 +7,23 @@
 }
 
 <div class="vietqr-page">
+    <span class="catalog-kicker">VietQR</span>
     <h1>Quét mã để thanh toán</h1>
 
     <img src="@ViewBag.QrUrl"
          class="vietqr-image"
          alt="Mã QR thanh toán VietQR" />
 
-    <p><b>Số tiền:</b> @ViewBag.Amount VND</p>
-    <p><b>Nội dung:</b> Chuyển tiền</p>
+    <div class="vietqr-info">
+        <div>
+            <span>Số tiền</span>
+            <strong>@ViewBag.Amount VND</strong>
+        </div>
+        <div>
+            <span>Nội dung</span>
+            <strong>Chuyển tiền</strong>
+        </div>
+    </div>
 
     <p class="vietqr-warning">
         Vui lòng chuyển đúng nội dung để xác nhận.
@@ -23,7 +32,7 @@
     <form method="post" asp-area="" asp-controller="Payment" asp-action="ConfirmPaid">
         @Html.AntiForgeryToken()
         <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
-        <button type="submit" class="btn btn-success">
+        <button type="submit" class="vietqr-submit">
             Tôi đã thanh toán
         </button>
     </form>

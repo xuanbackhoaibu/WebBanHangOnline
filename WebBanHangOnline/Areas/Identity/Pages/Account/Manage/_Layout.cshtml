@@ -10,9 +10,15 @@
     }
 }
 
-<div class="container mt-4">
+<div class="account-page">
 
-    <h3 class="mb-3">Quản lý tài khoản</h3>
+    <div class="account-hero">
+        <div>
+            <span class="catalog-kicker">Account</span>
+            <h1>Quản lý tài khoản</h1>
+            <p>Cập nhật hồ sơ, bảo mật và các thông tin liên hệ của bạn.</p>
+        </div>
+    </div>
 
     <div class="row">
         <!-- LEFT MENU -->
@@ -33,5 +39,6 @@
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
     @RenderSection("Styles", required: false)
 }

@@ -349,13 +349,13 @@ catch
                     datasets: [{
                         label: 'Doanh thu',
                         data: data,
-                        borderColor: '#667eea',
+                        borderColor: '#d94f3d',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
                         borderWidth: 3,
                         tension: 0.3,
                         fill: true,
                         pointBackgroundColor: '#fff',
-                        pointBorderColor: '#667eea',
+                        pointBorderColor: '#d94f3d',
                         pointBorderWidth: 2,
                         pointRadius: 4,
                         pointHoverRadius: 6
@@ -393,7 +393,7 @@ catch
             // Kiểm tra và thông báo nếu có doanh thu
             const totalRevenue = data.reduce((sum, val) => sum + val, 0);
             if (totalRevenue > 0) {
-                console.log('✅ Biểu đồ doanh thu đã vẽ với dữ liệu:', data);
+                console.log('Biểu đồ doanh thu đã vẽ với dữ liệu:', data);
 
                 // Highlight ngày có doanh thu
                 const revenueDates = labels.filter((_, index) => data[index] > 0);
@@ -415,7 +415,7 @@ catch
         }
 
         if (labels && labels.length > 0 && data && data.length > 0) {
-            const colors = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b'];
+            const colors = ['#d94f3d', '#151515', '#c69a3b', '#a9362a', '#6f6f78', '#3d3029', '#9f7927', '#8f837a'];
 
             distributionChart = new Chart(ctx, {
                 type: 'doughnut',
@@ -456,7 +456,7 @@ catch
                 }
             });
 
-            console.log('✅ Biểu đồ phân bố đã vẽ với dữ liệu:', data);
+            console.log('Biểu đồ phân bố đã vẽ với dữ liệu:', data);
         }
     }
 
@@ -481,7 +481,7 @@ catch
                 renderRevenueChart(data.revenueLabels, data.revenueData);
                 renderDistributionChart(data.statusLabels, data.statusData);
 
-                console.log('🔄 Đã cập nhật dữ liệu mới:', new Date().toLocaleTimeString());
+                console.log('Đã cập nhật dữ liệu mới:', new Date().toLocaleTimeString());
             }
         } catch (error) {
             console.error('Lỗi khi tải dữ liệu:', error);
@@ -516,7 +516,7 @@ catch
             refreshData();
         });
 
-        console.log('✅ Khởi tạo hoàn tất - Tự động refresh mỗi 30 giây');
+        console.log('Khởi tạo hoàn tất - Tự động refresh mỗi 30 giây');
     });
 
     // Hàm xem chi tiết đơn hàng

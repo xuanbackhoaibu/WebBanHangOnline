@@ -15,7 +15,7 @@ html {
 .form-control:focus,
 .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white,
-  0 0 0 0.25rem #258cfb;
+  0 0 0 0.25rem rgba(217, 79, 61, 0.22);
 }
 
 html {
@@ -250,6 +250,155 @@ body.coutura-body {
   padding: 0 5px;
 }
 
+.wishlist-badge {
+  background: var(--xb-ink);
+}
+
+.mini-cart-wrap {
+  position: relative;
+}
+
+.mini-cart-menu {
+  width: min(340px, calc(100vw - 28px));
+  border: 1px solid rgba(42, 34, 28, 0.12) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 22px 54px rgba(21, 21, 21, 0.16) !important;
+  padding: 12px !important;
+}
+
+.mini-cart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.mini-cart-head strong {
+  color: var(--xb-ink);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.mini-cart-head span {
+  color: var(--xb-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.mini-cart-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mini-cart-item,
+.mini-cart-item:visited {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--xb-ink);
+  text-decoration: none;
+  padding: 6px;
+}
+
+.mini-cart-item:hover,
+.mini-cart-item:focus {
+  border-color: rgba(217, 79, 61, 0.22);
+  background: #fff8f6;
+  color: var(--xb-ink);
+  text-decoration: none;
+}
+
+.mini-cart-item img {
+  width: 54px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.mini-cart-item span {
+  min-width: 0;
+}
+
+.mini-cart-item strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--xb-ink);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.28;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mini-cart-item small {
+  display: block;
+  margin-top: 3px;
+  color: var(--xb-accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mini-cart-cta,
+.mini-cart-cta:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: var(--xb-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.mini-cart-cta:hover,
+.mini-cart-cta:focus {
+  background: var(--xb-accent-dark);
+  color: #fff;
+}
+
+.mini-cart-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--xb-muted);
+  text-align: center;
+  padding: 16px 8px 8px;
+}
+
+.mini-cart-empty i {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #fff4f1;
+  color: var(--xb-accent);
+  font-size: 20px;
+}
+
+.mini-cart-empty span {
+  color: var(--xb-muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.mini-cart-empty a,
+.mini-cart-empty a:visited {
+  color: var(--xb-accent);
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
 .coutura-menu {
   position: fixed;
   top: 114px;
@@ -301,6 +450,34 @@ body.coutura-body {
   text-decoration: none;
 }
 
+.btn-primary,
+.btn-success {
+  border-color: var(--xb-accent) !important;
+  background-color: var(--xb-accent) !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover {
+  border-color: var(--xb-accent-dark) !important;
+  background-color: var(--xb-accent-dark) !important;
+}
+
+.btn-secondary,
+.btn-outline-secondary {
+  border-color: var(--xb-line) !important;
+  background-color: #fff !important;
+  color: var(--xb-ink) !important;
+}
+
+.btn-warning,
+.btn-danger,
+.btn-outline-danger {
+  border-color: rgba(217, 79, 61, 0.34) !important;
+  background-color: #fff8f6 !important;
+  color: var(--xb-accent) !important;
+}
+
 body {
   padding-top: 162px;
 }
@@ -331,10 +508,17 @@ body {
   min-width: max-content;
   border: 1px solid var(--xb-line);
   border-radius: 999px;
-  background: var(--xb-soft-green);
-  color: #176b4d !important;
-  font-weight: 850;
-  padding: 12px 16px;
+  background: #fff;
+  color: var(--xb-accent) !important;
+  font-weight: 780;
+  padding: 11px 15px;
+}
+
+.catalog-cart-link:hover {
+  border-color: rgba(217, 79, 61, 0.34);
+  background: #fff8f6;
+  color: var(--xb-accent-dark) !important;
+  text-decoration: none;
 }
 
 .form-control,
@@ -355,6 +539,10 @@ body {
   border-top: 1px solid var(--xb-line);
   background: #fff;
   padding-top: 48px;
+}
+
+.mobile-shop-nav {
+  display: none;
 }
 
 .shop-footer .logo {
@@ -444,6 +632,7 @@ body {
 @media (max-width: 991px) {
   body {
     padding-top: 0;
+    padding-bottom: 76px;
   }
 
   .coutura-topbar,
@@ -455,11 +644,57 @@ body {
 
   .coutura-header .container {
     flex-wrap: wrap;
+    gap: 12px !important;
+    padding-block: 10px;
+  }
+
+  .coutura-logo {
+    font-size: 24px;
   }
 
   .coutura-search {
     order: 3;
     flex-basis: 100%;
+    max-width: none;
+  }
+
+  .coutura-search input {
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .coutura-search .btn-search {
+    height: 42px;
+  }
+
+  .header-icons {
+    gap: 8px !important;
+  }
+
+  .header-icons .icon-btn {
+    width: 38px;
+    height: 38px;
+    box-shadow: none;
+  }
+
+  .coutura-menu .container {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .coutura-menu .container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .coutura-menu .nav {
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+
+  .coutura-menu .nav-link {
+    height: 42px;
+    font-size: 13px;
+    white-space: nowrap;
   }
 
   .catalog-cart-link {
@@ -469,10 +704,90 @@ body {
   .footer-grid {
     grid-template-columns: 1fr;
   }
+
+  .mobile-shop-nav {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    z-index: 1120;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    border: 1px solid rgba(42, 34, 28, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 18px 44px rgba(21, 21, 21, 0.16);
+    backdrop-filter: blur(18px);
+    padding: 7px;
+  }
+
+  .mobile-shop-nav a,
+  .mobile-shop-nav a:visited {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    border-radius: 13px;
+    color: #49443f;
+    font-size: 11px;
+    font-weight: 820;
+    line-height: 1.15;
+    text-decoration: none;
+    padding: 7px 4px;
+  }
+
+  .mobile-shop-nav a:hover,
+  .mobile-shop-nav a:focus {
+    background: #fff4f1;
+    color: var(--xb-accent);
+  }
+
+  .mobile-shop-nav i {
+    font-size: 18px;
+  }
+
+  .mobile-shop-nav b {
+    position: absolute;
+    top: 3px;
+    right: 18%;
+    display: inline-grid;
+    place-items: center;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--xb-accent);
+    color: #fff;
+    font-size: 10px;
+    line-height: 1;
+    padding: 0 4px;
+  }
 }
 
 @media (max-width: 576px) {
   .site-shell {
     margin-top: 16px;
+  }
+
+  .coutura-topbar {
+    font-size: 12px;
+  }
+
+  .coutura-topbar .container {
+    gap: 10px;
+  }
+
+  .coutura-logo {
+    font-size: 22px;
+  }
+
+  .header-icons .icon-btn[title="Tìm kiếm"],
+  .header-icons .icon-btn[title="Search"] {
+    display: none;
+  }
+
+  .shop-footer {
+    margin-top: 40px;
+    padding-top: 34px;
   }
 }

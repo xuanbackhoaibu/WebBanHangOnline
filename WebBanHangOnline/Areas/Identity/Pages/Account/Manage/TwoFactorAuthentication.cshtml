@@ -17,7 +17,7 @@
 @if (!(consentFeature?.CanTrack ?? true))
 {
     <div class="alert alert-danger">
-        <strong>⚠ Chưa chấp nhận chính sách Cookie</strong>
+        <strong><i class="bi bi-exclamation-triangle"></i> Chưa chấp nhận chính sách Cookie</strong>
         <p>Bạn cần chấp nhận chính sách quyền riêng tư để sử dụng xác thực hai bước.</p>
     </div>
 }
@@ -27,7 +27,7 @@ else
     @if (Model.Is2faEnabled)
     {
         <div class="alert alert-success">
-            <strong>✅ Xác thực hai bước đang được bật</strong>
+            <strong><i class="bi bi-check2-circle"></i> Xác thực hai bước đang được bật</strong>
         </div>
 
         @if (Model.RecoveryCodesLeft == 0)
@@ -75,7 +75,7 @@ else
     else
     {
         <div class="alert alert-warning">
-            <strong>⚠ Xác thực hai bước chưa được bật</strong>
+            <strong><i class="bi bi-exclamation-triangle"></i> Xác thực hai bước chưa được bật</strong>
             <p>Bật 2FA để tăng cường bảo mật cho tài khoản của bạn.</p>
         </div>
     }

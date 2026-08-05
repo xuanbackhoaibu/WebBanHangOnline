@@ -4,48 +4,42 @@
     ViewData["Title"] = "Gửi lại email xác nhận";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-body">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+}
 
-                <h3 class="card-title text-center mb-3">
-                    @ViewData["Title"]
-                </h3>
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card-body">
+            <div class="auth-icon">
+                <i class="bi bi-envelope-paper"></i>
+            </div>
+            <div class="auth-head">
+                <h1>Gửi lại email xác nhận</h1>
+                <p>Nhập email đã đăng ký để nhận lại liên kết kích hoạt tài khoản.</p>
+            </div>
 
-                <p class="text-muted text-center">
-                    Nhập email đã đăng ký để nhận lại liên kết xác nhận tài khoản.
-                </p>
+            <form method="post">
+                <div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
 
-                <hr />
-
-                <form method="post">
-                    <div asp-validation-summary="All"
-                         class="text-danger mb-3"
-                         role="alert">
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Email"
-                               class="form-control"
-                               placeholder="name@example.com" />
-                        <label asp-for="Input.Email"></label>
-                        <span asp-validation-for="Input.Email"
-                              class="text-danger"></span>
-                    </div>
-
-                    <button type="submit"
-                            class="btn btn-primary w-100">
-                        Gửi lại email xác nhận
-                    </button>
-                </form>
-
-                <div class="text-center mt-3">
-                    <a asp-page="./Login">
-                        Quay lại đăng nhập
-                    </a>
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Email"
+                           class="form-control"
+                           placeholder="name@example.com" />
+                    <label asp-for="Input.Email"></label>
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
                 </div>
 
+                <button type="submit" class="auth-submit">
+                    Gửi lại email
+                </button>
+            </form>
+
+            <div class="auth-link-row">
+                <a asp-page="./Login">
+                    <i class="bi bi-arrow-left"></i>
+                    Quay lại đăng nhập
+                </a>
             </div>
         </div>
     </div>

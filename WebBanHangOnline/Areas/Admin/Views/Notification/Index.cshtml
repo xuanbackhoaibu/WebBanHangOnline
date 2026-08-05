@@ -4,10 +4,10 @@
 }
 
 <div class="container my-4">
-    <h3>🛠 Quản lý Thông báo</h3>
+    <h3><i class="bi bi-bell"></i> Quản lý Thông báo</h3>
     <div class="mb-3">
         <a asp-action="Create" class="btn btn-success">
-            ➕ Thêm thông báo mới
+            <i class="bi bi-plus-circle"></i> Thêm thông báo mới
         </a>
     </div>
 
@@ -34,21 +34,21 @@
                     <td>
                         @if (n.IsActive)
                         {
-                            <span class="badge bg-success">✔ Có</span>
+                            <span class="badge bg-success"><i class="bi bi-check2"></i> Có</span>
                         }
                         else
                         {
-                            <span class="badge bg-secondary">✖ Không</span>
+                            <span class="badge bg-secondary"><i class="bi bi-x-lg"></i> Không</span>
                         }
                     </td>
                     <td>@n.Priority</td>
                     <td>
                         <div class="d-flex gap-1">
                             <a asp-action="Edit" asp-route-id="@n.NotificationId" class="btn btn-sm btn-primary">
-                                ✏ Sửa
+                                <i class="bi bi-pencil-square"></i> Sửa
                             </a>
                             <a asp-action="Delete" asp-route-id="@n.NotificationId" class="btn btn-sm btn-danger">
-                                🗑 Xóa
+                                <i class="bi bi-trash3"></i> Xóa
                             </a>
                             <a asp-action="ToggleActive" asp-route-id="@n.NotificationId" class="btn btn-sm @(n.IsActive ? "btn-warning" : "btn-success")">
                                 @(n.IsActive ? "Tắt" : "Bật")

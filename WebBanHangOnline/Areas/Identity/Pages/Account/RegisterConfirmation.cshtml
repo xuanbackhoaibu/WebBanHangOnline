@@ -4,53 +4,37 @@
     ViewData["Title"] = "Xác nhận đăng ký";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm">
-            <div class="card-body text-center">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+}
 
-                <div class="mb-3">
-                    <i class="bi bi-envelope-check-fill text-success fs-1"></i>
-                </div>
-
-                <h3 class="card-title mb-3">
-                    @ViewData["Title"]
-                </h3>
-
-                @if (Model.DisplayConfirmAccountLink)
-                {
-                    <div class="alert alert-warning text-start">
-                        <strong>⚠ Chưa cấu hình Email Sender</strong>
-                        <p class="mb-2">
-                            Ứng dụng hiện chưa cấu hình hệ thống gửi email.
-                            Trong môi trường thật, link xác nhận sẽ được gửi qua email.
-                        </p>
-                        <p class="mb-0">
-                            👉 <a id="confirm-link"
-                                  class="fw-bold"
-                                  href="@Model.EmailConfirmationUrl">
-                                Bấm vào đây để xác nhận tài khoản
-                            </a>
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted">
-                        Chúng tôi đã gửi email xác nhận đến địa chỉ của bạn.
-                        <br />
-                        Vui lòng kiểm tra hộp thư để kích hoạt tài khoản.
-                    </p>
-                }
-
-                <div class="mt-4">
-                    <a asp-page="./Login"
-                       class="btn btn-primary w-100">
-                        Đăng nhập
-                    </a>
-                </div>
-
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card-body text-center">
+            <div class="auth-icon">
+                <i class="bi bi-envelope-check"></i>
             </div>
+            <div class="auth-head">
+                <h1>Xác nhận đăng ký</h1>
+                <p>Hoàn tất bước xác nhận để bắt đầu mua sắm và theo dõi đơn hàng của bạn.</p>
+            </div>
+
+            @if (Model.DisplayConfirmAccountLink)
+            {
+                <div class="auth-note text-start">
+                    <strong>Chưa cấu hình gửi email</strong>
+                    <span>Trong môi trường thật, link xác nhận sẽ được gửi qua email.</span>
+                    <a id="confirm-link" href="@Model.EmailConfirmationUrl">Xác nhận tài khoản</a>
+                </div>
+            }
+            else
+            {
+                <p class="auth-muted">Chúng tôi đã gửi email xác nhận đến địa chỉ của bạn.</p>
+            }
+
+            <a asp-page="./Login" class="auth-submit mt-3">
+                Đăng nhập
+            </a>
         </div>
     </div>
 </div>

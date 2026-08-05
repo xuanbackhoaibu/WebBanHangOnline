@@ -4,18 +4,27 @@
     ViewData["Title"] = "Kết quả hỗ trợ";
 }
 
-<div class="container mt-4">
-    <h3>Kết quả yêu cầu hỗ trợ</h3>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/content.css" asp-append-version="true" />
+}
+
+<div class="support-page">
+    <div class="content-hero compact">
+        <span class="catalog-kicker">Support</span>
+        <h1>Kết quả yêu cầu hỗ trợ</h1>
+        <p>Theo dõi phản hồi và trạng thái xử lý các yêu cầu đã gửi.</p>
+    </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-warning">
+        <div class="content-alert warning">
             Không tìm thấy yêu cầu nào với email này.
         </div>
     }
     else
     {
-        <table class="table table-bordered mt-3">
+        <div class="content-table-card">
+        <table class="table support-table">
             <thead>
             <tr>
                 <th>Ngày gửi</th>
@@ -30,9 +39,7 @@
                     <td>@s.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                     <td>@s.Message</td>
                     <td>
-                        <span class="badge 
-                                @(s.Status == "New" ? "bg-warning" :
-                                s.Status == "InProgress" ? "bg-primary" : "bg-success")">
+                        <span class="support-status @(s.Status == "New" ? "new" : s.Status == "InProgress" ? "progressing" : "done")">
                             @s.Status
                         </span>
                     </td>
@@ -40,9 +47,10 @@
             }
             </tbody>
         </table>
+        </div>
     }
 
-    <a asp-action="Track" class="btn btn-secondary mt-2">
+    <a asp-action="Track" class="content-secondary-btn mt-3">
         Tra cứu lại
     </a>
 </div>

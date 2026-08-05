@@ -13,10 +13,10 @@
 
     .dashboard-header h2 {
         font-weight: 600;
-        color: #1e293b;
+        color: #151515;
         font-size: 2rem;
         margin: 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #d94f3d 0%, #a9362a 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -26,7 +26,7 @@
         padding: 0.75rem 1.5rem;
         border-radius: 12px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        border: 1px solid #e2e8f0;
+        border: 1px solid #e9e5df;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -37,11 +37,11 @@
 
     .date-picker:hover {
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        border-color: #667eea;
+        border-color: #d94f3d;
     }
 
     .date-picker i {
-        color: #667eea;
+        color: #d94f3d;
     }
 
     .refresh-badge {
@@ -91,7 +91,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
+        background: linear-gradient(90deg, #d94f3d, #a9362a);
     }
 
     .stat-card:hover {
@@ -110,13 +110,13 @@
         font-size: 1.5rem;
     }
 
-    .stat-icon.orders { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-    .stat-icon.revenue { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
-    .stat-icon.users { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
-    .stat-icon.products { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+    .stat-icon.orders { background: linear-gradient(135deg, #d94f3d 0%, #a9362a 100%); color: white; }
+    .stat-icon.revenue { background: linear-gradient(135deg, #d94f3d 0%, #a9362a 100%); color: white; }
+    .stat-icon.users { background: linear-gradient(135deg, #151515 0%, #3d3029 100%); color: white; }
+    .stat-icon.products { background: linear-gradient(135deg, #c69a3b 0%, #9f7927 100%); color: white; }
 
     .stat-content h5 {
-        color: #64748b;
+        color: #71717a;
         font-size: 0.9rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -126,7 +126,7 @@
     .stat-value {
         font-size: 2rem;
         font-weight: 700;
-        color: #1e293b;
+        color: #151515;
         margin-bottom: 0.25rem;
     }
 
@@ -135,7 +135,7 @@
         align-items: center;
         gap: 5px;
         font-size: 0.85rem;
-        color: #64748b;
+        color: #71717a;
     }
 
     .charts-row {
@@ -168,7 +168,7 @@
 
     .chart-header h4 {
         font-weight: 600;
-        color: #1e293b;
+        color: #151515;
         margin: 0;
         font-size: 1.2rem;
     }
@@ -205,12 +205,12 @@
 
     .table-header h4 {
         font-weight: 600;
-        color: #1e293b;
+        color: #151515;
         margin: 0;
     }
 
     .view-all {
-        color: #667eea;
+        color: #d94f3d;
         text-decoration: none;
         font-size: 0.9rem;
         font-weight: 500;
@@ -219,12 +219,12 @@
         gap: 5px;
         padding: 0.5rem 1rem;
         border-radius: 8px;
-        background: #f8fafc;
+        background: #fff8f6;
         transition: all 0.3s ease;
     }
 
     .view-all:hover {
-        background: #667eea;
+        background: #d94f3d;
         color: white;
     }
 
@@ -234,12 +234,12 @@
     }
 
     .order-table tr {
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e9e5df;
     }
 
     .order-table td {
         padding: 1rem 0;
-        color: #334155;
+        color: #3d3a37;
     }
 
     .status-badge {
@@ -265,7 +265,7 @@
         width: 40px;
         height: 40px;
         border-radius: 10px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #d94f3d 0%, #a9362a 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -282,12 +282,12 @@
 
     .user-name {
         font-weight: 600;
-        color: #1e293b;
+        color: #151515;
     }
 
     .user-email {
         font-size: 0.8rem;
-        color: #64748b;
+        color: #71717a;
     }
 
     .action-buttons {
@@ -305,12 +305,12 @@
         justify-content: center;
         cursor: pointer;
         transition: all 0.2s;
-        background: #f1f5f9;
-        color: #475569;
+        background: #fff4f1;
+        color: #5f5a55;
     }
 
     .btn-icon:hover {
-        background: #667eea;
+        background: #d94f3d;
         color: white;
         transform: scale(1.05);
     }
@@ -318,7 +318,7 @@
     .empty-state {
         text-align: center;
         padding: 3rem;
-        color: #64748b;
+        color: #71717a;
     }
 
     .empty-state i {
@@ -329,7 +329,7 @@
 
     /* Style cho debug panel */
     .debug-panel {
-        background: #1e293b;
+        background: #151515;
         color: #fff;
         padding: 20px;
         margin-bottom: 20px;
@@ -353,7 +353,7 @@
     }
 
     .debug-panel pre {
-        background: #0f172a;
+        background: #201b18;
         padding: 10px;
         border-radius: 8px;
         overflow-x: auto;

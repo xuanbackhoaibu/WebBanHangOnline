@@ -158,7 +158,7 @@
                     <strong id="selectedTotal">0 VND</strong>
                 </div>
 
-                <button class="btn btn-lg btn-success"
+                <button class="cart-checkout-btn"
                         id="checkoutBtn"
                         disabled>
                     Tiến hành đặt hàng
@@ -234,7 +234,7 @@
             cb.addEventListener("change", updateTotal);
         });
 
-        // ✅ FIX: LẤY TRỰC TIẾP CHECKBOX ĐANG CHECK (KHÔNG DÙNG LOCALSTORAGE KHI SUBMIT)
+        // Lấy trực tiếp checkbox đang chọn khi submit.
         checkoutBtn?.addEventListener("click", function () {
 
             let selected = [];

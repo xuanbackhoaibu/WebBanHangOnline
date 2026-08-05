@@ -4,40 +4,38 @@
     ViewData["Title"] = "Trung tâm hỗ trợ";
 }
 
-<div class="container mt-4">
-    <h3 class="text-center mb-4">Trung tâm hỗ trợ</h3>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/content.css" asp-append-version="true" />
+}
 
-    <div class="row text-center mb-4">
-        <div class="col-md-4">
-            <div class="card p-3">
-                <i class="bi bi-question-circle fs-2"></i>
-                <h6 class="mt-2">Câu hỏi thường gặp</h6>
-                <p>Giải đáp nhanh các vấn đề phổ biến</p>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <a asp-action="Create" class="text-decoration-none">
-                <div class="card p-3">
-                    <i class="bi bi-chat-dots fs-2"></i>
-                    <h6 class="mt-2">Gửi yêu cầu</h6>
-                    <p>Liên hệ với bộ phận hỗ trợ</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-4">
-            <a asp-action="Track" class="text-decoration-none">
-                <div class="card p-3">
-                    <i class="bi bi-search fs-2"></i>
-                    <h6 class="mt-2">Theo dõi yêu cầu</h6>
-                    <p>Kiểm tra trạng thái hỗ trợ</p>
-                </div>
-            </a>
-        </div>
+<div class="support-page">
+    <div class="content-hero">
+        <span class="catalog-kicker">Support</span>
+        <h1>Trung tâm hỗ trợ</h1>
+        <p>Tìm câu trả lời nhanh, gửi yêu cầu hỗ trợ hoặc theo dõi phản hồi từ XuanBac.</p>
     </div>
 
-    <h5>Câu hỏi thường gặp</h5>
+    <div class="support-action-grid">
+        <div class="support-action-card">
+                <i class="bi bi-question-circle"></i>
+                <h6 class="mt-2">Câu hỏi thường gặp</h6>
+                <p>Giải đáp nhanh các vấn đề phổ biến</p>
+        </div>
+
+        <a asp-action="Create" class="support-action-card">
+                    <i class="bi bi-chat-dots"></i>
+                    <h6 class="mt-2">Gửi yêu cầu</h6>
+                    <p>Liên hệ với bộ phận hỗ trợ</p>
+        </a>
+
+        <a asp-action="Track" class="support-action-card">
+                    <i class="bi bi-search"></i>
+                    <h6 class="mt-2">Theo dõi yêu cầu</h6>
+                    <p>Kiểm tra trạng thái hỗ trợ</p>
+        </a>
+    </div>
+
+    <h2 class="content-section-title">Câu hỏi thường gặp</h2>
 
     <div class="accordion mt-3" id="faqAccordion">
         @foreach (var f in Model)

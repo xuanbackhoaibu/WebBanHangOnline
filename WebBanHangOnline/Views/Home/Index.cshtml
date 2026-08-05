@@ -25,7 +25,7 @@
 <section class="hero hero-3d container" data-hero-3d>
     <div class="hero-content">
         <small class="hero-kicker">XUANBAC FASHION</small>
-        <h1>@T("Sàn diễn 3D cho phong cách mỗi ngày", "3D runway for everyday style")</h1>
+        <h1>@T("Thời trang tinh tế cho phong cách mỗi ngày", "Refined fashion for everyday style")</h1>
         <p class="hero-copy">
             @T("Khám phá sản phẩm theo cách sống động, nhanh và dễ chọn hơn.",
                 "Explore products in a vivid, faster and easier way.")
@@ -39,11 +39,11 @@
         <div class="hero-actions">
             <a asp-controller="Product"
                asp-action="Index"
-               class="btn btn-primary btn-lg rounded-pill px-4 hero-btn">
+               class="btn btn-primary rounded-pill hero-btn">
                 @T("Mua sắm ngay", "Shop now")
             </a>
             <a href="#women"
-               class="btn btn-outline-danger btn-lg rounded-pill px-4 hero-btn">
+               class="btn btn-outline-danger rounded-pill hero-btn">
                 @T("Khám phá thời trang nữ", "Explore women's fashion")
             </a>
         </div>
@@ -69,10 +69,6 @@
             <div class="hero-product hero-product-mini">
                 <img src="@(heroProducts.ElementAtOrDefault(4)?.Thumbnail ?? "/images/products/ebfc157b-4fa8-47c1-8437-32849bdc462a.webp")"
                      alt="@T("Sản phẩm thời trang", "Fashion product")">
-            </div>
-            <div class="hero-runway">
-                <span>@T("Bộ sưu tập mới", "New collection")</span>
-                <strong>@T("Xem chi tiết sản phẩm", "View product details")</strong>
             </div>
         </div>
     </div>

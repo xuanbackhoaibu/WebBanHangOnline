@@ -1,0 +1,93 @@
+@model IEnumerable<WebBanHangOnline.Models.WishlistItem>
+
+@{
+    ViewData["Title"] = WebBanHangOnline.Helpers.CatalogTextHelper.T("Sản phẩm yêu thích", "Wishlist");
+    string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
+    string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/wishlist.css" asp-append-version="true" />
+}
+
+<div class="wishlist-page">
+    <section class="wishlist-hero">
+        <div>
+            <span class="catalog-kicker">XuanBac edit</span>
+            <h1>@T("Danh sách yêu thích", "Your wishlist")</h1>
+            <p>@T("Giữ lại những thiết kế bạn đang cân nhắc để quay lại mua nhanh hơn.",
+                "Save the pieces you are considering so you can come back and buy faster.")</p>
+        </div>
+        <a asp-controller="Product" asp-action="Index" class="wishlist-shop-link">
+            <i class="bi bi-bag"></i>
+            @T("Tiếp tục mua sắm", "Keep shopping")
+        </a>
+    </section>
+
+    @if (TempData["WishlistMessage"] != null)
+    {
+        <div class="wishlist-toast">
+            <i class="bi bi-check2-circle"></i>
+            @TempData["WishlistMessage"]
+        </div>
+    }
+
+    @if (Model.Any(item => item.Product != null))
+    {
+        <div class="wishlist-grid">
+            @foreach (var item in Model.Where(item => item.Product != null))
+            {
+                var product = item.Product!;
+                <article class="wishlist-card">
+                    <a asp-controller="Product"
+                       asp-action="Details"
+                       asp-route-id="@product.ProductId"
+                       asp-route-slug="@product.Slug"
+                       class="wishlist-image">
+                        <img src="@(product.Thumbnail ?? "/images/no-image.png")" alt="@D(product.Name)" loading="lazy" />
+                        @if (product.IsFlashSaleActive)
+                        {
+                            <span>@T("Ưu đãi", "Offer")</span>
+                        }
+                    </a>
+                    <div class="wishlist-body">
+                        <small>@D(product.Category?.Name)</small>
+                        <h2>@D(product.Name)</h2>
+                        <div class="wishlist-price">
+                            @if (product.IsFlashSaleActive)
+                            {
+                                <del>@product.Price.ToString("N0") VND</del>
+                            }
+                            <strong>@product.FinalPrice.ToString("N0") VND</strong>
+                        </div>
+                        <div class="wishlist-actions">
+                            <a asp-controller="Product"
+                               asp-action="Details"
+                               asp-route-id="@product.ProductId"
+                               asp-route-slug="@product.Slug">
+                                @T("Xem sản phẩm", "View item")
+                            </a>
+                            <form asp-action="Remove" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.WishlistItemId" />
+                                <button type="submit" aria-label="@T("Xóa khỏi yêu thích", "Remove from wishlist")">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+    else
+    {
+        <section class="wishlist-empty">
+            <i class="bi bi-heart"></i>
+            <h2>@T("Bạn chưa lưu sản phẩm nào", "No saved items yet")</h2>
+            <p>@T("Bấm biểu tượng trái tim ở sản phẩm để lưu lại món bạn thích.",
+                "Use the heart icon on a product to save what you like.")</p>
+            <a asp-controller="Product" asp-action="Index">@T("Khám phá bộ sưu tập", "Explore collection")</a>
+        </section>
+    }
+</div>

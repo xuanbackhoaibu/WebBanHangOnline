@@ -5,7 +5,7 @@
     Layout = "_AdminLayout";
 }
 
-<h2>➕ Thêm sản phẩm mới</h2>
+<h2><i class="bi bi-plus-circle"></i> Thêm sản phẩm mới</h2>
 
 <form asp-area="Admin"
       asp-controller="Product"
@@ -17,7 +17,7 @@
 
     <div class="text-danger mb-3" asp-validation-summary="ModelOnly"></div>
 
-    <!-- 🔥 Hidden Slug (để ModelState không lỗi) -->
+    <!-- Hidden Slug để ModelState không lỗi -->
     <input asp-for="Slug" type="hidden" />
 
     <div class="mb-3">
@@ -86,12 +86,14 @@
         <label class="form-check-label">Kích hoạt sản phẩm</label>
     </div>
 
-    <button type="submit" class="btn btn-success">💾 Lưu</button>
+    <button type="submit" class="btn btn-success">
+        <i class="bi bi-save"></i> Lưu
+    </button>
     <a asp-area="Admin"
        asp-controller="Product"
        asp-action="Index"
        class="btn btn-secondary ms-2">
-        ← Quay lại
+        <i class="bi bi-arrow-left"></i> Quay lại
     </a>
 </form>
 

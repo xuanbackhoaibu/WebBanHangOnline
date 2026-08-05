@@ -1,8 +1,27 @@
 ﻿@page
 @model ConfirmEmailModel
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Xác nhận email";
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+}
+
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card-body text-center">
+            <div class="auth-icon">
+                <i class="bi bi-check2"></i>
+            </div>
+            <div class="auth-head">
+                <h1>Xác nhận email</h1>
+                <p>Tài khoản của bạn đã được kiểm tra trạng thái xác nhận email.</p>
+            </div>
+            <partial name="_StatusMessage" model="Model.StatusMessage" />
+            <a asp-page="./Login" class="auth-submit mt-3">
+                Đăng nhập
+            </a>
+        </div>
+    </div>
+</div>

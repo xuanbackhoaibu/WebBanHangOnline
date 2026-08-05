@@ -10,27 +10,23 @@
     <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
 }
 
-<div class="container d-flex justify-content-center align-items-center auth-shell">
-    <div class="card shadow border-0 auth-card">
-        <div class="auth-accent"></div>
-        <div class="card-body p-4">
-
-            <!-- Tiêu đề -->
-            <div class="text-center mb-3">
-                <div class="d-inline-flex align-items-center justify-content-center rounded-pill auth-icon">
-                    <i class="bi bi-box-arrow-in-right text-danger fs-4"></i>
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-card-body">
+            <div class="auth-head">
+                <div class="auth-icon">
+                    <i class="bi bi-box-arrow-in-right"></i>
                 </div>
-                <h3 class="fw-bold mt-3 mb-1">Đăng nhập</h3>
-                <p class="text-muted mb-0">
-                    Chào mừng bạn đến với <strong>Web Bán Hàng Online</strong>
+                <span class="catalog-kicker">Account</span>
+                <h3>Đăng nhập</h3>
+                <p>
+                    Chào mừng bạn quay lại XuanBac.
                 </p>
             </div>
 
-            <!-- Form login -->
             <form method="post">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 mb-3" role="alert"></div>
+                <div asp-validation-summary="ModelOnly" class="auth-alert" role="alert"></div>
 
-                <!-- Email -->
                 <div class="form-floating mb-3">
                     <input asp-for="Input.Email"
                            class="form-control"
@@ -40,7 +36,6 @@
                     <span asp-validation-for="Input.Email" class="text-danger"></span>
                 </div>
 
-                <!-- Password -->
                 <div class="form-floating mb-3">
                     <input asp-for="Input.Password"
                            class="form-control"
@@ -50,7 +45,6 @@
                     <span asp-validation-for="Input.Password" class="text-danger"></span>
                 </div>
 
-                <!-- Remember + Forgot -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="form-check">
                         <input class="form-check-input" asp-for="Input.RememberMe" />
@@ -65,13 +59,11 @@
                     </a>
                 </div>
 
-                <!-- Button -->
-                <button type="submit" class="btn btn-primary w-100 mb-3 auth-submit">
+                <button type="submit" class="auth-submit">
                     <i class="bi bi-box-arrow-in-right me-2"></i>
                     Đăng nhập
                 </button>
 
-                <!-- Register -->
                 <div class="text-center mt-1">
                     <span class="small text-muted">Chưa có tài khoản?</span>
                     <a asp-page="./Register"
@@ -82,7 +74,6 @@
                 </div>
             </form>
 
-            <!-- External login (nếu có) -->
             @if ((Model.ExternalLogins?.Count ?? 0) > 0)
             {
                 <hr />

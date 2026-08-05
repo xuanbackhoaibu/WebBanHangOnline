@@ -4,15 +4,21 @@
     ViewData["Title"] = "Chi tiết thông báo";
 }
 
-<h2>@Model.Title</h2>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/notifications.css" asp-append-version="true" />
+}
 
-<hr />
+<div class="notifications-page">
+    <article class="notification-detail-card">
+        <span class="catalog-kicker">News</span>
+        <h1>@Model.Title</h1>
+        <time>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</time>
 
-<div>
-    <p>@Model.Content</p>
-    <p>
-        <small>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-    </p>
+        <p>@Model.Content</p>
+
+        <a asp-action="Index" class="notification-back-link">
+            <i class="bi bi-arrow-left"></i>
+            Quay lại
+        </a>
+    </article>
 </div>
-
-<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

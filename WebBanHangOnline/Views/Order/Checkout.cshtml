@@ -33,17 +33,14 @@ var paymentMethods = new[]
     <form asp-action="PlaceOrder" method="post" class="checkout-form">
         @Html.AntiForgeryToken()
 
-        <!-- ================= GIỮ LOGIC CŨ + HỖ TRỢ BUY NOW ================= -->
         @foreach (var item in Model)
         {
         if (item.Id > 0)
         {
-        <!-- ✅ CHECKOUT TỪ CART -->
         <input type="hidden" name="selectedItems" value="@item.Id" />
         }
         else
         {
-        <!-- ✅ BUY NOW -->
         <input type="hidden" name="variantId" value="@item.ProductVariantId" />
         <input type="hidden" name="quantity" value="@item.Quantity" />
         }
