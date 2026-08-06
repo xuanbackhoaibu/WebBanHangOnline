@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Services;
 
 namespace WebBanHangOnline.Areas.Admin.Controllers
 {
@@ -82,13 +83,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             ViewBag.From = fromDate?.ToString("yyyy-MM-dd");
             ViewBag.To = to?.Date.ToString("yyyy-MM-dd");
             ViewBag.OrderStatuses = OrderStatuses.AdminEditableStatuses;
-            ViewBag.PaymentStatuses = new[]
-            {
-                PaymentStatuses.Unpaid,
-                PaymentStatuses.Paid,
-                PaymentStatuses.Failed,
-                PaymentStatuses.Refunded
-            };
+            ViewBag.PaymentStatuses = PaymentStatuses.AdminEditableStatuses;
             ViewBag.TotalFilteredOrders = orders.Count;
             ViewBag.TotalFilteredRevenue = orders
                 .Where(o => OrderStatuses.RevenueStatuses.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
@@ -105,6 +100,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.ProductVariant)
                 .ThenInclude(pv => pv.Product)
+                .Include(o => o.StatusHistories)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null) return NotFound();
@@ -123,10 +119,39 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 return RedirectAfterUpdate(id, returnUrl);
             }
 
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(d => d.ProductVariant)
+                .FirstOrDefaultAsync(o => o.Id == id);
             if (order == null) return NotFound();
 
+            if (order.Status == OrderStatuses.Cancelled && status != OrderStatuses.Cancelled)
+            {
+                TempData["ErrorMessage"] = "Đơn đã hủy không thể chuyển sang trạng thái khác để tránh sai tồn kho.";
+                return RedirectAfterUpdate(id, returnUrl);
+            }
+
+            if (status == OrderStatuses.Cancelled &&
+                order.Status != OrderStatuses.Cancelled &&
+                !CanCancelOrder(order.Status))
+            {
+                TempData["ErrorMessage"] = "Chỉ có thể hủy đơn đang chờ hoặc đã xác nhận.";
+                return RedirectAfterUpdate(id, returnUrl);
+            }
+
+            var previousStatus = order.Status;
+
+            if (status == OrderStatuses.Cancelled && order.Status != OrderStatuses.Cancelled)
+            {
+                RestoreOrderStock(order);
+            }
+
             order.Status = status;
+
+            if (previousStatus != status)
+            {
+                AddOrderHistory(order, "OrderStatus", previousStatus, status, "Cập nhật trạng thái đơn hàng.");
+            }
 
             try
             {
@@ -141,6 +166,74 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             return RedirectAfterUpdate(id, returnUrl);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePaymentStatus(int id, string paymentStatus, string? returnUrl = null)
+        {
+            if (!PaymentStatuses.AdminEditableStatuses.Contains(paymentStatus))
+            {
+                TempData["ErrorMessage"] = "Trạng thái thanh toán không hợp lệ.";
+                return RedirectAfterUpdate(id, returnUrl);
+            }
+
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound();
+
+            var previousPaymentStatus = order.PaymentStatus;
+            order.PaymentStatus = paymentStatus;
+            order.PaymentDate = paymentStatus == PaymentStatuses.Paid ? DateTime.Now : null;
+
+            if (paymentStatus == PaymentStatuses.Paid && order.Status == OrderStatuses.Pending)
+            {
+                AddOrderHistory(order, "OrderStatus", order.Status, OrderStatuses.Confirmed, "Tự xác nhận đơn sau khi ghi nhận đã thanh toán.");
+                order.Status = OrderStatuses.Confirmed;
+            }
+
+            if (previousPaymentStatus != paymentStatus)
+            {
+                AddOrderHistory(order, "PaymentStatus", previousPaymentStatus, paymentStatus, "Cập nhật trạng thái thanh toán.");
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cập nhật thanh toán thành công.";
+            }
+            catch (DbUpdateException ex)
+            {
+                TempData["ErrorMessage"] = "Không thể cập nhật thanh toán: " + ex.Message;
+            }
+
+            return RedirectAfterUpdate(id, returnUrl);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateAdminNote(int id, string? adminNote, string? returnUrl = null)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null) return NotFound();
+
+            var cleanNote = (adminNote ?? string.Empty).Trim();
+            if (cleanNote.Length > 500)
+            {
+                cleanNote = cleanNote[..500];
+            }
+
+            if ((order.AdminNote ?? string.Empty) != cleanNote)
+            {
+                order.AdminNote = cleanNote;
+                AddOrderHistory(order, "AdminNote", null, null, string.IsNullOrWhiteSpace(cleanNote)
+                    ? "Đã xóa ghi chú nội bộ."
+                    : "Đã cập nhật ghi chú nội bộ.");
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Đã lưu ghi chú nội bộ.";
+
+            return RedirectAfterUpdate(id, returnUrl);
+        }
+
         private IActionResult RedirectAfterUpdate(int id, string? returnUrl)
         {
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -149,6 +242,36 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             }
 
             return RedirectToAction(nameof(Details), new { id });
+        }
+
+        private static bool CanCancelOrder(string status)
+        {
+            return status == OrderStatuses.Pending || status == OrderStatuses.Confirmed;
+        }
+
+        private static void RestoreOrderStock(Order order)
+        {
+            foreach (var item in order.OrderDetails)
+            {
+                if (item.ProductVariant != null)
+                {
+                    InventoryService.Release(item.ProductVariant, item.Quantity);
+                }
+            }
+        }
+
+        private void AddOrderHistory(Order order, string changeType, string? fromValue, string? toValue, string? note)
+        {
+            _context.OrderStatusHistories.Add(new OrderStatusHistory
+            {
+                OrderId = order.Id,
+                ChangeType = changeType,
+                FromValue = fromValue,
+                ToValue = toValue,
+                Note = note,
+                ChangedBy = User.Identity?.Name ?? "Admin",
+                ChangedAt = DateTime.Now
+            });
         }
 
         // GET: Admin/Order/Delete/5

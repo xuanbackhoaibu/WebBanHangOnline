@@ -42,6 +42,20 @@
                 {
                     <span class="detail-sale-badge">@T("Ưu đãi", "Offer")</span>
                 }
+                <form asp-controller="Wishlist"
+                      asp-action="Toggle"
+                      method="post"
+                      class="detail-wishlist-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.ProductId" />
+                    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                    <button type="submit"
+                            class="detail-wishlist-btn @(isWishlisted ? "is-saved" : "")"
+                            aria-label="@(isWishlisted ? T("Bỏ khỏi yêu thích", "Remove from wishlist") : T("Thêm vào yêu thích", "Add to wishlist"))"
+                            title="@(isWishlisted ? T("Bỏ khỏi yêu thích", "Remove from wishlist") : T("Thêm vào yêu thích", "Add to wishlist"))">
+                        <i class="bi @(isWishlisted ? "bi-heart-fill" : "bi-heart")"></i>
+                    </button>
+                </form>
                 <img id="mainImage" src="@mainImage" alt="@D(Model.Name)" />
             </div>
 
@@ -164,19 +178,6 @@
                         @T("Mua ngay", "Buy now")
                     </button>
                 </div>
-            </form>
-
-            <form asp-controller="Wishlist"
-                  asp-action="Toggle"
-                  method="post"
-                  class="detail-wishlist-form">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="productId" value="@Model.ProductId" />
-                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
-                <button type="submit" class="detail-wishlist-btn @(isWishlisted ? "is-saved" : "")">
-                    <i class="bi @(isWishlisted ? "bi-heart-fill" : "bi-heart")"></i>
-                    @(isWishlisted ? T("Đã lưu yêu thích", "Saved to wishlist") : T("Lưu vào yêu thích", "Save to wishlist"))
-                </button>
             </form>
 
             <div class="detail-policy-grid">
@@ -358,13 +359,17 @@
 
         <div class="review-summary">
             <div class="review-score">
-                <strong>@averageRating.ToString("0.0")</strong>
+                <div class="review-score-value">
+                    <strong>@averageRating.ToString("0.0")</strong>
+                    <span>/5</span>
+                </div>
                 <div class="detail-stars">
                     @for (int i = 1; i <= 5; i++)
                     {
                         <i class="bi @(i <= averageRating ? "bi-star-fill" : "bi-star")"></i>
                     }
                 </div>
+                <small>@reviewCount @T("đánh giá", "reviews")</small>
             </div>
 
             @if (Model.Reviews != null && Model.Reviews.Any())

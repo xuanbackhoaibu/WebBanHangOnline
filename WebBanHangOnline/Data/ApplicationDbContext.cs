@@ -24,6 +24,7 @@ namespace WebBanHangOnline.Data
         // 📦 Đơn hàng
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; }
         
         public DbSet<SupportRequest> SupportRequests { get; set; }
         public DbSet<SupportFaq> SupportFaqs { get; set; }
@@ -31,6 +32,7 @@ namespace WebBanHangOnline.Data
 
         public DbSet<Review> Reviews { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }
+        public DbSet<DiscountCode> DiscountCodes { get; set; }
         // 📢 Thông báo
         public DbSet<Notification> Notifications { get; set; } // <-- Thêm mới
 
@@ -50,9 +52,57 @@ namespace WebBanHangOnline.Data
                 .HasPrecision(18, 2);
 
             builder.Entity<Order>()
+                .Property(o => o.SubtotalAmount)
+                .HasPrecision(18, 2);
+
+            builder.Entity<Order>()
+                .Property(o => o.DiscountAmount)
+                .HasPrecision(18, 2);
+
+            builder.Entity<Order>()
+                .Property(o => o.DiscountCode)
+                .HasMaxLength(32);
+
+            builder.Entity<Order>()
                 .Property(o => o.PaymentStatus)
                 .HasMaxLength(32)
                 .HasDefaultValue(PaymentStatuses.Unpaid);
+
+            builder.Entity<Order>()
+                .Property(o => o.AdminNote)
+                .HasMaxLength(500);
+
+            builder.Entity<OrderStatusHistory>()
+                .Property(history => history.ChangeType)
+                .HasMaxLength(32);
+
+            builder.Entity<OrderStatusHistory>()
+                .Property(history => history.FromValue)
+                .HasMaxLength(64);
+
+            builder.Entity<OrderStatusHistory>()
+                .Property(history => history.ToValue)
+                .HasMaxLength(64);
+
+            builder.Entity<OrderStatusHistory>()
+                .Property(history => history.Note)
+                .HasMaxLength(256);
+
+            builder.Entity<OrderStatusHistory>()
+                .Property(history => history.ChangedBy)
+                .HasMaxLength(128);
+
+            builder.Entity<DiscountCode>()
+                .Property(code => code.Code)
+                .HasMaxLength(32);
+
+            builder.Entity<DiscountCode>()
+                .HasIndex(code => code.Code)
+                .IsUnique();
+
+            builder.Entity<DiscountCode>()
+                .Property(code => code.IsPublic)
+                .HasDefaultValue(true);
 
             builder.Entity<OrderDetail>()
                 .Property(od => od.Price)
@@ -69,6 +119,12 @@ namespace WebBanHangOnline.Data
                 .HasOne(od => od.Order)
                 .WithMany(o => o.OrderDetails)
                 .HasForeignKey(od => od.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<OrderStatusHistory>()
+                .HasOne(history => history.Order)
+                .WithMany(order => order.StatusHistories)
+                .HasForeignKey(history => history.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<OrderDetail>()

@@ -1,0 +1,257 @@
+@model List<WebBanHangOnline.Models.DiscountCode>
+
+@{
+    ViewData["Title"] = "Mã giảm giá";
+
+    string TypeText(string type) => type switch
+    {
+        "Percent" => "Phần trăm",
+        "FixedAmount" => "Số tiền",
+        _ => type
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+        <h2 class="mb-1"><i class="bi bi-ticket-perforated"></i> Mã giảm giá</h2>
+        <div class="text-muted small">Tạo mã đại trà để khách chọn ở checkout hoặc mã giới hạn để khách nhập tay.</div>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex gap-3">
+                    <div class="fs-3 text-primary"><i class="bi bi-info-circle"></i></div>
+                    <div>
+                        <h5 class="mb-2">Cách tạo mã</h5>
+                        <div class="row g-2 small text-muted">
+                            <div class="col-md-6">
+                                <strong class="text-dark">Mã đại trà</strong>
+                                <div>Bật “Hiển thị ở checkout”, khách sẽ thấy voucher và bấm chọn, không cần nhớ mã.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="text-dark">Mã nhập tay</strong>
+                                <div>Tắt “Hiển thị ở checkout”, mã vẫn dùng được nhưng khách phải nhập đúng mã.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="text-dark">Giảm phần trăm</strong>
+                                <div>Nhập 10 nghĩa là giảm 10%. Nên đặt “Giảm tối đa” để tránh giảm quá nhiều.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="text-dark">Giảm số tiền</strong>
+                                <div>Nhập số tiền VND, ví dụ 50000 là giảm 50.000 VND.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="mb-2">Ví dụ nhanh</h5>
+                <div class="small text-muted">
+                    <div><strong class="text-dark">WELCOME10</strong>: giảm 10%, đơn từ 200.000 VND, tối đa 50.000 VND.</div>
+                    <div class="mt-2"><strong class="text-dark">FREESHIP30</strong>: giảm 30.000 VND, dùng 100 lượt.</div>
+                    <div class="mt-2"><strong class="text-dark">VIP50K</strong>: mã nhập tay, chỉ gửi cho nhóm khách riêng.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Create" method="post" class="card border-0 shadow-sm mb-3">
+    @Html.AntiForgeryToken()
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h5 class="mb-1">Tạo mã mới</h5>
+                <div class="text-muted small">Các trường không bắt buộc có thể để trống nếu mã không cần giới hạn.</div>
+            </div>
+            <span class="badge text-bg-light border">Mã sẽ tự viết hoa khi lưu</span>
+        </div>
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Mã</label>
+                <input name="Code" class="form-control text-uppercase" placeholder="WELCOME10" maxlength="32" required />
+                <div class="form-text">Không dấu, dễ nhớ, ví dụ SALE08 hoặc VIP50K.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Kiểu giảm</label>
+                <select name="DiscountType" class="form-select" id="discountType">
+                    <option value="Percent">Phần trăm</option>
+                    <option value="FixedAmount">Số tiền</option>
+                </select>
+                <div class="form-text" id="discountTypeHelp">Phần trăm dùng số từ 1 đến 100.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Giá trị giảm</label>
+                <input name="DiscountValue" type="number" min="1" step="1" class="form-control" id="discountValue" placeholder="10" required />
+                <div class="form-text" id="discountValueHelp">Nhập 10 nghĩa là giảm 10%.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Đơn tối thiểu</label>
+                <input name="MinimumOrderAmount" type="number" min="0" step="1000" class="form-control" value="0" placeholder="200000" />
+                <div class="form-text">Để 0 nếu áp dụng cho mọi đơn.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Giảm tối đa</label>
+                <input name="MaximumDiscountAmount" type="number" min="0" step="1000" class="form-control" placeholder="50000" />
+                <div class="form-text">Nên dùng cho mã phần trăm.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Lượt dùng</label>
+                <input name="UsageLimit" type="number" min="1" class="form-control" placeholder="100" />
+                <div class="form-text">Để trống nếu không giới hạn lượt.</div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label">Mô tả</label>
+                <input name="Description" class="form-control" maxlength="160" placeholder="Giảm 10% cho đơn đầu tiên" />
+                <div class="form-text">Dòng này hiển thị kèm mã để admin dễ nhận biết.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Bắt đầu</label>
+                <input name="StartsAt" type="datetime-local" class="form-control" />
+                <div class="form-text">Để trống nếu dùng ngay.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="form-label">Kết thúc</label>
+                <input name="EndsAt" type="datetime-local" class="form-control" />
+                <div class="form-text">Để trống nếu không hết hạn.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <div class="form-check form-switch">
+                    <input name="IsActive" value="true" class="form-check-input" type="checkbox" checked />
+                    <label class="form-check-label">Đang bật</label>
+                </div>
+                <div class="form-text">Tắt nếu muốn lưu nháp.</div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <div class="form-check form-switch">
+                    <input name="IsPublic" value="true" class="form-check-input" type="checkbox" id="isPublicVoucher" checked />
+                    <label class="form-check-label" for="isPublicVoucher">Hiển thị ở checkout</label>
+                </div>
+                <div class="form-text">Tắt để tạo mã nhập tay giới hạn.</div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-circle"></i> Tạo mã
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                <th>Mã</th>
+                <th>Kiểu</th>
+                <th>Giá trị</th>
+                <th>Đơn tối thiểu</th>
+                <th>Đã dùng</th>
+                <th>Thời hạn</th>
+                <th>Loại mã</th>
+                <th>Trạng thái</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.Any())
+            {
+                foreach (var code in Model)
+                {
+                    <tr>
+                        <td>
+                            <strong>@code.Code</strong>
+                            <div class="text-muted small">@code.Description</div>
+                        </td>
+                        <td>@TypeText(code.DiscountType)</td>
+                        <td>
+                            @(code.DiscountType == "Percent"
+                                ? $"{code.DiscountValue:N0}%"
+                                : $"{code.DiscountValue:N0} VND")
+                            @if (code.MaximumDiscountAmount.HasValue)
+                            {
+                                <div class="text-muted small">Tối đa @code.MaximumDiscountAmount.Value.ToString("N0") VND</div>
+                            }
+                        </td>
+                        <td>@code.MinimumOrderAmount.ToString("N0") VND</td>
+                        <td>@code.UsedCount / @(code.UsageLimit?.ToString() ?? "∞")</td>
+                        <td>
+                            <div>@(code.StartsAt?.ToString("dd/MM/yyyy HH:mm") ?? "Không giới hạn")</div>
+                            <div class="text-muted small">đến @(code.EndsAt?.ToString("dd/MM/yyyy HH:mm") ?? "Không giới hạn")</div>
+                        </td>
+                        <td>
+                            <span class="badge @(code.IsPublic ? "text-bg-info" : "text-bg-dark")">
+                                @(code.IsPublic ? "Đại trà" : "Nhập mã")
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge @(code.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                @(code.IsActive ? "Đang bật" : "Đã tắt")
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <form asp-action="Toggle" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@code.Id" />
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                    @(code.IsActive ? "Tắt" : "Bật")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-5">Chưa có mã giảm giá.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const typeSelect = document.getElementById('discountType');
+            const valueInput = document.getElementById('discountValue');
+            const typeHelp = document.getElementById('discountTypeHelp');
+            const valueHelp = document.getElementById('discountValueHelp');
+
+            const syncDiscountHints = () => {
+                const isPercent = typeSelect.value === 'Percent';
+                valueInput.step = isPercent ? '1' : '1000';
+                valueInput.placeholder = isPercent ? '10' : '50000';
+                typeHelp.textContent = isPercent
+                    ? 'Phần trăm dùng số từ 1 đến 100.'
+                    : 'Số tiền được tính theo VND.';
+                valueHelp.textContent = isPercent
+                    ? 'Nhập 10 nghĩa là giảm 10%.'
+                    : 'Nhập 50000 nghĩa là giảm 50.000 VND.';
+            };
+
+            typeSelect.addEventListener('change', syncDiscountHints);
+            syncDiscountHints();
+        })();
+    </script>
+}

@@ -140,6 +140,10 @@
                     <div class="orders-total">
                         Tổng:
                         <span>@order.TotalAmount.ToString("N0") VND</span>
+                        @if (order.DiscountAmount > 0)
+                        {
+                            <small>Đã giảm @order.DiscountAmount.ToString("N0") VND</small>
+                        }
                     </div>
 
                     <div class="orders-actions">

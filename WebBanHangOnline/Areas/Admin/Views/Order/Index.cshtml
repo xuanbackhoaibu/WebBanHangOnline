@@ -35,6 +35,9 @@
     }
 
     string OrderCode(int id) => $"ORD{id:D6}";
+    bool CanCancelOrder(string status) => status == "Pending" || status == "Confirmed";
+    bool CanMarkShipping(string status) => status == "Pending" || status == "Confirmed";
+    bool CanMarkCompleted(string status) => status == "Shipping";
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
@@ -163,32 +166,57 @@
                                     <i class="bi bi-eye"></i>
                                 </a>
 
-                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="id" value="@o.Id" />
-                                    <input type="hidden" name="status" value="Shipping" />
-                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
-                                    <button class="btn btn-outline-warning btn-sm" title="Chuyển sang đang giao">
-                                        <i class="bi bi-truck"></i>
-                                    </button>
-                                </form>
+                                @if (CanMarkShipping(o.Status))
+                                {
+                                    <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@o.Id" />
+                                        <input type="hidden" name="status" value="Shipping" />
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button class="btn btn-outline-warning btn-sm" title="Chuyển sang đang giao">
+                                            <i class="bi bi-truck"></i>
+                                        </button>
+                                    </form>
+                                }
 
-                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="id" value="@o.Id" />
-                                    <input type="hidden" name="status" value="Completed" />
-                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
-                                    <button class="btn btn-outline-success btn-sm" title="Hoàn thành">
-                                        <i class="bi bi-check2"></i>
-                                    </button>
-                                </form>
+                                @if (CanMarkCompleted(o.Status))
+                                {
+                                    <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@o.Id" />
+                                        <input type="hidden" name="status" value="Completed" />
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button class="btn btn-outline-success btn-sm" title="Hoàn thành">
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+                                    </form>
+                                }
 
-                                <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
-                                    <input type="hidden" name="id" value="@o.Id" />
-                                    <input type="hidden" name="status" value="Cancelled" />
-                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
-                                    <button class="btn btn-outline-danger btn-sm" title="Hủy">
-                                        <i class="bi bi-x-lg"></i>
-                                    </button>
-                                </form>
+                                @if (o.PaymentStatus == "Unpaid")
+                                {
+                                    <form asp-area="Admin" asp-controller="Order" asp-action="UpdatePaymentStatus" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@o.Id" />
+                                        <input type="hidden" name="paymentStatus" value="Paid" />
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button class="btn btn-outline-success btn-sm" title="Đã thu tiền">
+                                            <i class="bi bi-cash-coin"></i>
+                                        </button>
+                                    </form>
+                                }
+
+                                @if (CanCancelOrder(o.Status))
+                                {
+                                    <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@o.Id" />
+                                        <input type="hidden" name="status" value="Cancelled" />
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button class="btn btn-outline-danger btn-sm" title="Hủy">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                }
                             </div>
                         </td>
                     </tr>

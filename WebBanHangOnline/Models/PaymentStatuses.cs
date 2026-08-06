@@ -14,6 +14,14 @@ public static class PaymentStatuses
         Refunded
     };
 
+    public static readonly string[] AdminEditableStatuses =
+    {
+        Unpaid,
+        Paid,
+        Failed,
+        Refunded
+    };
+
     public static bool IsFinal(string status)
     {
         return FinalStatuses.Contains(status);

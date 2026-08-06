@@ -3,113 +3,239 @@
 @{
     ViewData["Title"] = "Quản lý sản phẩm";
     Layout = "_AdminLayout";
+
+    var categories = ViewBag.Categories as List<WebBanHangOnline.Models.Category> ?? new();
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+
+    int TotalStock(WebBanHangOnline.Models.Product product) => product.Variants?.Sum(v => v.Stock) ?? 0;
+
+    string StockBadgeClass(int stock)
+    {
+        if (stock <= 0) return "text-bg-danger";
+        if (stock <= 10) return "text-bg-warning";
+        return "text-bg-success";
+    }
+
+    string StockText(int stock)
+    {
+        if (stock <= 0) return "Hết hàng";
+        if (stock <= 10) return "Sắp hết";
+        return "Còn hàng";
+    }
 }
 
-<h2>🧥 Quản lý sản phẩm</h2>
-
-<div class="mb-3 d-flex gap-2">
-    <a asp-area="Admin"
-       asp-controller="Product"
-       asp-action="Create"
-       class="btn btn-primary">
-        + Thêm sản phẩm
-    </a>
-
-    <a asp-area="Admin"
-       asp-controller="Product"
-       asp-action="Import"
-       class="btn btn-success">
-        📥 Import từ Excel
-    </a>
+<div class="admin-page-head">
+    <div>
+        <h2><i class="bi bi-bag"></i> Quản lý sản phẩm</h2>
+        <p>Theo dõi sản phẩm, tồn kho, trạng thái hiển thị và chương trình sale.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-area="Admin" asp-controller="Product" asp-action="Import" class="btn btn-outline-primary">
+            <i class="bi bi-file-earmark-arrow-up"></i> Import Excel
+        </a>
+        <a asp-area="Admin" asp-controller="Product" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+        </a>
+    </div>
 </div>
 
-<table class="table table-bordered align-middle">
-    <thead>
-        <tr>
-            <th>Ảnh</th>
-            <th>Tên</th>
-            <th>Giá</th>
-            <th>Phân loại</th>
-            <th width="240">Thao tác</th>
-        </tr>
-    </thead>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
 
-    <tbody>
-    @foreach (var p in Model)
-    {
-        <tr>
-            <!-- Thumbnail + ảnh phụ -->
-            <td class="admin-product-actions">
-                <img src="@(!string.IsNullOrEmpty(p.Thumbnail) ? p.Thumbnail : "/images/no-image.png")"
-                     alt="@p.Name"
-                     width="80"
-                     height="80"
-                     class="img-thumbnail mb-1" />
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
 
-                @if (p.Images != null && p.Images.Any())
+<div class="admin-metric-grid mb-3">
+    <div class="admin-metric-card">
+        <span>Tổng sản phẩm</span>
+        <strong>@ViewBag.TotalProducts</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Đang hiển thị</span>
+        <strong>@ViewBag.ActiveProducts</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Sắp hết hàng</span>
+        <strong>@ViewBag.LowStockProducts</strong>
+    </div>
+    <div class="admin-metric-card is-primary">
+        <span>Đang sale</span>
+        <strong>@ViewBag.FlashSaleProducts</strong>
+    </div>
+</div>
+
+<form method="get" class="admin-filter-card mb-3">
+    <div class="row g-3 align-items-end">
+        <div class="col-xl-3 col-md-6">
+            <label class="form-label">Tìm kiếm</label>
+            <input type="search" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tên, slug, mô tả" />
+        </div>
+        <div class="col-xl-2 col-md-6">
+            <label class="form-label">Danh mục</label>
+            <select name="categoryId" class="form-select">
+                <option value="">Tất cả</option>
+                @foreach (var category in categories)
                 {
-                    <div class="d-flex flex-wrap mt-1">
-                        @foreach (var img in p.Images)
-                        {
-                            <img src="@img.ImageUrl"
-                                 width="45"
-                                 height="45"
-                                 class="img-thumbnail me-1 mb-1" />
-                        }
-                    </div>
+                    <option value="@category.CategoryId" selected="@(ViewBag.CategoryId == category.CategoryId)">@category.Name</option>
                 }
-                else
+            </select>
+        </div>
+        <div class="col-xl-2 col-md-6">
+            <label class="form-label">Hiển thị</label>
+            <select name="status" class="form-select">
+                <option value="">Tất cả</option>
+                <option value="active" selected="@(ViewBag.Status == "active")">Đang bật</option>
+                <option value="inactive" selected="@(ViewBag.Status == "inactive")">Đang ẩn</option>
+            </select>
+        </div>
+        <div class="col-xl-2 col-md-6">
+            <label class="form-label">Tồn kho</label>
+            <select name="stock" class="form-select">
+                <option value="">Tất cả</option>
+                <option value="out" selected="@(ViewBag.Stock == "out")">Hết hàng</option>
+                <option value="low" selected="@(ViewBag.Stock == "low")">Sắp hết</option>
+                <option value="ok" selected="@(ViewBag.Stock == "ok")">Còn hàng</option>
+            </select>
+        </div>
+        <div class="col-xl-2 col-md-6">
+            <label class="form-label">Sale</label>
+            <select name="sale" class="form-select">
+                <option value="">Tất cả</option>
+                <option value="active" selected="@(ViewBag.Sale == "active")">Đang sale</option>
+                <option value="scheduled" selected="@(ViewBag.Sale == "scheduled")">Sắp sale</option>
+                <option value="none" selected="@(ViewBag.Sale == "none")">Không sale</option>
+            </select>
+        </div>
+        <div class="col-xl-1 col-md-6 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill" title="Lọc">
+                <i class="bi bi-funnel"></i>
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary" title="Xóa lọc">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+    </div>
+</form>
+
+<div class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Giá</th>
+                <th>Danh mục</th>
+                <th>Tồn kho</th>
+                <th>Sale</th>
+                <th>Trạng thái</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.Any())
+            {
+                foreach (var product in Model)
                 {
-                    <small class="text-muted">Không có ảnh phụ</small>
+                    var totalStock = TotalStock(product);
+                    <tr>
+                        <td>
+                            <div class="admin-product-cell">
+                                <img src="@(!string.IsNullOrEmpty(product.Thumbnail) ? product.Thumbnail : "/images/no-image.png")"
+                                     alt="@product.Name" />
+                                <div>
+                                    <strong>@product.Name</strong>
+                                    <small>Slug: @product.Slug</small>
+                                    <small>@(product.Images?.Count ?? 0) ảnh phụ, @(product.Variants?.Count ?? 0) phân loại</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <strong>@product.FinalPrice.ToString("N0") VND</strong>
+                            @if (product.IsFlashSaleActive)
+                            {
+                                <small class="text-muted d-block"><del>@product.Price.ToString("N0") VND</del></small>
+                            }
+                        </td>
+                        <td>@(product.Category?.Name ?? "-")</td>
+                        <td>
+                            <span class="badge @StockBadgeClass(totalStock)">@StockText(totalStock)</span>
+                            <small class="text-muted d-block">@totalStock sản phẩm</small>
+                        </td>
+                        <td>
+                            @if (product.IsFlashSaleActive)
+                            {
+                                <span class="badge text-bg-danger">Đang sale</span>
+                                <small class="text-muted d-block">đến @product.FlashSaleEnd?.ToString("dd/MM HH:mm")</small>
+                            }
+                            else if (product.FlashSaleStart.HasValue && product.FlashSaleStart > DateTime.Now)
+                            {
+                                <span class="badge text-bg-warning">Sắp sale</span>
+                                <small class="text-muted d-block">@product.FlashSaleStart?.ToString("dd/MM HH:mm")</small>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-secondary">Không sale</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge @(product.IsActive ? "text-bg-success" : "text-bg-secondary")">
+                                @(product.IsActive ? "Đang bật" : "Đang ẩn")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="admin-action-row">
+                                <a asp-area="Admin"
+                                   asp-controller="ProductVariant"
+                                   asp-action="Index"
+                                   asp-route-productId="@product.ProductId"
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-grid-3x3-gap"></i> Size/Màu
+                                </a>
+                                <a asp-area="Admin"
+                                   asp-controller="Product"
+                                   asp-action="Edit"
+                                   asp-route-id="@product.ProductId"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-pencil-square"></i> Sửa
+                                </a>
+                                <form asp-area="Admin" asp-controller="Product" asp-action="ToggleActive" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@product.ProductId" />
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button class="btn btn-sm @(product.IsActive ? "btn-outline-warning" : "btn-outline-success")">
+                                        <i class="bi @(product.IsActive ? "bi-eye-slash" : "bi-eye")"></i>
+                                        @(product.IsActive ? "Ẩn" : "Bật")
+                                    </button>
+                                </form>
+                                <form asp-area="Admin"
+                                      asp-controller="Product"
+                                      asp-action="Delete"
+                                      asp-route-id="@product.ProductId"
+                                      method="post"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
                 }
-            </td>
-
-            <td>
-                <strong>@p.Name</strong><br />
-                <small class="text-muted">Slug: @p.Slug</small>
-            </td>
-
-            <td>
-                @p.Price.ToString("N0") VND
-            </td>
-
-            <!-- QUẢN LÝ VARIANT -->
-            <td>
-                <a asp-area="Admin"
-                   asp-controller="ProductVariant"
-                   asp-action="Index"
-                   asp-route-productId="@p.ProductId"
-                   class="btn btn-secondary btn-sm">
-                    Size / Màu
-                </a>
-            </td>
-
-            <td>
-                <a asp-area="Admin"
-                   asp-controller="Product"
-                   asp-action="Edit"
-                   asp-route-id="@p.ProductId"
-                   class="btn btn-warning btn-sm">
-                    <i class="bi bi-pencil-square"></i> Sửa
-                </a>
-                
-
-                <form asp-area="Admin"
-                      asp-controller="Product"
-                      asp-action="Delete"
-                      asp-route-id="@p.ProductId"
-                      method="post"
-                      class="d-inline"
-                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
-
-                    @Html.AntiForgeryToken()
-
-                    <button class="btn btn-danger btn-sm">
-                        <i class="bi bi-trash3"></i> Xóa
-                    </button>
-                </form>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">
+                        Không tìm thấy sản phẩm phù hợp.
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

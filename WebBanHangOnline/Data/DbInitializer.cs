@@ -85,6 +85,8 @@ namespace WebBanHangOnline.Data
             await EnsureOrderPaymentStatusAsync(context);
             await EnsureReviewTableAsync(context);
             await EnsureWishlistTableAsync(context);
+            await EnsureDiscountCodesAsync(context);
+            await EnsureOrderAdminNotesAndHistoriesAsync(context);
 
             if (!await context.SupportFaqs.AnyAsync())
             {
@@ -395,6 +397,91 @@ IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_WishlistItems_Asp
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_WishlistItems_Products_ProductId' AND parent_object_id = OBJECT_ID(N'[WishlistItems]'))
     ALTER TABLE [WishlistItems] ADD CONSTRAINT [FK_WishlistItems_Products_ProductId]
         FOREIGN KEY ([ProductId]) REFERENCES [Products] ([ProductId]) ON DELETE CASCADE;
+");
+        }
+
+        private static async Task EnsureDiscountCodesAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[DiscountCodes]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [DiscountCodes] (
+        [Id] int NOT NULL IDENTITY,
+        [Code] nvarchar(32) NOT NULL,
+        [Description] nvarchar(160) NOT NULL,
+        [DiscountType] nvarchar(16) NOT NULL,
+        [DiscountValue] decimal(18,2) NOT NULL,
+        [MinimumOrderAmount] decimal(18,2) NOT NULL,
+        [MaximumDiscountAmount] decimal(18,2) NULL,
+        [UsageLimit] int NULL,
+        [UsedCount] int NOT NULL,
+        [StartsAt] datetime2 NULL,
+        [EndsAt] datetime2 NULL,
+        [IsPublic] bit NOT NULL DEFAULT 1,
+        [IsActive] bit NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_DiscountCodes] PRIMARY KEY ([Id])
+    );
+
+    CREATE UNIQUE INDEX [IX_DiscountCodes_Code] ON [DiscountCodes] ([Code]);
+END
+
+IF COL_LENGTH('Orders', 'SubtotalAmount') IS NULL
+    ALTER TABLE [Orders] ADD [SubtotalAmount] decimal(18,2) NOT NULL CONSTRAINT [DF_Orders_SubtotalAmount] DEFAULT 0;
+
+IF COL_LENGTH('Orders', 'DiscountAmount') IS NULL
+    ALTER TABLE [Orders] ADD [DiscountAmount] decimal(18,2) NOT NULL CONSTRAINT [DF_Orders_DiscountAmount] DEFAULT 0;
+
+IF COL_LENGTH('Orders', 'DiscountCode') IS NULL
+    ALTER TABLE [Orders] ADD [DiscountCode] nvarchar(32) NULL;
+
+IF COL_LENGTH('DiscountCodes', 'IsPublic') IS NULL
+    ALTER TABLE [DiscountCodes] ADD [IsPublic] bit NOT NULL CONSTRAINT [DF_DiscountCodes_IsPublic] DEFAULT 1;
+
+EXEC(N'UPDATE [Orders] SET [SubtotalAmount] = [TotalAmount] WHERE [SubtotalAmount] = 0;');
+
+IF NOT EXISTS (SELECT 1 FROM [DiscountCodes] WHERE [Code] = N'WELCOME10')
+BEGIN
+    EXEC(N'
+    INSERT INTO [DiscountCodes]
+        ([Code], [Description], [DiscountType], [DiscountValue], [MinimumOrderAmount], [MaximumDiscountAmount],
+         [UsageLimit], [UsedCount], [StartsAt], [EndsAt], [IsPublic], [IsActive], [CreatedAt])
+    VALUES
+        (N''WELCOME10'', N''Giảm 10% cho đơn từ 200.000 VND'', N''Percent'', 10, 200000, 50000,
+         100, 0, NULL, NULL, 1, 1, SYSUTCDATETIME());
+    ');
+END
+");
+        }
+
+        private static async Task EnsureOrderAdminNotesAndHistoriesAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF COL_LENGTH('Orders', 'AdminNote') IS NULL
+    ALTER TABLE [Orders] ADD [AdminNote] nvarchar(500) NULL;
+
+IF OBJECT_ID(N'[OrderStatusHistories]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [OrderStatusHistories] (
+        [Id] int NOT NULL IDENTITY,
+        [OrderId] int NOT NULL,
+        [ChangeType] nvarchar(32) NOT NULL,
+        [FromValue] nvarchar(64) NULL,
+        [ToValue] nvarchar(64) NULL,
+        [Note] nvarchar(256) NULL,
+        [ChangedBy] nvarchar(128) NOT NULL,
+        [ChangedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_OrderStatusHistories] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_OrderStatusHistories_Orders_OrderId] FOREIGN KEY ([OrderId]) REFERENCES [Orders] ([Id]) ON DELETE CASCADE
+    );
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE [name] = N'IX_OrderStatusHistories_OrderId'
+      AND [object_id] = OBJECT_ID(N'[OrderStatusHistories]')
+)
+    CREATE INDEX [IX_OrderStatusHistories_OrderId] ON [OrderStatusHistories] ([OrderId]);
 ");
         }
 

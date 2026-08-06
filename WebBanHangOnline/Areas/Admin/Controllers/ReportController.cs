@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Models.ViewModels;
 
 namespace WebBanHangOnline.Areas.Admin.Controllers
 
@@ -25,25 +26,73 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             var fromDate = from?.Date;
             var toExclusive = to?.Date.AddDays(1);
 
-            var query = _context.Orders
+            var revenueQuery = _context.Orders
                 .Where(o =>
                     OrderStatuses.RevenueStatuses.Contains(o.Status) ||
                     o.PaymentStatus == PaymentStatuses.Paid);
 
             if (fromDate.HasValue)
-                query = query.Where(o => o.OrderDate >= fromDate.Value);
+                revenueQuery = revenueQuery.Where(o => o.OrderDate >= fromDate.Value);
 
             if (toExclusive.HasValue)
-                query = query.Where(o => o.OrderDate < toExclusive.Value);
+                revenueQuery = revenueQuery.Where(o => o.OrderDate < toExclusive.Value);
 
-            var orders = await query.ToListAsync();
+            var orders = await revenueQuery
+                .OrderByDescending(order => order.OrderDate)
+                .ToListAsync();
 
-            ViewBag.TotalRevenue = orders.Sum(o => o.TotalAmount);
-            ViewBag.TotalOrders = orders.Count;
-            ViewBag.From = fromDate?.ToString("yyyy-MM-dd");
-            ViewBag.To = to?.Date.ToString("yyyy-MM-dd");
+            var orderIds = orders.Select(order => order.Id).ToList();
 
-            return View();
+            var topProducts = orderIds.Any()
+                ? await _context.OrderDetails
+                    .Include(detail => detail.ProductVariant)
+                    .ThenInclude(variant => variant.Product)
+                    .Where(detail => orderIds.Contains(detail.OrderId))
+                    .GroupBy(detail => detail.ProductVariant.Product.Name)
+                    .Select(group => new TopProductReportViewModel
+                    {
+                        ProductName = group.Key,
+                        Quantity = group.Sum(item => item.Quantity),
+                        Revenue = group.Sum(item => item.Quantity * item.Price)
+                    })
+                    .OrderByDescending(item => item.Revenue)
+                    .Take(5)
+                    .ToListAsync()
+                : new List<TopProductReportViewModel>();
+
+            var model = new ReportIndexViewModel
+            {
+                TotalRevenue = orders.Sum(order => order.TotalAmount),
+                TotalDiscount = orders.Sum(order => order.DiscountAmount),
+                TotalOrders = orders.Count,
+                PaidOrders = orders.Count(order => order.PaymentStatus == PaymentStatuses.Paid),
+                UnpaidOrders = orders.Count(order => order.PaymentStatus == PaymentStatuses.Unpaid),
+                AverageOrderValue = orders.Any() ? orders.Average(order => order.TotalAmount) : 0,
+                From = fromDate?.ToString("yyyy-MM-dd"),
+                To = to?.Date.ToString("yyyy-MM-dd"),
+                DailyRevenue = orders
+                    .GroupBy(order => order.OrderDate.Date)
+                    .OrderBy(group => group.Key)
+                    .Select(group => new DailyRevenueViewModel
+                    {
+                        Date = group.Key,
+                        Revenue = group.Sum(order => order.TotalAmount),
+                        Orders = group.Count()
+                    })
+                    .ToList(),
+                TopProducts = topProducts,
+                Statuses = orders
+                    .GroupBy(order => order.Status)
+                    .Select(group => new OrderStatusReportViewModel
+                    {
+                        Status = group.Key,
+                        Count = group.Count()
+                    })
+                    .OrderByDescending(item => item.Count)
+                    .ToList()
+            };
+
+            return View(model);
         }
 
         // 🥇 Top sản phẩm bán chạy
@@ -93,17 +142,29 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             sheet.Cell(1, 3).Value = "Tổng tiền";
             sheet.Cell(1, 4).Value = "Trạng thái đơn";
             sheet.Cell(1, 5).Value = "Trạng thái thanh toán";
+            sheet.Cell(1, 6).Value = "Mã giảm giá";
+            sheet.Cell(1, 7).Value = "Tiền giảm";
+            sheet.Cell(1, 8).Value = "Phương thức";
+
+            sheet.Range(1, 1, 1, 8).Style.Font.Bold = true;
+            sheet.Range(1, 1, 1, 8).Style.Fill.BackgroundColor = XLColor.FromHtml("#E11D48");
+            sheet.Range(1, 1, 1, 8).Style.Font.FontColor = XLColor.White;
 
             int row = 2;
             foreach (var o in orders)
             {
-                sheet.Cell(row, 1).Value = o.Id;
-                sheet.Cell(row, 2).Value = o.OrderDate.ToString("dd/MM/yyyy");
+                sheet.Cell(row, 1).Value = $"ORD{o.Id:D6}";
+                sheet.Cell(row, 2).Value = o.OrderDate.ToString("dd/MM/yyyy HH:mm");
                 sheet.Cell(row, 3).Value = o.TotalAmount;
                 sheet.Cell(row, 4).Value = o.Status;
                 sheet.Cell(row, 5).Value = o.PaymentStatus;
+                sheet.Cell(row, 6).Value = o.DiscountCode ?? "";
+                sheet.Cell(row, 7).Value = o.DiscountAmount;
+                sheet.Cell(row, 8).Value = o.PaymentMethod;
                 row++;
             }
+
+            sheet.Columns().AdjustToContents();
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);

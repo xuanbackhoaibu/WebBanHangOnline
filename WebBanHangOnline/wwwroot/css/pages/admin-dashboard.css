@@ -7,11 +7,17 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    padding: 1rem 1.15rem;
     margin-bottom: 1.25rem;
+    background:
+        linear-gradient(135deg, #fff1f5 0%, #fce7f3 50%, #fff7ed 100%);
+    border: 1px solid rgba(225, 29, 72, 0.16);
+    border-radius: 10px;
+    box-shadow: 0 14px 30px rgba(225, 29, 72, 0.1);
 }
 
 .dashboard-kicker {
-    color: #8b8178;
+    color: #e11d48;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0;
@@ -20,7 +26,7 @@
 }
 
 .dashboard-header h2 {
-    color: #1e1d1b;
+    color: #4a1021;
     font-size: 1.45rem;
     font-weight: 700;
     margin: 0;
@@ -33,18 +39,27 @@
     gap: 0.55rem;
     min-height: 38px;
     padding: 0.45rem 0.8rem;
-    color: #3d3834;
+    color: #be123c;
     background: #ffffff;
-    border: 1px solid #ded8d1;
+    border: 1px solid rgba(225, 29, 72, 0.26);
     border-radius: 8px;
+    box-shadow: 0 8px 18px rgba(225, 29, 72, 0.12);
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 
 .date-picker:hover {
-    border-color: #b94132;
-    color: #b94132;
+    border-color: #e11d48;
+    background: #e11d48;
+    color: #ffffff;
+    box-shadow: 0 12px 26px rgba(225, 29, 72, 0.24);
+    transform: translateY(-2px);
+}
+
+.date-picker:active {
+    transform: translateY(0);
 }
 
 .refresh-badge {
@@ -220,11 +235,24 @@
     font-size: 0.78rem;
     font-weight: 700;
     cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .segmented-control button.active {
     color: #ffffff;
-    background: #252525;
+    background: #e11d48;
+    box-shadow: 0 6px 14px rgba(225, 29, 72, 0.18);
+}
+
+.segmented-control button:hover {
+    color: #be123c;
+    background: #fff1f5;
+}
+
+.segmented-control button.active:hover {
+    color: #ffffff;
+    background: #be123c;
+    transform: translateY(-1px);
 }
 
 .month-input {
@@ -297,8 +325,8 @@
 
 .view-all:hover {
     color: #ffffff;
-    background: #b94132;
-    border-color: #b94132;
+    background: #e11d48;
+    border-color: #e11d48;
 }
 
 .order-table {
@@ -376,12 +404,19 @@
     border: 1px solid #e4ddd5;
     border-radius: 8px;
     cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 
 .btn-icon:hover {
     color: #ffffff;
-    background: #252525;
-    border-color: #252525;
+    background: #e11d48;
+    border-color: #e11d48;
+    box-shadow: 0 8px 18px rgba(225, 29, 72, 0.22);
+    transform: translateY(-2px);
+}
+
+.btn-icon:active {
+    transform: translateY(0);
 }
 
 .stock-list {

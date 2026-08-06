@@ -2,6 +2,34 @@
 
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
+
+    string StatusText(string? status) => status switch
+    {
+        "Pending" => "Đang chờ",
+        "Confirmed" => "Đã xác nhận",
+        "Shipping" => "Đang vận chuyển",
+        "Completed" => "Đã hoàn thành",
+        "Cancelled" => "Đã hủy",
+        "Unpaid" => "Chưa thanh toán",
+        "Paid" => "Đã thanh toán",
+        "Failed" => "Thanh toán lỗi",
+        "Refunded" => "Đã hoàn tiền",
+        _ => status ?? "-"
+    };
+
+    bool CanCancelOrder(string? status) => status == "Pending" || status == "Confirmed" || status == "Cancelled";
+
+    string HistoryTypeText(string? type) => type switch
+    {
+        "OrderStatus" => "Trạng thái đơn",
+        "PaymentStatus" => "Thanh toán",
+        "AdminNote" => "Ghi chú",
+        _ => type ?? "-"
+    };
+
+    var orderedHistories = Model.StatusHistories?
+        .OrderByDescending(item => item.ChangedAt)
+        .ToList() ?? new List<WebBanHangOnline.Models.OrderStatusHistory>();
 }
 
 <h2><i class="bi bi-receipt"></i> Chi tiết đơn #@Model.Id</h2>
@@ -9,7 +37,13 @@
 <p><strong>Khách:</strong> @Model.User?.UserName</p>
 <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
 <p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
-<p><strong>Trạng thái thanh toán:</strong> @Model.PaymentStatus</p>
+<p><strong>Trạng thái thanh toán:</strong> @StatusText(Model.PaymentStatus)</p>
+@if (Model.DiscountAmount > 0)
+{
+    <p><strong>Tạm tính:</strong> @String.Format("{0:N0} VND", Model.SubtotalAmount)</p>
+    <p><strong>Mã giảm giá:</strong> @Model.DiscountCode</p>
+    <p><strong>Đã giảm:</strong> @String.Format("{0:N0} VND", Model.DiscountAmount)</p>
+}
 <p><strong>Tổng tiền:</strong> <span class="text-danger fw-bold">
     @String.Format("{0:N0} VND", Model.TotalAmount)
 </span></p>
@@ -32,7 +66,7 @@
         <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Đã xác nhận</option>
         <option value="Shipping" selected="@(Model.Status == "Shipping")">Đang vận chuyển</option>
         <option value="Completed" selected="@(Model.Status == "Completed")">Đã hoàn thành</option>
-        <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Đã hủy</option>
+        <option value="Cancelled" selected="@(Model.Status == "Cancelled")" disabled="@(!CanCancelOrder(Model.Status))">Đã hủy</option>
     </select>
 
     <button type="submit" class="btn btn-success ms-2">
@@ -45,6 +79,107 @@
        class="btn btn-secondary ms-2">
         <i class="bi bi-arrow-left"></i> Quay lại
     </a>
+</form>
+
+@if (Model.Status == "Pending" || Model.Status == "Confirmed")
+{
+    <div class="alert alert-warning py-2">
+        Khi chuyển đơn sang đã hủy, hệ thống sẽ tự hoàn lại số lượng sản phẩm vào kho.
+    </div>
+}
+
+<hr />
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="mb-3"><i class="bi bi-journal-text"></i> Ghi chú nội bộ</h5>
+                <form asp-area="Admin"
+                      asp-controller="Order"
+                      asp-action="UpdateAdminNote"
+                      method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id"/>
+                    <textarea name="adminNote"
+                              class="form-control"
+                              rows="5"
+                              maxlength="500"
+                              placeholder="Ví dụ: Khách yêu cầu gọi trước khi giao, cần kiểm tra size...">@Model.AdminNote</textarea>
+                    <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+                        <small class="text-muted">Chỉ admin nhìn thấy ghi chú này.</small>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-save"></i> Lưu ghi chú
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="mb-3"><i class="bi bi-clock-history"></i> Lịch sử xử lý</h5>
+                @if (orderedHistories.Any())
+                {
+                    <div class="order-history-list">
+                        @foreach (var history in orderedHistories)
+                        {
+                            <div class="order-history-item">
+                                <div>
+                                    <strong>@HistoryTypeText(history.ChangeType)</strong>
+                                    @if (!string.IsNullOrWhiteSpace(history.FromValue) || !string.IsNullOrWhiteSpace(history.ToValue))
+                                    {
+                                        <span>@StatusText(history.FromValue) <i class="bi bi-arrow-right-short"></i> @StatusText(history.ToValue)</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(history.Note))
+                                    {
+                                        <p>@history.Note</p>
+                                    }
+                                </div>
+                                <small>
+                                    @history.ChangedAt.ToString("dd/MM/yyyy HH:mm")
+                                    <br />
+                                    @history.ChangedBy
+                                </small>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted py-3">
+                        Chưa có lịch sử thao tác cho đơn này.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<h5><i class="bi bi-cash-coin"></i> Cập nhật thanh toán</h5>
+
+<form asp-area="Admin"
+      asp-controller="Order"
+      asp-action="UpdatePaymentStatus"
+      method="post"
+      class="mb-3">
+
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model.Id"/>
+
+    <select name="paymentStatus" class="form-select d-inline w-auto">
+        <option value="Unpaid" selected="@(Model.PaymentStatus == "Unpaid")">Chưa thanh toán</option>
+        <option value="Paid" selected="@(Model.PaymentStatus == "Paid")">Đã thanh toán</option>
+        <option value="Failed" selected="@(Model.PaymentStatus == "Failed")">Thanh toán lỗi</option>
+        <option value="Refunded" selected="@(Model.PaymentStatus == "Refunded")">Đã hoàn tiền</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary ms-2">
+        <i class="bi bi-save"></i> Lưu thanh toán
+    </button>
 </form>
 
 <hr />

@@ -228,6 +228,14 @@
   font-weight: 840;
 }
 
+.orders-total small {
+  display: block;
+  color: #32745d;
+  font-size: 12px;
+  font-weight: 760;
+  margin-top: 3px;
+}
+
 .orders-actions {
   display: inline-flex;
   flex-wrap: wrap;

@@ -181,6 +181,7 @@ body.coutura-body {
 }
 
 .coutura-search {
+  position: relative;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -198,9 +199,10 @@ body.coutura-body {
   height: 46px;
   min-height: 0;
   border: 0;
-  border-radius: 999px 0 0 999px;
+  border-radius: 999px;
   box-shadow: none;
   padding-left: 20px;
+  padding-right: 52px;
   color: var(--xb-ink);
   font-family: Inter, "Segoe UI", Arial, sans-serif;
 }
@@ -215,15 +217,31 @@ body.coutura-body {
 }
 
 .coutura-search .btn-search {
-  flex: 0 0 54px;
-  position: static;
-  width: 54px;
-  height: 46px;
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
   border: 0;
   border-radius: 999px;
-  color: #fff;
-  background: var(--xb-ink);
+  color: var(--xb-accent);
+  background: transparent;
   padding: 0;
+  transform: translateY(-50%);
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.coutura-search .btn-search:hover,
+.coutura-search .btn-search:focus {
+  color: var(--xb-accent-dark);
+  background: #fff2ee;
+  transform: translateY(-50%) scale(1.06);
+}
+
+.coutura-search .btn-search:active {
+  transform: translateY(-50%) scale(0.96);
 }
 
 .header-icons .icon-btn {
@@ -677,7 +695,8 @@ body {
   }
 
   .coutura-search .btn-search {
-    height: 42px;
+    width: 32px;
+    height: 32px;
   }
 
   .header-icons {

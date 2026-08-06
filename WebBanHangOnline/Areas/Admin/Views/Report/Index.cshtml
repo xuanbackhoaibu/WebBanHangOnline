@@ -1,47 +1,173 @@
+@model WebBanHangOnline.Models.ViewModels.ReportIndexViewModel
+
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Báo cáo";
+    var maxRevenue = Model.DailyRevenue.Any() ? Model.DailyRevenue.Max(item => item.Revenue) : 0;
+
+    string StatusText(string status) => status switch
+    {
+        "Pending" => "Chờ xử lý",
+        "Confirmed" => "Đã xác nhận",
+        "Shipping" => "Đang giao",
+        "Completed" => "Hoàn thành",
+        "Cancelled" => "Đã hủy",
+        _ => status
+    };
 }
 
-<h2>📑 Báo cáo doanh thu</h2>
+<div class="admin-page-head">
+    <div>
+        <h2><i class="bi bi-graph-up-arrow"></i> Báo cáo doanh thu</h2>
+        <p>Tổng hợp doanh thu, thanh toán, giảm giá và sản phẩm bán chạy theo khoảng ngày.</p>
+    </div>
+    <a asp-action="ExportExcel"
+       asp-route-from="@Model.From"
+       asp-route-to="@Model.To"
+       class="btn btn-primary">
+        <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+    </a>
+</div>
 
-<form method="get" class="row mb-3">
-    <div class="col-md-4">
-        <label>Từ ngày</label>
-        <input type="date" name="from" class="form-control" value="@ViewBag.From" />
-    </div>
-    <div class="col-md-4">
-        <label>Đến ngày</label>
-        <input type="date" name="to" class="form-control" value="@ViewBag.To" />
-    </div>
-    <div class="col-md-4 d-flex align-items-end">
-        <button type="submit" class="btn btn-primary me-2">Lọc</button>
-        <a asp-action="ExportExcel"
-           asp-route-from="@ViewBag.From"
-           asp-route-to="@ViewBag.To"
-           class="btn btn-success">Xuất Excel</a>
+<form method="get" class="admin-filter-card mb-3">
+    <div class="row g-3 align-items-end">
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label">Từ ngày</label>
+            <input type="date" name="from" class="form-control" value="@Model.From" />
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <label class="form-label">Đến ngày</label>
+            <input type="date" name="to" class="form-control" value="@Model.To" />
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-funnel"></i> Lọc báo cáo
+            </button>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-arrow-counterclockwise"></i> Xóa lọc
+            </a>
+        </div>
     </div>
 </form>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-body">
-                <h5>Tổng doanh thu</h5>
-                <h3>@String.Format("{0:N0} VND", ViewBag.TotalRevenue)</h3>
-            </div>
-        </div>
+<div class="admin-metric-grid mb-3">
+    <div class="admin-metric-card is-primary">
+        <span>Tổng doanh thu</span>
+        <strong>@Model.TotalRevenue.ToString("N0") VND</strong>
     </div>
-
-    <div class="col-md-6">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-body">
-                <h5>Tổng đơn hàng</h5>
-                <h3>@ViewBag.TotalOrders</h3>
-            </div>
-        </div>
+    <div class="admin-metric-card">
+        <span>Tổng đơn hợp lệ</span>
+        <strong>@Model.TotalOrders</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Giá trị trung bình</span>
+        <strong>@Model.AverageOrderValue.ToString("N0") VND</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Đã giảm giá</span>
+        <strong>@Model.TotalDiscount.ToString("N0") VND</strong>
     </div>
 </div>
 
-<a asp-action="TopProducts" class="btn btn-dark">
-    Xem Top sản phẩm bán chạy
-</a>
+<div class="admin-report-grid">
+    <section class="admin-report-card">
+        <div class="admin-card-head">
+            <div>
+                <h5>Doanh thu theo ngày</h5>
+                <span>@Model.DailyRevenue.Count ngày có doanh thu</span>
+            </div>
+        </div>
+
+        @if (Model.DailyRevenue.Any())
+        {
+            <div class="admin-bar-chart">
+                @foreach (var item in Model.DailyRevenue)
+                {
+                    var percent = maxRevenue > 0 ? Math.Max(6, (int)Math.Round(item.Revenue / maxRevenue * 100)) : 0;
+                    <div class="admin-bar-row">
+                        <time>@item.Date.ToString("dd/MM")</time>
+                        <div class="admin-bar-track">
+                            <span style="width:@percent%"></span>
+                        </div>
+                        <strong>@item.Revenue.ToString("N0")</strong>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="admin-empty-state">Chưa có doanh thu trong khoảng ngày này.</div>
+        }
+    </section>
+
+    <section class="admin-report-card">
+        <div class="admin-card-head">
+            <div>
+                <h5>Thanh toán</h5>
+                <span>Theo các đơn được tính doanh thu</span>
+            </div>
+        </div>
+        <div class="admin-payment-split">
+            <div>
+                <span>Đã thanh toán</span>
+                <strong>@Model.PaidOrders</strong>
+            </div>
+            <div>
+                <span>Chưa thanh toán</span>
+                <strong>@Model.UnpaidOrders</strong>
+            </div>
+        </div>
+
+        <div class="admin-status-list">
+            @foreach (var item in Model.Statuses)
+            {
+                <div>
+                    <span>@StatusText(item.Status)</span>
+                    <strong>@item.Count</strong>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+<section class="admin-table-card mt-3">
+    <div class="admin-card-head">
+        <div>
+            <h5>Top sản phẩm bán chạy</h5>
+            <span>Xếp theo doanh thu trong khoảng lọc</span>
+        </div>
+        <a asp-action="TopProducts" class="btn btn-outline-primary btn-sm">Xem đầy đủ</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th class="text-center">Số lượng</th>
+                <th class="text-end">Doanh thu</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.TopProducts.Any())
+            {
+                foreach (var item in Model.TopProducts)
+                {
+                    <tr>
+                        <td><strong>@item.ProductName</strong></td>
+                        <td class="text-center">@item.Quantity</td>
+                        <td class="text-end">@item.Revenue.ToString("N0") VND</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" class="text-center text-muted py-5">Chưa có dữ liệu sản phẩm bán chạy.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

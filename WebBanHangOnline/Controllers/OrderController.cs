@@ -34,6 +34,7 @@ public class OrderController : Controller
             return RedirectToAction("Index", "Cart");
 
         SetUserInfoToViewBag(user);
+        await SetDiscountToViewBag(cart, null);
 
         return View(cart);
     }
@@ -58,6 +59,7 @@ public class OrderController : Controller
             return RedirectToAction("Index", "Cart");
 
         SetUserInfoToViewBag(user);
+        await SetDiscountToViewBag(cart, null);
 
         return View("Checkout", cart);
     }
@@ -95,9 +97,34 @@ public class OrderController : Controller
         };
 
         SetUserInfoToViewBag(user);
+        await SetDiscountToViewBag(fakeCart, null);
 
         return View("Checkout", fakeCart);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> PreviewDiscount(string? code, decimal subtotal)
+    {
+        if (subtotal < 0)
+        {
+            return BadRequest();
+        }
+
+        var result = await CalculateDiscount(code, subtotal);
+        var finalTotal = Math.Max(0, subtotal - (result.IsValid ? result.DiscountAmount : 0));
+
+        return Json(new
+        {
+            isValid = result.IsValid,
+            code = result.Code,
+            discountAmount = result.IsValid ? result.DiscountAmount : 0,
+            finalTotal,
+            message = result.IsValid
+                ? $"Đã áp dụng mã {result.Code}."
+                : result.Message
+        });
+    }
+
     // =========================================================
     // 📦 PLACE ORDER (XỬ LÝ CẢ 2 TRƯỜNG HỢP)
     // =========================================================
@@ -107,6 +134,8 @@ public class OrderController : Controller
         string address,
         string phone,
         string paymentMethod,
+        string? selectedDiscountCode,
+        string? manualDiscountCode,
         List<int> selectedItems,
         int? variantId,
         int quantity = 1)
@@ -174,10 +203,25 @@ public class OrderController : Controller
 
                 if (!InventoryService.CanReserve(item.ProductVariant, item.Quantity))
                 {
+                    await transaction.RollbackAsync();
                     return BadRequest(
                         $"Sản phẩm {item.ProductVariant.Product?.Name ?? "này"} không đủ số lượng.");
                 }
             }
+
+            var discountCode = ResolveDiscountCode(selectedDiscountCode, manualDiscountCode);
+            var subtotal = cart.Sum(x => GetItemPrice(x) * x.Quantity);
+            var discountResult = await CalculateDiscount(discountCode, subtotal);
+            if (!discountResult.IsValid)
+            {
+                await transaction.RollbackAsync();
+                SetUserInfoToViewBag(user);
+                await SetDiscountToViewBag(cart, selectedDiscountCode, manualDiscountCode);
+                ViewBag.DiscountError = discountResult.Message;
+                return View("Checkout", cart);
+            }
+
+            var finalTotal = Math.Max(0, subtotal - discountResult.DiscountAmount);
 
             // 🔹 Tạo Order
             var order = new Order
@@ -185,7 +229,10 @@ public class OrderController : Controller
                 UserId = user.Id,
                 ShippingAddress = address,
                 PhoneNumber = phone,
-                TotalAmount = cart.Sum(x => GetItemPrice(x) * x.Quantity),
+                SubtotalAmount = subtotal,
+                DiscountAmount = discountResult.DiscountAmount,
+                DiscountCode = discountResult.Code,
+                TotalAmount = finalTotal,
                 Status = OrderStatuses.Pending,
                 OrderDate = DateTime.Now,
                 PaymentMethod = paymentMethod,
@@ -194,6 +241,11 @@ public class OrderController : Controller
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+
+            if (discountResult.DiscountCode != null)
+            {
+                discountResult.DiscountCode.UsedCount += 1;
+            }
 
             // 🔹 Tạo OrderDetails + trừ kho
             foreach (var item in cart)
@@ -239,8 +291,8 @@ public class OrderController : Controller
 
                 default: // COD
                     order.Status = OrderStatuses.Confirmed;
-                    order.PaymentStatus = PaymentStatuses.Paid;
-                    order.PaymentDate = DateTime.Now;
+                    order.PaymentStatus = PaymentStatuses.Unpaid;
+                    order.PaymentDate = null;
                     await _context.SaveChangesAsync();
                     return RedirectToAction("OrderSuccess",
                         new { id = order.Id });
@@ -383,10 +435,163 @@ public class OrderController : Controller
             : item.ProductVariant.Product.FinalPrice;
     }
 
+    private async Task SetDiscountToViewBag(
+        List<CartItem> cart,
+        string? selectedDiscountCode,
+        string? manualDiscountCode = null)
+    {
+        var subtotal = cart.Sum(x => GetItemPrice(x) * x.Quantity);
+        var code = ResolveDiscountCode(selectedDiscountCode, manualDiscountCode);
+        var discount = await CalculateDiscount(code, subtotal);
+
+        ViewBag.Subtotal = subtotal;
+        ViewBag.DiscountCode = code?.Trim().ToUpperInvariant();
+        ViewBag.SelectedDiscountCode = string.IsNullOrWhiteSpace(manualDiscountCode)
+            ? selectedDiscountCode?.Trim().ToUpperInvariant()
+            : string.Empty;
+        ViewBag.ManualDiscountCode = manualDiscountCode?.Trim().ToUpperInvariant();
+        ViewBag.DiscountAmount = discount.IsValid ? discount.DiscountAmount : 0;
+        ViewBag.FinalTotal = Math.Max(0, subtotal - (discount.IsValid ? discount.DiscountAmount : 0));
+        ViewBag.PublicDiscounts = await GetPublicDiscounts(subtotal, selectedDiscountCode);
+    }
+
+    private static string? ResolveDiscountCode(string? selectedDiscountCode, string? manualDiscountCode)
+    {
+        return !string.IsNullOrWhiteSpace(manualDiscountCode)
+            ? manualDiscountCode
+            : selectedDiscountCode;
+    }
+
+    private async Task<List<CheckoutVoucherViewModel>> GetPublicDiscounts(decimal subtotal, string? selectedCode)
+    {
+        var now = DateTime.Now;
+        var normalizedSelectedCode = selectedCode?.Trim().ToUpperInvariant();
+
+        var codes = await _context.DiscountCodes
+            .Where(code => code.IsPublic && code.IsActive)
+            .Where(code => !code.StartsAt.HasValue || code.StartsAt.Value <= now)
+            .Where(code => !code.EndsAt.HasValue || code.EndsAt.Value >= now)
+            .Where(code => !code.UsageLimit.HasValue || code.UsedCount < code.UsageLimit.Value)
+            .OrderBy(code => code.MinimumOrderAmount)
+            .ThenByDescending(code => code.DiscountValue)
+            .ToListAsync();
+
+        return codes.Select(code =>
+        {
+            var discount = CalculateDiscountAmount(code, subtotal);
+            var isAvailable = subtotal >= code.MinimumOrderAmount;
+
+            return new CheckoutVoucherViewModel
+            {
+                Code = code.Code,
+                Description = code.Description,
+                DiscountText = GetDiscountText(code),
+                ConditionText = code.MinimumOrderAmount > 0
+                    ? $"Đơn từ {code.MinimumOrderAmount:N0} VND"
+                    : "Áp dụng cho mọi đơn",
+                DiscountAmount = isAvailable ? discount : 0,
+                IsAvailable = isAvailable,
+                IsSelected = code.Code == normalizedSelectedCode,
+                DisabledReason = isAvailable
+                    ? null
+                    : $"Cần thêm {(code.MinimumOrderAmount - subtotal):N0} VND"
+            };
+        }).ToList();
+    }
+
+    private async Task<DiscountCalculation> CalculateDiscount(string? code, decimal subtotal)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return DiscountCalculation.Valid(null, null, 0);
+        }
+
+        var normalizedCode = code.Trim().ToUpperInvariant();
+        var discountCode = await _context.DiscountCodes
+            .FirstOrDefaultAsync(item => item.Code == normalizedCode);
+
+        if (discountCode == null)
+        {
+            return DiscountCalculation.Invalid("Mã giảm giá không tồn tại.");
+        }
+
+        var now = DateTime.Now;
+        if (!discountCode.IsActive)
+        {
+            return DiscountCalculation.Invalid("Mã giảm giá đã bị tắt.");
+        }
+
+        if (discountCode.StartsAt.HasValue && discountCode.StartsAt.Value > now)
+        {
+            return DiscountCalculation.Invalid("Mã giảm giá chưa đến thời gian sử dụng.");
+        }
+
+        if (discountCode.EndsAt.HasValue && discountCode.EndsAt.Value < now)
+        {
+            return DiscountCalculation.Invalid("Mã giảm giá đã hết hạn.");
+        }
+
+        if (discountCode.UsageLimit.HasValue && discountCode.UsedCount >= discountCode.UsageLimit.Value)
+        {
+            return DiscountCalculation.Invalid("Mã giảm giá đã hết lượt sử dụng.");
+        }
+
+        if (subtotal < discountCode.MinimumOrderAmount)
+        {
+            return DiscountCalculation.Invalid(
+                $"Đơn hàng cần tối thiểu {discountCode.MinimumOrderAmount:N0} VND để dùng mã này.");
+        }
+
+        var amount = CalculateDiscountAmount(discountCode, subtotal);
+        return DiscountCalculation.Valid(discountCode, normalizedCode, amount);
+    }
+
+    private static decimal CalculateDiscountAmount(DiscountCode discountCode, decimal subtotal)
+    {
+        var amount = discountCode.DiscountType == DiscountTypes.Percent
+            ? subtotal * discountCode.DiscountValue / 100
+            : discountCode.DiscountValue;
+
+        if (discountCode.MaximumDiscountAmount.HasValue)
+        {
+            amount = Math.Min(amount, discountCode.MaximumDiscountAmount.Value);
+        }
+
+        return Math.Min(amount, subtotal);
+    }
+
+    private static string GetDiscountText(DiscountCode discountCode)
+    {
+        if (discountCode.DiscountType == DiscountTypes.Percent)
+        {
+            var maxText = discountCode.MaximumDiscountAmount.HasValue
+                ? $" tối đa {discountCode.MaximumDiscountAmount.Value:N0} VND"
+                : string.Empty;
+
+            return $"Giảm {discountCode.DiscountValue:N0}%{maxText}";
+        }
+
+        return $"Giảm {discountCode.DiscountValue:N0} VND";
+    }
+
     private void SetUserInfoToViewBag(ApplicationUser user)
     {
         ViewBag.FullName = user.FullName;
         ViewBag.Phone = user.PhoneNumber;
         ViewBag.Address = user.StreetAddress;
+    }
+
+    private sealed record DiscountCalculation(
+        bool IsValid,
+        DiscountCode? DiscountCode,
+        string? Code,
+        decimal DiscountAmount,
+        string? Message)
+    {
+        public static DiscountCalculation Valid(DiscountCode? discountCode, string? code, decimal amount)
+            => new(true, discountCode, code, amount, null);
+
+        public static DiscountCalculation Invalid(string message)
+            => new(false, null, null, 0, message);
     }
 }

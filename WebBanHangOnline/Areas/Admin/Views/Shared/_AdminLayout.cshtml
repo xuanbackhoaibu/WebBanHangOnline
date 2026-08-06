@@ -17,7 +17,7 @@
 
 
     <!-- Custom Admin CSS -->
-    <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -31,11 +31,11 @@
         </span>
 
         <div class="d-flex align-items-center gap-3">
-            <span class="small text-light opacity-75">
+            <span class="admin-greeting small">
                 Xin chào, Admin
             </span>
 
-            <a class="btn btn-outline-light btn-sm"
+            <a class="btn admin-storefront-btn btn-sm"
                asp-area=""
                asp-controller="Home"
                asp-action="Index">
@@ -94,6 +94,15 @@
                        asp-controller="Report"
                        asp-action="Index">
                         <i class="bi bi-graph-up"></i> Báo cáo
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString()=="DiscountCode" ? "active" : "")"
+                       asp-area="Admin"
+                       asp-controller="DiscountCode"
+                       asp-action="Index">
+                        <i class="bi bi-ticket-perforated"></i> Mã giảm giá
                     </a>
                 </li>
 

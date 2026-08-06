@@ -293,12 +293,127 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         }
 
         // GET: Admin/Product
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search,
+            int? categoryId,
+            string? status,
+            string? stock,
+            string? sale)
         {
-            var products = await _context.Products
-                                         .Include(p => p.Category)
-                                         .ToListAsync();
+            var now = DateTime.Now;
+            var query = _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Images)
+                .Include(p => p.Variants)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var keyword = search.Trim();
+                query = query.Where(p =>
+                    p.Name.Contains(keyword) ||
+                    p.Slug.Contains(keyword) ||
+                    (p.Description ?? string.Empty).Contains(keyword));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = status switch
+                {
+                    "active" => query.Where(p => p.IsActive),
+                    "inactive" => query.Where(p => !p.IsActive),
+                    _ => query
+                };
+            }
+
+            if (!string.IsNullOrWhiteSpace(sale))
+            {
+                query = sale switch
+                {
+                    "active" => query.Where(p =>
+                        p.FlashSalePrice.HasValue &&
+                        p.FlashSaleStart.HasValue &&
+                        p.FlashSaleEnd.HasValue &&
+                        p.FlashSaleStart <= now &&
+                        p.FlashSaleEnd >= now),
+                    "scheduled" => query.Where(p =>
+                        p.FlashSalePrice.HasValue &&
+                        p.FlashSaleStart.HasValue &&
+                        p.FlashSaleStart > now),
+                    "none" => query.Where(p => !p.FlashSalePrice.HasValue),
+                    _ => query
+                };
+            }
+
+            if (!string.IsNullOrWhiteSpace(stock))
+            {
+                query = stock switch
+                {
+                    "out" => query.Where(p => !p.Variants.Any() || p.Variants.Sum(v => v.Stock) <= 0),
+                    "low" => query.Where(p => p.Variants.Sum(v => v.Stock) > 0 && p.Variants.Sum(v => v.Stock) <= 10),
+                    "ok" => query.Where(p => p.Variants.Sum(v => v.Stock) > 10),
+                    _ => query
+                };
+            }
+
+            var products = await query
+                .OrderByDescending(p => p.ProductId)
+                .ToListAsync();
+
+            var stockStats = await _context.Products
+                .Select(p => new
+                {
+                    p.IsActive,
+                    IsFlashSaleActive = p.FlashSalePrice.HasValue &&
+                        p.FlashSaleStart.HasValue &&
+                        p.FlashSaleEnd.HasValue &&
+                        p.FlashSaleStart <= now &&
+                        p.FlashSaleEnd >= now,
+                    TotalStock = p.Variants.Sum(v => (int?)v.Stock) ?? 0
+                })
+                .ToListAsync();
+
+            ViewBag.Search = search;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.Status = status;
+            ViewBag.Stock = stock;
+            ViewBag.Sale = sale;
+            ViewBag.Categories = await _context.Categories
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+            ViewBag.TotalProducts = stockStats.Count;
+            ViewBag.ActiveProducts = stockStats.Count(p => p.IsActive);
+            ViewBag.OutOfStockProducts = stockStats.Count(p => p.TotalStock <= 0);
+            ViewBag.LowStockProducts = stockStats.Count(p => p.TotalStock > 0 && p.TotalStock <= 10);
+            ViewBag.FlashSaleProducts = stockStats.Count(p => p.IsFlashSaleActive);
+            ViewBag.TotalFilteredProducts = products.Count;
+
             return View(products);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleActive(int id, string? returnUrl = null)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return NotFound();
+
+            product.IsActive = !product.IsActive;
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = product.IsActive ? "Đã bật sản phẩm." : "Đã ẩn sản phẩm.";
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Admin/Product/Details/5

@@ -2,6 +2,12 @@
 
 @{
 decimal total = 0;
+decimal discountAmount = ViewBag.DiscountAmount as decimal? ?? 0;
+decimal finalTotal = ViewBag.FinalTotal as decimal? ?? 0;
+string discountCode = ViewBag.DiscountCode as string ?? string.Empty;
+string selectedDiscountCode = ViewBag.SelectedDiscountCode as string ?? string.Empty;
+string manualDiscountCode = ViewBag.ManualDiscountCode as string ?? string.Empty;
+var publicVouchers = ViewBag.PublicDiscounts as List<CheckoutVoucherViewModel> ?? new List<CheckoutVoucherViewModel>();
 var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
 var paymentMethods = new[]
 {
@@ -73,35 +79,43 @@ var paymentMethods = new[]
 
                         @if (hasAddress)
                         {
-                        <div class="checkout-address-grid">
-                        <div class="checkout-field">
-                            <label class="form-label">Họ tên</label>
-                            <input id="fullNameInput"
-                                   name="fullName"
-                                   class="form-control"
-                                   value="@ViewBag.FullName"
-                                   readonly />
+                        <div id="addressPreview" class="checkout-address-preview">
+                            <div>
+                                <strong>@ViewBag.FullName</strong>
+                                <span>@ViewBag.Phone</span>
+                            </div>
+                            <p>@ViewBag.Address</p>
                         </div>
 
-                        <div class="checkout-field">
-                            <label class="form-label">Số điện thoại</label>
-                            <input id="phoneInput"
-                                   name="phone"
-                                   class="form-control"
-                                   value="@ViewBag.Phone"
-                                   readonly
-                                   required />
-                        </div>
+                        <div id="addressEditor" class="checkout-address-grid is-collapsed">
+                            <div class="checkout-field">
+                                <label class="form-label">Họ tên</label>
+                                <input id="fullNameInput"
+                                       name="fullName"
+                                       class="form-control"
+                                       value="@ViewBag.FullName"
+                                       readonly />
+                            </div>
 
-                        <div class="checkout-field checkout-field-full">
-                            <label class="form-label">Địa chỉ giao hàng</label>
-                            <textarea id="addressInput"
-                                      name="address"
-                                      class="form-control"
-                                      rows="3"
-                                      readonly
-                                      required>@ViewBag.Address</textarea>
-                        </div>
+                            <div class="checkout-field">
+                                <label class="form-label">Số điện thoại</label>
+                                <input id="phoneInput"
+                                       name="phone"
+                                       class="form-control"
+                                       value="@ViewBag.Phone"
+                                       readonly
+                                       required />
+                            </div>
+
+                            <div class="checkout-field checkout-field-full">
+                                <label class="form-label">Địa chỉ giao hàng</label>
+                                <textarea id="addressInput"
+                                          name="address"
+                                          class="form-control"
+                                          rows="3"
+                                          readonly
+                                          required>@ViewBag.Address</textarea>
+                            </div>
                         </div>
                         }
                         else
@@ -187,44 +201,89 @@ var paymentMethods = new[]
             <!-- ================= RIGHT ================= -->
             <aside class="checkout-side">
 
-                <section class="checkout-card checkout-section">
-                    <div class="checkout-section-head">
-                        <div>
-                            <i class="bi bi-credit-card"></i>
-                            <span>Phương thức thanh toán</span>
-                        </div>
-                    </div>
-
-                    <div class="checkout-payment-list">
-                        @foreach (var method in paymentMethods)
-                        {
-                        <label class="checkout-payment-option">
-                            <input class="form-check-input"
-                                   type="radio"
-                                   name="paymentMethod"
-                                   value="@method.Value"
-                                   required />
-                            <span class="checkout-payment-icon">
-                                <i class="bi @method.Icon"></i>
-                            </span>
-                            <span class="checkout-payment-copy">
-                                <strong>@method.Title</strong>
-                                <small>@method.Note</small>
-                            </span>
-                        </label>
-                        }
-                    </div>
-                </section>
-
                 <section class="checkout-card checkout-total">
                     <div class="checkout-total-head">
                         <span>Tóm tắt đơn hàng</span>
                         <i class="bi bi-receipt"></i>
                     </div>
 
+                    <div class="checkout-voucher-box" data-subtotal="@total.ToString(System.Globalization.CultureInfo.InvariantCulture)">
+                        <div class="checkout-voucher-title">
+                            <span>Voucher</span>
+                            <small>Chọn mã có sẵn hoặc nhập mã riêng</small>
+                        </div>
+
+                        <div class="checkout-voucher-list">
+                            <label class="checkout-voucher-option @(string.IsNullOrWhiteSpace(selectedDiscountCode) && string.IsNullOrWhiteSpace(manualDiscountCode) ? "is-selected" : "")">
+                                <input type="radio"
+                                       name="selectedDiscountCode"
+                                       value=""
+                                       data-discount="0"
+                                       @(string.IsNullOrWhiteSpace(selectedDiscountCode) && string.IsNullOrWhiteSpace(manualDiscountCode) ? "checked" : "") />
+                                <span>
+                                    <strong>Không dùng voucher</strong>
+                                    <small>Thanh toán theo tổng tiền hiện tại</small>
+                                </span>
+                            </label>
+
+                            @foreach (var voucher in publicVouchers)
+                            {
+                                <label class="checkout-voucher-option @(voucher.IsSelected ? "is-selected" : "") @(voucher.IsAvailable ? "" : "is-disabled")">
+                                    <input type="radio"
+                                           name="selectedDiscountCode"
+                                           value="@voucher.Code"
+                                           data-discount="@voucher.DiscountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                           @(voucher.IsSelected ? "checked" : "")
+                                           @(voucher.IsAvailable ? "" : "disabled") />
+                                    <span>
+                                        <strong>@voucher.Code</strong>
+                                        <small>@voucher.DiscountText</small>
+                                        <small>@voucher.ConditionText</small>
+                                        @if (!voucher.IsAvailable)
+                                        {
+                                            <em>@voucher.DisabledReason</em>
+                                        }
+                                    </span>
+                                </label>
+                            }
+                        </div>
+
+                        <label class="form-label mt-3">Nhập mã giới hạn</label>
+                        <div class="checkout-manual-voucher">
+                            <input type="text"
+                                   name="manualDiscountCode"
+                                   value="@manualDiscountCode"
+                                   class="form-control"
+                                   placeholder="Nhập mã riêng nếu có"
+                                   maxlength="32" />
+                            <button type="button"
+                                    class="checkout-apply-voucher-btn"
+                                    data-apply-manual-voucher>
+                                Áp dụng
+                            </button>
+                        </div>
+                        @if (ViewBag.DiscountError != null)
+                        {
+                            <div class="text-danger small mt-2" data-voucher-message>@ViewBag.DiscountError</div>
+                        }
+                        else if (discountAmount > 0)
+                        {
+                            <div class="text-success small mt-2" data-voucher-message>Đã áp dụng mã @discountCode.</div>
+                        }
+                        else
+                        {
+                            <div class="small mt-2 checkout-voucher-message" data-voucher-message></div>
+                        }
+                    </div>
+
                     <div class="checkout-total-row">
                             <span>Tạm tính:</span>
-                            <span>@total.ToString("N0") VND</span>
+                            <span data-checkout-subtotal>@total.ToString("N0") VND</span>
+                    </div>
+
+                    <div class="checkout-total-row">
+                        <span>Giảm giá:</span>
+                        <span data-checkout-discount>-@discountAmount.ToString("N0") VND</span>
                     </div>
 
                     <div class="checkout-total-row">
@@ -234,13 +293,14 @@ var paymentMethods = new[]
 
                     <div class="checkout-total-final">
                             <span>Tổng thanh toán:</span>
-                            <span>@total.ToString("N0") VND</span>
+                            <span data-checkout-final>@(finalTotal > 0 || discountAmount > 0 ? finalTotal.ToString("N0") : total.ToString("N0")) VND</span>
                     </div>
 
-                    <button type="submit"
+                    <button type="button"
+                            id="continuePaymentBtn"
                             class="checkout-submit-btn">
-                        <i class="bi bi-bag-check"></i>
-                        Đặt hàng
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Tiến hành đặt hàng
                     </button>
 
                     <p class="checkout-safe-note">
@@ -252,6 +312,49 @@ var paymentMethods = new[]
             </aside>
 
         </div>
+
+        <section id="paymentStep" class="checkout-card checkout-section checkout-payment-step">
+            <div class="checkout-section-head">
+                <div>
+                    <i class="bi bi-credit-card"></i>
+                    <span>Chọn phương thức thanh toán</span>
+                </div>
+            </div>
+
+            <div class="checkout-payment-list">
+                @foreach (var method in paymentMethods)
+                {
+                <label class="checkout-payment-option">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="paymentMethod"
+                           value="@method.Value"
+                           disabled />
+                    <span class="checkout-payment-icon">
+                        <i class="bi @method.Icon"></i>
+                    </span>
+                    <span class="checkout-payment-copy">
+                        <strong>@method.Title</strong>
+                        <small>@method.Note</small>
+                    </span>
+                </label>
+                }
+            </div>
+
+            <div class="checkout-payment-actions">
+                <button type="button"
+                        id="backToReviewBtn"
+                        class="checkout-secondary-btn">
+                    <i class="bi bi-arrow-left"></i>
+                    Xem lại đơn
+                </button>
+                <button type="submit"
+                        class="checkout-submit-btn">
+                    <i class="bi bi-bag-check"></i>
+                    Xác nhận đặt hàng
+                </button>
+            </div>
+        </section>
     </form>
 </div>
 
@@ -259,12 +362,16 @@ var paymentMethods = new[]
     <script>
         function toggleEdit() {
 
-            var address = document.getElementById("addressInput");
-            var phone = document.getElementById("phoneInput");
-            var fullName = document.getElementById("fullNameInput");
-            var btn = document.getElementById("editBtn");
+            const address = document.getElementById("addressInput");
+            const phone = document.getElementById("phoneInput");
+            const fullName = document.getElementById("fullNameInput");
+            const btn = document.getElementById("editBtn");
+            const preview = document.getElementById("addressPreview");
+            const editor = document.getElementById("addressEditor");
 
             if (address && phone && address.readOnly) {
+                preview?.classList.add("is-hidden");
+                editor?.classList.remove("is-collapsed");
                 address.readOnly = false;
                 phone.readOnly = false;
                 if (fullName) fullName.readOnly = false;
@@ -274,9 +381,151 @@ var paymentMethods = new[]
                 address.readOnly = true;
                 phone.readOnly = true;
                 if (fullName) fullName.readOnly = true;
+                preview?.classList.remove("is-hidden");
+                editor?.classList.add("is-collapsed");
                 btn.innerText = "Thay đổi";
                 btn.classList.remove("is-saving");
             }
         }
+
+        document.getElementById("addressPreview")?.addEventListener("click", toggleEdit);
+
+        (function setupPaymentStep() {
+            const form = document.querySelector(".checkout-form");
+            const paymentStep = document.getElementById("paymentStep");
+            const continueBtn = document.getElementById("continuePaymentBtn");
+            const backBtn = document.getElementById("backToReviewBtn");
+            const paymentInputs = [...document.querySelectorAll("input[name='paymentMethod']")];
+
+            function setPaymentEnabled(enabled) {
+                paymentInputs.forEach(input => {
+                    input.disabled = !enabled;
+                    input.required = enabled;
+                });
+            }
+
+            setPaymentEnabled(false);
+
+            continueBtn?.addEventListener("click", () => {
+                if (form && !form.reportValidity()) return;
+
+                paymentStep?.classList.add("is-open");
+                setPaymentEnabled(true);
+                paymentStep?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+
+            backBtn?.addEventListener("click", () => {
+                setPaymentEnabled(false);
+                paymentInputs.forEach(input => input.checked = false);
+                paymentStep?.classList.remove("is-open");
+                document.querySelector(".checkout-total")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+        })();
+
+        (function setupVoucherPicker() {
+            const voucherBox = document.querySelector(".checkout-voucher-box");
+            if (!voucherBox) return;
+
+            const subtotal = parseMoney(voucherBox.dataset.subtotal);
+            const options = [...voucherBox.querySelectorAll(".checkout-voucher-option")];
+            const radios = [...voucherBox.querySelectorAll("input[name='selectedDiscountCode']")];
+            const manualInput = voucherBox.querySelector("input[name='manualDiscountCode']");
+            const applyManualBtn = voucherBox.querySelector("[data-apply-manual-voucher]");
+            const voucherMessage = voucherBox.querySelector("[data-voucher-message]");
+            const discountNode = document.querySelector("[data-checkout-discount]");
+            const finalNode = document.querySelector("[data-checkout-final]");
+            const formatter = new Intl.NumberFormat("vi-VN");
+
+            function parseMoney(value) {
+                const raw = String(value || "").trim();
+                if (!raw) return 0;
+
+                const normalized = raw.includes(",") && raw.includes(".")
+                    ? raw.replace(/\./g, "").replace(",", ".")
+                    : raw.replace(",", ".");
+
+                const parsed = Number(normalized);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function render(discount) {
+                discount = Number.isFinite(discount) ? discount : 0;
+                const finalTotal = Math.max(0, subtotal - discount);
+                if (discountNode) discountNode.textContent = `-${formatter.format(discount)} VND`;
+                if (finalNode) finalNode.textContent = `${formatter.format(finalTotal)} VND`;
+            }
+
+            function setVoucherMessage(message, isValid) {
+                if (!voucherMessage) return;
+
+                voucherMessage.textContent = message || "";
+                voucherMessage.classList.toggle("text-success", Boolean(isValid));
+                voucherMessage.classList.toggle("text-danger", isValid === false);
+                voucherMessage.classList.toggle("checkout-voucher-message", isValid == null);
+            }
+
+            function markSelected(input) {
+                options.forEach(option => option.classList.remove("is-selected"));
+                input.closest(".checkout-voucher-option")?.classList.add("is-selected");
+            }
+
+            radios.forEach(input => {
+                input.addEventListener("change", () => {
+                    if (!input.checked) return;
+
+                    if (manualInput) manualInput.value = "";
+                    markSelected(input);
+                    setVoucherMessage(input.value ? `Đã áp dụng mã ${input.value}.` : "", input.value ? true : null);
+                    render(parseMoney(input.dataset.discount));
+                });
+            });
+
+            manualInput?.addEventListener("input", () => {
+                const emptyOption = radios.find(input => input.value === "");
+                if (emptyOption) {
+                    emptyOption.checked = true;
+                    markSelected(emptyOption);
+                }
+
+                render(0);
+                setVoucherMessage(manualInput.value.trim() ? "Bấm Áp dụng để kiểm tra mã này." : "", null);
+            });
+
+            applyManualBtn?.addEventListener("click", async () => {
+                const code = manualInput?.value.trim();
+                if (!code) {
+                    setVoucherMessage("Vui lòng nhập mã giảm giá.", false);
+                    render(0);
+                    return;
+                }
+
+                applyManualBtn.disabled = true;
+                applyManualBtn.textContent = "Đang kiểm tra";
+
+                try {
+                    const url = new URL("@Url.Action("PreviewDiscount", "Order")", window.location.origin);
+                    url.searchParams.set("code", code);
+                    url.searchParams.set("subtotal", String(subtotal));
+
+                    const response = await fetch(url, {
+                        headers: { "Accept": "application/json" }
+                    });
+
+                    if (!response.ok) throw new Error("Không thể kiểm tra mã.");
+
+                    const result = await response.json();
+                    const discount = parseMoney(result.discountAmount);
+
+                    render(result.isValid ? discount : 0);
+                    setVoucherMessage(result.message, result.isValid);
+                } catch {
+                    render(0);
+                    setVoucherMessage("Không thể kiểm tra mã lúc này.", false);
+                } finally {
+                    applyManualBtn.disabled = false;
+                    applyManualBtn.textContent = "Áp dụng";
+                }
+            });
+        })();
     </script>
 }

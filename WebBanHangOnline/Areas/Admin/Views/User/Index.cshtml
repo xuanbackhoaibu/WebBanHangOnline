@@ -3,104 +3,203 @@
 @{
     ViewData["Title"] = "Quản lý người dùng";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    string RoleText(WebBanHangOnline.Models.ViewModels.UserViewModel user)
+    {
+        if (user.IsAdmin) return "Admin";
+        if (user.IsClient) return "Client";
+        return "User";
+    }
+
+    string RoleBadge(WebBanHangOnline.Models.ViewModels.UserViewModel user)
+    {
+        if (user.IsAdmin) return "text-bg-primary";
+        if (user.IsClient) return "text-bg-info";
+        return "text-bg-secondary";
+    }
+
+    string Initial(WebBanHangOnline.Models.ViewModels.UserViewModel user)
+    {
+        var name = string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName;
+        return string.IsNullOrWhiteSpace(name) ? "U" : name[..1].ToUpperInvariant();
+    }
 }
 
-<h4 class="mb-4">👤 Quản lý người dùng</h4>
+<div class="admin-page-head">
+    <div>
+        <h2><i class="bi bi-people"></i> Quản lý người dùng</h2>
+        <p>Theo dõi tài khoản, vai trò, trạng thái khóa và giá trị mua hàng.</p>
+    </div>
+    <div class="admin-head-meta">
+        <span>@ViewBag.TotalFilteredUsers / @ViewBag.TotalUsers người dùng</span>
+    </div>
+</div>
 
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<table class="table table-hover align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Email</th>
-            <th>UserName</th>
-            <th>Vai trò</th>
-            <th>Trạng thái</th>
-            <th width="260">Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="admin-metric-grid mb-3">
+    <div class="admin-metric-card">
+        <span>Tổng người dùng</span>
+        <strong>@ViewBag.TotalUsers</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Đang hoạt động</span>
+        <strong>@ViewBag.ActiveUsers</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Client</span>
+        <strong>@ViewBag.ClientUsers</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Giá trị nhóm lọc</span>
+        <strong>@String.Format("{0:N0} VND", ViewBag.TotalCustomerValue)</strong>
+    </div>
+</div>
+
+<form method="get" class="admin-filter-card mb-3">
+    <div class="row g-3 align-items-end">
+        <div class="col-lg-4 col-md-6">
+            <label class="form-label">Tìm kiếm</label>
+            <input type="search" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tên, email, username, SĐT" />
+        </div>
+        <div class="col-lg-2 col-md-6">
+            <label class="form-label">Vai trò</label>
+            <select name="role" class="form-select">
+                <option value="">Tất cả</option>
+                <option value="Admin" selected="@(ViewBag.Role == "Admin")">Admin</option>
+                <option value="Client" selected="@(ViewBag.Role == "Client")">Client</option>
+                <option value="User" selected="@(ViewBag.Role == "User")">User</option>
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+            <label class="form-label">Trạng thái</label>
+            <select name="status" class="form-select">
+                <option value="">Tất cả</option>
+                <option value="Active" selected="@(ViewBag.Status == "Active")">Hoạt động</option>
+                <option value="Locked" selected="@(ViewBag.Status == "Locked")">Bị khóa</option>
+            </select>
+        </div>
+        <div class="col-lg-4 col-md-6 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-fill">
+                <i class="bi bi-funnel"></i> Lọc
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+    </div>
+</form>
+
+<div class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
             <tr>
-                <td>@user.Email</td>
-                <td>@user.UserName</td>
-
-                <td>
-                    @if (user.IsAdmin)
-                    {
-                        <span class="badge bg-primary">Admin</span>
-                    }
-                    else if (user.IsClient)
-                    {
-                        <span class="badge bg-info">Client</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">User</span>
-                    }
-                </td>
-
-                <td>
-                    @if (user.IsLocked)
-                    {
-                        <span class="badge bg-danger">Bị khóa</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">Hoạt động</span>
-                    }
-                </td>
-
-                <td class="d-flex gap-2 flex-wrap">
-                    @if (!user.IsAdmin)
-                    {
-                        <!-- KHÓA / MỞ -->
-                        <form asp-action="ToggleLock" method="post">
-                            <input type="hidden" name="id" value="@user.Id" />
-                            <button class="btn btn-sm @(user.IsLocked ? "btn-success" : "btn-warning")">
-                                @(user.IsLocked ? "🔓 Mở" : "🔒 Khóa")
-                            </button>
-                        </form>
-
-                        <!-- CẤP CLIENT -->
-                        @if (!user.IsClient)
-                        {
-                            <form asp-action="GrantClient" method="post">
-                                <input type="hidden" name="id" value="@user.Id" />
-                                <button class="btn btn-sm btn-info">⭐ Cấp Client</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <!-- THU HỒI CLIENT -->
-                            <form asp-action="RevokeClient" method="post">
-                                <input type="hidden" name="id" value="@user.Id" />
-                                <button class="btn btn-sm btn-secondary">
-                                    <i class="bi bi-arrow-counterclockwise"></i> Thu hồi Client
-                                </button>
-                            </form>
-                        }
-
-                        <!-- XOÁ USER -->
-                        <form asp-action="Delete" method="post"
-                              onsubmit="return confirm('Bạn chắc chắn muốn xoá user này?')">
-                            <input type="hidden" name="id" value="@user.Id" />
-                            <button class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash3"></i> Xoá
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <span class="text-muted fst-italic">Không khả dụng</span>
-                    }
-                </td>
-
+                <th>Người dùng</th>
+                <th>Liên hệ</th>
+                <th>Vai trò</th>
+                <th>Đơn hàng</th>
+                <th>Chi tiêu</th>
+                <th>Trạng thái</th>
+                <th class="text-end">Thao tác</th>
             </tr>
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+            @if (Model.Any())
+            {
+                foreach (var user in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="admin-user-cell">
+                                <span>@Initial(user)</span>
+                                <div>
+                                    <strong>@(string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName)</strong>
+                                    <small>Tham gia @user.CreatedDate.ToString("dd/MM/yyyy")</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>@user.Email</div>
+                            <small class="text-muted">@(!string.IsNullOrWhiteSpace(user.PhoneNumber) ? user.PhoneNumber : "Chưa có SĐT")</small>
+                        </td>
+                        <td><span class="badge @RoleBadge(user)">@RoleText(user)</span></td>
+                        <td>
+                            <strong>@user.OrderCount</strong>
+                            <small class="text-muted d-block">Lần cuối @(user.LastOrderDate?.ToString("dd/MM/yyyy") ?? "-")</small>
+                        </td>
+                        <td>@user.TotalSpent.ToString("N0") VND</td>
+                        <td>
+                            <span class="badge @(user.IsLocked ? "text-bg-danger" : "text-bg-success")">
+                                @(user.IsLocked ? "Bị khóa" : "Hoạt động")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="admin-action-row">
+                                @if (!user.IsAdmin)
+                                {
+                                    <form asp-action="ToggleLock" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button class="btn btn-sm @(user.IsLocked ? "btn-outline-success" : "btn-outline-warning")">
+                                            <i class="bi @(user.IsLocked ? "bi-unlock" : "bi-lock")"></i>
+                                            @(user.IsLocked ? "Mở" : "Khóa")
+                                        </button>
+                                    </form>
+
+                                    @if (!user.IsClient)
+                                    {
+                                        <form asp-action="GrantClient" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-person-check"></i> Client
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="RevokeClient" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <button class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Thu hồi
+                                            </button>
+                                        </form>
+                                    }
+
+                                    <form asp-action="Delete" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xoá người dùng này?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@user.Id" />
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Tài khoản quản trị</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">Không tìm thấy người dùng phù hợp.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

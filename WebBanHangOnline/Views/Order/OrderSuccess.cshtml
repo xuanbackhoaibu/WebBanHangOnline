@@ -76,6 +76,13 @@
                         <span>Trạng thái thanh toán</span>
                         <strong>@PaymentStatusText(Model.PaymentStatus)</strong>
                     </div>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <div>
+                            <span>Mã giảm giá</span>
+                            <strong>@Model.DiscountCode (-@Model.DiscountAmount.ToString("N0") VND)</strong>
+                        </div>
+                    }
                 </div>
             </section>
 
@@ -92,7 +99,7 @@
                         <span></span>
                         <strong>Đã đặt</strong>
                     </div>
-                    <div class="timeline-step @(Model.PaymentStatus == "Paid" || Model.PaymentMethod == "COD" ? "active" : "")">
+                    <div class="timeline-step @(Model.PaymentStatus == "Paid" ? "active" : "")">
                         <span></span>
                         <strong>Thanh toán</strong>
                     </div>
