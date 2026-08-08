@@ -1,117 +1,148 @@
 @{
-ViewData["Title"] = "Giới thiệu";
+    ViewData["Title"] = "Giới thiệu";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/content.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/muva.css" asp-append-version="true" />
 }
 
-<div class="about-hero text-center text-white d-flex align-items-center justify-content-center">
-    <div>
-        <span class="catalog-kicker">About</span>
-        <h1 class="fw-bold">XuanBac Fashion</h1>
-        <p class="lead">Thời trang hiện đại, dễ mặc và chỉn chu trong từng lựa chọn.</p>
+<div class="muva-page muva-intro-page" id="top">
+    <header class="muva-nav">
+        <div class="muva-wrap">
+            <a class="muva-logo" asp-controller="Home" asp-action="About">XuanBac<em>.</em></a>
+            <nav aria-label="MUVA navigation">
+                <a href="#cauchuyen">Câu chuyện</a>
+                <a href="#giatri">Giá trị</a>
+                <a href="#bosuutap">Bộ sưu tập</a>
+            </nav>
+            <div class="muva-nav-actions">
+                <a class="muva-icon-link" asp-controller="Wishlist" asp-action="Index" aria-label="Yêu thích" title="Yêu thích">
+                    <i class="bi bi-heart"></i>
+                </a>
+                <a class="muva-icon-link" asp-controller="Cart" asp-action="Index" aria-label="Giỏ hàng" title="Giỏ hàng">
+                    <i class="bi bi-bag"></i>
+                </a>
+                <a class="muva-nav-cta" asp-controller="Home" asp-action="Index">Vào cửa hàng</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="muva-hero">
+        <div class="muva-wrap muva-hero-grid">
+            <div class="muva-hero-copy">
+                <div class="muva-kicker">Thương hiệu thời trang Việt</div>
+                <h1 class="muva-title">
+                    <span class="muva-line"><span>Mặc chậm lại,</span></span>
+                    <span class="muva-line"><span>sống <em>tinh tế</em></span></span>
+                    <span class="muva-line"><span>hơn mỗi ngày.</span></span>
+                </h1>
+                <p class="muva-sub">XuanBac là những mảnh ghép tối giản từ chất liệu dễ mặc, được chọn cho tủ đồ bền vững của bạn.</p>
+                <div class="muva-actions">
+                    <a class="muva-btn muva-btn-terra" asp-controller="Home" asp-action="Index">Khám phá cửa hàng</a>
+                    <a class="muva-btn muva-btn-outline" href="#cauchuyen">Câu chuyện thương hiệu</a>
+                </div>
+                <div class="muva-meta">
+                    <div><b>12k+</b><span>Khách hàng</span></div>
+                    <div><b>350+</b><span>Thiết kế</span></div>
+                    <div><b>4.9</b><span>Đánh giá</span></div>
+                </div>
+            </div>
+
+            <div class="muva-visual" data-muva-reveal>
+                <svg class="muva-stamp" viewBox="0 0 120 120" aria-hidden="true">
+                    <circle cx="60" cy="60" r="58" fill="#c05b2a" />
+                    <defs>
+                        <path id="muva-circ" d="M60,60 m-40,0 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0" />
+                    </defs>
+                    <text><textPath href="#muva-circ">BST THU DONG 2026 - XUANBAC ATELIER -</textPath></text>
+                    <text x="60" y="70" text-anchor="middle" class="muva-stamp-mark">*</text>
+                </svg>
+                <div class="muva-frame">
+                    <img src="https://image.qwenlm.ai/public_source/e753910b-f450-4d13-b2e0-e6c2535f0a02/17ba52aed-a2b4-437c-b447-2619b21389e6.png" alt="Bộ sưu tập Thu Đông XuanBac" />
+                </div>
+                <div class="muva-caption"><b>LOOK 01 - ATELIER</b>Trench camel, len camel, chân váy dạ xám</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="muva-marquee" aria-hidden="true">
+        <div class="muva-marquee-track">
+            <span>MIEN PHI VAN CHUYEN DON TU 499K</span><span>*</span><span>DOI TRA TRONG 7 NGAY</span><span>*</span><span>CHAT LIEU TU NHIEN</span><span>*</span>
+        </div>
     </div>
+
+    <section class="muva-section" id="cauchuyen">
+        <div class="muva-wrap">
+            <div class="muva-section-head" data-muva-reveal>
+                <span>Câu chuyện</span>
+                <h2>Bắt đầu từ một <em>xưởng may</em> nhỏ</h2>
+            </div>
+            <div class="muva-story-grid">
+                <div class="muva-story-image" data-muva-reveal>
+                    <img src="https://image.qwenlm.ai/public_source/e753910b-f450-4d13-b2e0-e6c2535f0a02/1bbc67f1d-0cd8-4cf5-92ff-3e4e427bfe11.png" alt="Xưởng may XuanBac" loading="lazy" />
+                </div>
+                <div class="muva-story-text" data-muva-reveal>
+                    <p>XuanBac ra đời từ niềm tin rằng quần áo đẹp không cần ồn ào. Chúng tôi chọn chất liệu bền, phom dễ mặc và chi tiết vừa đủ.</p>
+                    <p>Mỗi thiết kế được chọn để đồng hành trong nhiều hoàn cảnh: đi làm, dạo phố, gặp gỡ bạn bè và những ngày bạn muốn mặc thật chỉn chu.</p>
+                    <blockquote>“Chúng tôi may những món đồ bạn muốn mặc lại trong nhiều mùa.”</blockquote>
+                    <div class="muva-stats">
+                        <div><b><span data-muva-count="12">0</span>k+</b><span>Khách hàng</span></div>
+                        <div><b><span data-muva-count="350">0</span>+</b><span>Thiết kế</span></div>
+                        <div><b><span data-muva-count="98">0</span>%</b><span>Hài lòng</span></div>
+                        <div><b><span data-muva-count="5">0</span></b><span>Năm gắn bó</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="muva-section muva-values" id="giatri">
+        <div class="muva-wrap">
+            <div class="muva-section-head" data-muva-reveal>
+                <span>Giá trị</span>
+                <h2>Điều làm nên <em>XuanBac</em></h2>
+            </div>
+            <div class="muva-value-grid" data-muva-reveal>
+                <article><span>01</span><h3>Chất liệu dễ mặc</h3><p>Ưu tiên bề mặt thoáng, nhẹ và giữ phom tốt để mặc được nhiều lần.</p><small>Chọn lọc theo mùa</small></article>
+                <article><span>02</span><h3>Đường may chỉn chu</h3><p>Từng sản phẩm được kiểm tra phom, chỉ và chi tiết trước khi đóng gói.</p><small>Kiểm hàng trước khi gửi</small></article>
+                <article><span>03</span><h3>Giao hàng nhanh</h3><p>Đơn hàng được xử lý rõ ràng, hỗ trợ COD, VNPay, MoMo và VietQR.</p><small>Freeship từ 499K</small></article>
+                <article><span>04</span><h3>Đổi trả 7 ngày</h3><p>Hỗ trợ đổi size hoặc đổi sản phẩm khi còn nguyên tem mác.</p><small>Tư vấn tận tâm</small></article>
+            </div>
+        </div>
+    </section>
+
+    <section class="muva-section" id="bosuutap">
+        <div class="muva-wrap">
+            <div class="muva-section-head" data-muva-reveal>
+                <span>Bộ sưu tập</span>
+                <h2>Ba mảnh ghép <em>được yêu nhất</em></h2>
+            </div>
+            <div class="muva-collection-grid">
+                <a class="muva-collection-card" asp-controller="Home" asp-action="Index" data-muva-reveal>
+                    <img src="https://image.qwenlm.ai/public_source/e753910b-f450-4d13-b2e0-e6c2535f0a02/136e73d8b-f2eb-4360-8994-160fc97ac652.png" alt="Áo khoác và len" loading="lazy" />
+                    <div><span><b>Áo và len</b><small>Blazer dạ, len dệt, phom oversize</small></span><i class="bi bi-arrow-right"></i></div>
+                </a>
+                <a class="muva-collection-card" asp-controller="Home" asp-action="Index" data-muva-reveal>
+                    <img src="https://image.qwenlm.ai/public_source/e753910b-f450-4d13-b2e0-e6c2535f0a02/1b285df23-5cd4-4e0e-832d-d7c2f786d534.png" alt="Váy linen" loading="lazy" />
+                    <div><span><b>Váy linen</b><small>Dáng suông, thắt eo bản nhỏ</small></span><i class="bi bi-arrow-right"></i></div>
+                </a>
+                <a class="muva-collection-card" asp-controller="Home" asp-action="Index" data-muva-reveal>
+                    <img src="https://image.qwenlm.ai/public_source/e753910b-f450-4d13-b2e0-e6c2535f0a02/191a0f296-8d1e-4e25-8852-737c85121574.png" alt="Túi và phụ kiện" loading="lazy" />
+                    <div><span><b>Túi và phụ kiện</b><small>Da thuộc, phụ kiện tối giản</small></span><i class="bi bi-arrow-right"></i></div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="muva-cta">
+        <div class="muva-wrap">
+            <h2>Sẵn sàng chạm vào<br /><em>chất liệu thật</em>?</h2>
+            <p>Toàn bộ bộ sưu tập mới đã lên kệ cửa hàng trực tuyến.</p>
+            <a class="muva-btn muva-btn-terra" asp-controller="Home" asp-action="Index">Vào cửa hàng</a>
+        </div>
+    </section>
 </div>
 
-<div class="container about-content">
-
-    <!-- INTRO -->
-    <div class="row align-items-center mb-5">
-        <div class="col-md-6">
-            <img src="https://images.unsplash.com/photo-1521335629791-ce4aec67dd47"
-                 class="img-fluid rounded shadow"
-                 alt="Fashion Store" />
-        </div>
-        <div class="col-md-6">
-            <h2>Giới thiệu</h2>
-            <p>
-                XuanBac Fashion là thương hiệu thời trang chuyên cung cấp các sản phẩm
-                quần áo nam, nữ và trẻ em với phong cách hiện đại, trẻ trung và chất lượng cao.
-            </p>
-        </div>
-    </div>
-
-    <!-- MISSION / VISION -->
-    <div class="row text-center mb-5">
-        <div class="col-md-6">
-            <div class="info-card p-4 shadow-sm rounded">
-                <h3>Sứ mệnh</h3>
-                <p>
-                    Mang đến sản phẩm thời trang chất lượng, giá hợp lý và dịch vụ tận tâm.
-                </p>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="info-card p-4 shadow-sm rounded">
-                <h3>Tầm nhìn</h3>
-                <p>
-                    Trở thành thương hiệu thời trang được yêu thích tại Việt Nam.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- PRODUCTS -->
-    <h3 class="mb-4 text-center">Sản phẩm của chúng tôi</h3>
-
-    <div class="row g-4 mb-5">
-        <div class="col-md-3">
-            <div class="product-card text-center p-3 shadow-sm rounded">
-                <img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e"
-                     class="img-fluid rounded mb-2" />
-                <h5>Thời trang nam</h5>
-                <p>Áo thun, sơ mi, jeans...</p>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="product-card text-center p-3 shadow-sm rounded">
-                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b"
-                     class="img-fluid rounded mb-2" />
-                <h5>Thời trang nữ</h5>
-                <p>Váy, đầm, áo kiểu...</p>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="product-card text-center p-3 shadow-sm rounded">
-                <img src="https://images.unsplash.com/photo-1503919545889-aef636e10ad4"
-                     class="img-fluid rounded mb-2" />
-                <h5>Thời trang trẻ em</h5>
-                <p>Quần áo bé trai & gái</p>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="product-card text-center p-3 shadow-sm rounded">
-                <img src="https://images.unsplash.com/photo-1523381294911-8d3cead13475"
-                     class="img-fluid rounded mb-2" />
-                <h5>Phụ kiện</h5>
-                <p>Balo, kính, mũ...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- COMMITMENT -->
-    <div class="mb-5">
-        <h3 class="text-center mb-4">Cam kết của chúng tôi</h3>
-
-        <div class="row text-center about-commitments">
-            <div class="col-md-3"><i class="bi bi-patch-check"></i> Chất lượng cao</div>
-            <div class="col-md-3"><i class="bi bi-camera"></i> Hình ảnh thực tế</div>
-            <div class="col-md-3"><i class="bi bi-tag"></i> Giá hợp lý</div>
-            <div class="col-md-3"><i class="bi bi-arrow-repeat"></i> Hỗ trợ đổi trả</div>
-        </div>
-    </div>
-
-    <!-- CONTACT -->
-    <div class="contact-card text-center p-4 shadow rounded">
-        <h3>Thông tin liên hệ</h3>
-        <p><i class="bi bi-geo-alt"></i> Hà Nội, Việt Nam</p>
-        <p><i class="bi bi-telephone"></i> 0123 456 789</p>
-        <p><i class="bi bi-envelope"></i> support@xuanbac.vn</p>
-    </div>
-
-</div>
+@section Scripts {
+    <script src="~/js/muva.js" asp-append-version="true"></script>
+}

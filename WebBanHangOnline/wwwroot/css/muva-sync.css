@@ -1,0 +1,506 @@
+/* Global MUVA sync layer for legacy pages rendered through _Layout. */
+body.coutura-body {
+  --xb-ink: var(--muva-ink);
+  --xb-muted: var(--muva-ink70);
+  --xb-line: var(--muva-line);
+  --xb-paper: var(--muva-paper);
+  --xb-soft: var(--muva-cream);
+  --xb-soft-green: rgba(125, 138, 106, 0.14);
+  --xb-accent: var(--muva-terra);
+  --xb-accent-dark: var(--muva-terra-dark);
+  --xb-gold: var(--muva-gold);
+  --xb-shadow: var(--muva-shadow);
+  --xb-radius: 4px;
+  background:
+    radial-gradient(circle at 92% 120px, rgba(192, 91, 42, 0.09), transparent 270px),
+    linear-gradient(180deg, var(--muva-paper) 0%, #efe8da 440px, var(--muva-paper) 100%);
+  color: var(--muva-ink);
+  font-family: var(--muva-sans);
+}
+
+body.coutura-body:not(:has(.muva-page)) .site-shell {
+  max-width: 1220px;
+  margin-top: 30px;
+  margin-bottom: 78px;
+}
+
+.coutura-topbar {
+  background: var(--muva-ink);
+  color: rgba(244, 239, 230, 0.76);
+  font-family: var(--muva-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coutura-topbar a {
+  color: rgba(244, 239, 230, 0.86);
+}
+
+.coutura-topbar a:hover,
+.coutura-topbar a:focus {
+  color: var(--muva-paper);
+}
+
+.coutura-header,
+.coutura-menu {
+  border-color: var(--muva-line);
+  background: rgba(244, 239, 230, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.coutura-logo {
+  color: var(--muva-ink);
+  font-family: var(--muva-serif);
+  font-size: 29px;
+  font-weight: 600;
+}
+
+.coutura-logo span {
+  color: var(--muva-terra);
+  font-style: italic;
+}
+
+.coutura-search {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.54);
+  box-shadow: none;
+}
+
+.coutura-search input {
+  background: transparent;
+  color: var(--muva-ink);
+  font-family: var(--muva-sans);
+}
+
+.coutura-search .btn-search {
+  border-radius: 4px;
+  color: var(--muva-terra);
+}
+
+.coutura-search .btn-search:hover,
+.coutura-search .btn-search:focus {
+  background: var(--muva-terra);
+  color: var(--muva-paper);
+}
+
+.header-icons .icon-btn,
+.mobile-shop-nav a i,
+.muva-sync-icon {
+  border: 1px solid var(--muva-line);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.34);
+  color: var(--muva-ink70);
+  box-shadow: none;
+  transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.header-icons .icon-btn:hover,
+.header-icons .icon-btn:focus,
+.mobile-shop-nav a:hover i,
+.mobile-shop-nav a:focus i {
+  border-color: var(--muva-terra);
+  background: var(--muva-terra);
+  color: var(--muva-paper);
+  box-shadow: 0 12px 26px rgba(192, 91, 42, 0.24);
+  transform: translateY(-2px);
+}
+
+.cart-badge,
+.wishlist-badge,
+.mobile-shop-nav b {
+  background: var(--muva-terra);
+  color: var(--muva-paper);
+  font-family: var(--muva-mono);
+}
+
+.coutura-menu .nav {
+  gap: 6px;
+}
+
+.coutura-menu .nav-link {
+  position: relative;
+  color: var(--muva-ink70);
+  font-family: var(--muva-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.coutura-menu .nav-link:hover,
+.coutura-menu .nav-link:focus,
+.coutura-menu .nav-link.active {
+  color: var(--muva-ink);
+}
+
+.coutura-menu .nav-link::after {
+  background: var(--muva-terra);
+}
+
+.dropdown-menu,
+.mini-cart-menu {
+  border: 1px solid var(--muva-line) !important;
+  border-radius: 4px !important;
+  background: var(--muva-paper) !important;
+  box-shadow: var(--muva-shadow) !important;
+}
+
+.dropdown-item {
+  border-radius: 4px !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: rgba(192, 91, 42, 0.1) !important;
+  color: var(--muva-terra) !important;
+}
+
+.shop-footer {
+  border-top: 1px solid var(--muva-line);
+  background: var(--muva-ink);
+  color: rgba(244, 239, 230, 0.76);
+}
+
+.shop-footer .logo,
+.shop-footer h4,
+.shop-footer h6 {
+  color: var(--muva-paper);
+  font-family: var(--muva-serif);
+  font-weight: 600;
+}
+
+.shop-footer a {
+  color: rgba(244, 239, 230, 0.78);
+}
+
+.shop-footer a:hover,
+.shop-footer a:focus {
+  color: var(--muva-terra);
+}
+
+.newsletter input {
+  border-radius: 4px;
+}
+
+.newsletter button,
+.mini-cart-cta,
+.btn-primary,
+.btn-dark,
+.cart-checkout-btn,
+.checkout-submit,
+.success-actions .btn,
+.content-form-card .btn-primary,
+.auth-submit {
+  border-color: var(--muva-terra) !important;
+  border-radius: 4px !important;
+  background: var(--muva-terra) !important;
+  color: var(--muva-paper) !important;
+  font-family: var(--muva-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+}
+
+.newsletter button:hover,
+.mini-cart-cta:hover,
+.btn-primary:hover,
+.btn-dark:hover,
+.cart-checkout-btn:hover,
+.checkout-submit:hover,
+.success-actions .btn:hover,
+.content-form-card .btn-primary:hover,
+.auth-submit:hover {
+  border-color: var(--muva-terra-dark) !important;
+  background: var(--muva-terra-dark) !important;
+  box-shadow: 0 14px 30px rgba(192, 91, 42, 0.28);
+  color: var(--muva-paper) !important;
+  transform: translateY(-2px);
+}
+
+.btn-outline-secondary,
+.btn-outline-dark,
+.cart-continue-link,
+.catalog-cart-link,
+.checkout-back-link {
+  border-color: var(--muva-line) !important;
+  border-radius: 4px !important;
+  color: var(--muva-ink) !important;
+  font-family: var(--muva-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-dark:hover,
+.cart-continue-link:hover,
+.catalog-cart-link:hover,
+.checkout-back-link:hover {
+  border-color: var(--muva-ink) !important;
+  background: var(--muva-ink) !important;
+  color: var(--muva-paper) !important;
+}
+
+.cart-heading,
+.checkout-heading,
+.content-hero,
+.orders-heading,
+.wishlist-heading,
+.notification-hero,
+.success-hero,
+.payment-hero,
+.auth-shell .auth-card,
+.account-card {
+  overflow: hidden;
+  border: 1px solid var(--muva-ink) !important;
+  border-radius: 0 !important;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(192, 91, 42, 0.1), transparent 32%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.56), var(--muva-cream)) !important;
+  box-shadow: var(--muva-shadow) !important;
+}
+
+.cart-heading,
+.checkout-heading,
+.content-hero,
+.orders-heading,
+.wishlist-heading,
+.notification-hero,
+.success-hero,
+.payment-hero {
+  animation: muvaSyncRise 0.72s ease both;
+}
+
+@keyframes muvaSyncRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cart-heading h1,
+.checkout-heading h1,
+.content-hero h1,
+.orders-heading h1,
+.wishlist-heading h1,
+.notification-hero h1,
+.success-hero h1,
+.payment-hero h1,
+.page-title,
+.auth-head h3,
+.account-card h3,
+.card-title {
+  color: var(--muva-ink) !important;
+  font-family: var(--muva-serif);
+  font-weight: 600 !important;
+  letter-spacing: 0;
+}
+
+.cart-heading p,
+.checkout-heading p,
+.content-hero p,
+.orders-heading p,
+.wishlist-heading p,
+.notification-hero p,
+.success-hero p,
+.payment-hero p,
+.auth-head p,
+.page-content,
+.text-muted {
+  color: var(--muva-ink70) !important;
+}
+
+.catalog-kicker,
+.checkout-secure-badge,
+.content-section-title,
+.cart-summary .catalog-kicker,
+.auth-head .catalog-kicker {
+  color: var(--muva-terra) !important;
+  font-family: var(--muva-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cart-items-panel,
+.cart-summary,
+.cart-item-card,
+.checkout-card,
+.orders-card,
+.wishlist-card,
+.notification-card,
+.notification-detail-card,
+.support-action-card,
+.policy-block,
+.content-form-card,
+.content-table-card,
+.success-card,
+.payment-card,
+.card,
+.auth-card,
+.account-card {
+  border-color: var(--muva-line) !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.52) !important;
+  box-shadow: 0 14px 34px rgba(23, 20, 15, 0.08) !important;
+}
+
+.cart-item-card,
+.orders-card,
+.wishlist-card,
+.notification-card,
+.support-action-card,
+.policy-block,
+.success-card,
+.payment-card {
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cart-item-card:hover,
+.orders-card:hover,
+.wishlist-card:hover,
+.notification-card:hover,
+.support-action-card:hover,
+.policy-block:hover,
+.success-card:hover,
+.payment-card:hover {
+  border-color: rgba(192, 91, 42, 0.34) !important;
+  box-shadow: var(--muva-shadow) !important;
+  transform: translateY(-3px);
+}
+
+.cart-item-image,
+.wishlist-image,
+.mini-cart-item img,
+.orders-product img,
+.success-product img {
+  border-color: var(--muva-ink) !important;
+  border-radius: 0 !important;
+  background: var(--muva-cream) !important;
+}
+
+.form-control,
+.form-select,
+.form-check-input,
+.content-form-card input,
+.content-form-card textarea,
+.checkout-field .form-control,
+.auth-card .form-control,
+.account-card .form-control {
+  border: 1px solid var(--muva-line) !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  color: var(--muva-ink) !important;
+  font-family: var(--muva-sans);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.content-form-card input:focus,
+.content-form-card textarea:focus,
+.checkout-field .form-control:focus,
+.auth-card .form-control:focus,
+.account-card .form-control:focus {
+  border-color: var(--muva-terra) !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 4px rgba(192, 91, 42, 0.12) !important;
+}
+
+.form-label,
+.checkout-field .form-label,
+.auth-card label,
+.account-card label,
+.table th {
+  color: var(--muva-ink) !important;
+  font-family: var(--muva-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.table,
+.content-table-card table {
+  color: var(--muva-ink);
+  border-color: var(--muva-line);
+}
+
+.table thead,
+.content-table-card thead {
+  background: rgba(192, 91, 42, 0.08);
+}
+
+.alert,
+.toast,
+.status-message {
+  border-radius: 4px !important;
+  box-shadow: 0 12px 30px rgba(23, 20, 15, 0.08);
+}
+
+.mobile-shop-nav {
+  border-top: 1px solid var(--muva-line);
+  background: rgba(244, 239, 230, 0.96);
+  backdrop-filter: blur(12px);
+}
+
+.mobile-shop-nav a {
+  color: var(--muva-ink70);
+  font-family: var(--muva-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mobile-shop-nav a:hover,
+.mobile-shop-nav a:focus {
+  color: var(--muva-ink);
+}
+
+#xb-chat-btn {
+  background: var(--muva-terra);
+  box-shadow: 0 18px 38px rgba(192, 91, 42, 0.28);
+}
+
+#xb-chat-box {
+  border: 1px solid var(--muva-line);
+  border-radius: 4px;
+  box-shadow: var(--muva-shadow);
+}
+
+#xb-chat-header {
+  background: var(--muva-ink);
+  color: var(--muva-paper);
+}
+
+@media (max-width: 768px) {
+  body.coutura-body:not(:has(.muva-page)) .site-shell {
+    margin-top: 18px;
+    margin-bottom: 96px;
+  }
+
+  .coutura-header .container {
+    gap: 10px !important;
+  }
+
+  .coutura-logo {
+    font-size: 24px;
+  }
+
+  .cart-heading,
+  .checkout-heading,
+  .content-hero,
+  .orders-heading,
+  .wishlist-heading,
+  .notification-hero,
+  .success-hero,
+  .payment-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

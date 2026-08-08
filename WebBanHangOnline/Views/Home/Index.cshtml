@@ -3,12 +3,13 @@
     ViewData["Title"] = WebBanHangOnline.Helpers.CatalogTextHelper.T("Trang chủ", "Home");
     string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
     string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
-    var trendProducts = Model
+    var products = Model ?? new List<WebBanHangOnline.Models.Product>();
+    var trendProducts = products
         .Where(product => product.IsActive && !string.IsNullOrWhiteSpace(product.Thumbnail))
         .OrderBy(_ => Guid.NewGuid())
         .Take(3)
         .ToList();
-    var heroProducts = Model
+    var heroProducts = products
         .Where(product => product.IsActive && !string.IsNullOrWhiteSpace(product.Thumbnail))
         .OrderBy(product => product.ProductId)
         .Take(5)
@@ -84,8 +85,8 @@
             <p class="section-eyebrow">For women</p>
             <h4 class="section-title">@T("Thời trang nữ", "Women's fashion")</h4>
             <div class="row g-4">
-                @foreach (var p in Model
-                              .Where(x => x.Category != null 
+                @foreach (var p in products
+                              .Where(x => x.Category != null
                                           && x.Category.Name == "Đồ Nữ"
                                           && x.IsActive)
                               .Take(6))
@@ -97,10 +98,10 @@
                                asp-action="Details"
                                asp-route-id="@p.ProductId"
                                asp-route-slug="@p.Slug">
-                                <img src="@p.Thumbnail" />
+                                <img src="@p.Thumbnail" alt="@D(p.Name)" loading="lazy" />
                             </a>
                             <h6>@D(p.Name)</h6>
-                            <div class="price">@p.Price.ToString("N0") VND</div>
+                            <div class="price">@p.FinalPrice.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -109,19 +110,19 @@
     </div>
 </section>
 
-
 <!-- ================= SALE ================= -->
 <section class="sale-box">
     <div class="sale-left">
-        <img src="/images/d.jpg">
-        <p>@T("", "Mini backpack")</p>
+        <img src="/images/d.jpg" alt="@T("Phụ kiện khuyến mãi", "Sale accessory")" loading="lazy">
+        <p>@T("Phụ kiện chọn lọc", "Curated accessories")</p>
     </div>
     <div class="sale-center">
         <h3>@T("Khuyến mãi giới hạn", "Limited promotion")</h3>
         <h2>50% OFF</h2>
+        <a asp-controller="Product" asp-action="Index">@T("Xem ưu đãi", "View offers")</a>
     </div>
     <div class="sale-right">
-        <img src="/images/c.jpg">
+        <img src="/images/c.jpg" alt="@T("Bộ sưu tập giảm giá", "Sale collection")" loading="lazy">
     </div>
 </section>
 
@@ -132,8 +133,8 @@
             <p class="section-eyebrow">For men</p>
             <h4 class="section-title">@T("Thời trang nam", "Men's fashion")</h4>
             <div class="row g-4">
-                @foreach (var p in Model
-                              .Where(x => x.Category != null 
+                @foreach (var p in products
+                              .Where(x => x.Category != null
                                           && x.Category.Name == "Đồ Nam"
                                           && x.IsActive)
                               .Take(6))
@@ -145,10 +146,10 @@
                                asp-action="Details"
                                asp-route-id="@p.ProductId"
                                asp-route-slug="@p.Slug">
-                                <img src="@p.Thumbnail" />
+                                <img src="@p.Thumbnail" alt="@D(p.Name)" loading="lazy" />
                             </a>
                             <h6>@D(p.Name)</h6>
-                            <div class="price">@p.Price.ToString("N0") VND</div>
+                            <div class="price">@p.FinalPrice.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -170,8 +171,8 @@
             <p class="section-eyebrow">For boys</p>
             <h4 class="section-title">@T("Thời trang bé trai", "Boys' fashion")</h4>
             <div class="row g-4">
-                @foreach (var p in Model
-                              .Where(x => x.Category != null 
+                @foreach (var p in products
+                              .Where(x => x.Category != null
                                           && x.Category.Name == "Bé Trai"
                                           && x.IsActive)
                               .Take(6))
@@ -183,10 +184,10 @@
                                asp-action="Details"
                                asp-route-id="@p.ProductId"
                                asp-route-slug="@p.Slug">
-                                <img src="@p.Thumbnail" />
+                                <img src="@p.Thumbnail" alt="@D(p.Name)" loading="lazy" />
                             </a>
                             <h6>@D(p.Name)</h6>
-                            <div class="price">@p.Price.ToString("N0") VND</div>
+                            <div class="price">@p.FinalPrice.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -202,8 +203,8 @@
             <p class="section-eyebrow">For girls</p>
             <h4 class="section-title">@T("Thời trang bé gái", "Girls' fashion")</h4>
             <div class="row g-4">
-                @foreach (var p in Model
-                              .Where(x => x.Category != null 
+                @foreach (var p in products
+                              .Where(x => x.Category != null
                                           && x.Category.Name == "Bé Gái"
                                           && x.IsActive)
                               .Take(6))
@@ -215,10 +216,10 @@
                                asp-action="Details"
                                asp-route-id="@p.ProductId"
                                asp-route-slug="@p.Slug">
-                                <img src="@p.Thumbnail" />
+                                <img src="@p.Thumbnail" alt="@D(p.Name)" loading="lazy" />
                             </a>
                             <h6>@D(p.Name)</h6>
-                            <div class="price">@p.Price.ToString("N0") VND</div>
+                            <div class="price">@p.FinalPrice.ToString("N0") VND</div>
                         </div>
                     </div>
                 }
@@ -238,10 +239,9 @@
         <button class="tab-btn" data-tab="sale">@T("Khuyến mãi", "On sale")</button>
     </div>
 
-    <!-- ===== PHỔ BIẾN ===== -->
     <div class="tab-body active" id="popular">
         <div class="row g-4">
-            @foreach (var p in Model.Take(8))
+            @foreach (var p in products.Where(p => p.IsActive).Take(8))
             {
                 <div class="col-6 col-md-3">
                     <div class="product-card">
@@ -250,11 +250,9 @@
                            asp-route-id="@p.ProductId"
                            asp-route-slug="@p.Slug"
                            class="product-link">
-
-                            <img src="@p.Thumbnail" />
+                            <img src="@p.Thumbnail" alt="@D(p.Name)" loading="lazy" />
                             <h6>@D(p.Name)</h6>
-                            <div class="price">@p.Price.ToString("N0") VND</div>
-
+                            <div class="price">@p.FinalPrice.ToString("N0") VND</div>
                         </a>
                     </div>
                 </div>
@@ -262,10 +260,9 @@
         </div>
     </div>
 
-    <!-- ===== BÁN CHẠY ===== -->
     <div class="tab-body" id="hot">
         <div class="row g-4">
-            @foreach (var p in Model.Skip(4).Take(8))
+            @foreach (var p in products.Where(p => p.IsActive).Skip(4).Take(8))
             {
                 <div class="col-6 col-md-3">
                     <div class="product-card">
@@ -274,11 +271,9 @@
                            asp-route-id="@p.ProductId"
                            asp-route-slug="@p.Slug"
                            class="product-link">
-
-                            <img src="@p.Thumbnail" />
+                            <img src="@p.Thumbnail" alt="@D(p.Name)" loading="lazy" />
                             <h6>@D(p.Name)</h6>
-                            <div class="price">@p.Price.ToString("N0") VND</div>
-
+                            <div class="price">@p.FinalPrice.ToString("N0") VND</div>
                         </a>
                     </div>
                 </div>
@@ -286,10 +281,9 @@
         </div>
     </div>
 
-    <!-- ===== KHUYẾN MÃI ===== -->
     <div class="tab-body" id="sale">
         <div class="row g-4">
-            @foreach (var p in Model.Skip(8).Take(8))
+            @foreach (var p in products.Where(p => p.IsActive).Skip(8).Take(8))
             {
                 <div class="col-6 col-md-3">
                     <div class="product-card">
@@ -298,11 +292,9 @@
                            asp-route-id="@p.ProductId"
                            asp-route-slug="@p.Slug"
                            class="product-link">
-
-                            <img src="@p.Thumbnail" />
+                            <img src="@p.Thumbnail" alt="@D(p.Name)" loading="lazy" />
                             <h6>@D(p.Name)</h6>
-                            <div class="price">@p.Price.ToString("N0") VND</div>
-
+                            <div class="price">@p.FinalPrice.ToString("N0") VND</div>
                         </a>
                     </div>
                 </div>
@@ -310,6 +302,7 @@
         </div>
     </div>
 </section>
+
 <!-- ================= BLOG ================= -->
 <section class="blog container">
     <h4 class="text-center mb-4">@T("Xu hướng thời trang", "Fashion trends")</h4>

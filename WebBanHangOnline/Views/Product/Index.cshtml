@@ -1,12 +1,13 @@
-
 @model IEnumerable<WebBanHangOnline.Models.Product>
 @{
     ViewData["Title"] = "Shop";
-    var currentCulture = WebBanHangOnline.Helpers.CatalogTextHelper.IsEnglish ? "en" : "vi";
     var hasActiveFilter = ViewBag.HasActiveFilter == true;
-    var hasAdvancedFilter = ViewBag.MinPrice != null || ViewBag.MaxPrice != null || !string.IsNullOrWhiteSpace(ViewBag.Size as string) || !string.IsNullOrWhiteSpace(ViewBag.Color as string) || ViewBag.Sale == true;
-    var totalItems = ViewBag.TotalItems ?? Model.Count();
-    var colorOptions = ViewBag.Colors as IEnumerable<string> ?? Enumerable.Empty<string>();
+    var productList = Model?.ToList() ?? new List<WebBanHangOnline.Models.Product>();
+    var totalItems = ViewBag.TotalItems ?? productList.Count;
+    var heroProducts = productList
+        .Where(product => !string.IsNullOrWhiteSpace(product.Thumbnail))
+        .Take(3)
+        .ToList();
     var wishlistProductIds = ViewBag.WishlistProductIds as HashSet<int> ?? new HashSet<int>();
     string T(string vi, string en) => WebBanHangOnline.Helpers.CatalogTextHelper.T(vi, en);
     string D(string? value) => WebBanHangOnline.Helpers.CatalogTextHelper.Display(value);
@@ -16,78 +17,132 @@
     <link rel="stylesheet" href="~/css/pages/product.css" asp-append-version="true" />
 }
 
-<div class="catalog-page">
-    <div class="catalog-hero">
-        <div>
-            <span class="catalog-kicker">XuanBac collection</span>
-            <h1>@T("Bộ sưu tập chọn lọc", "Curated collection")</h1>
-            <p>@T("Những thiết kế dễ mặc, tinh tế và được sắp xếp để bạn tìm nhanh phong cách phù hợp.",
-                "Easy, polished pieces arranged so you can find the right style quickly.")</p>
+<div class="catalog-page container">
+    <section class="catalog-hero" data-muva-reveal>
+        <div class="catalog-hero-copy">
+            <div class="catalog-kicker">XUANBAC STORE</div>
+            <h1>@T("Chọn đồ đẹp nhanh hơn", "Find your fit faster")</h1>
+            <p>
+                @T("Lọc theo kiểu dáng, giá và danh mục trong một giao diện gọn hơn.",
+                    "Filter by style, price and category in a cleaner shopping view.")
+            </p>
+            <div class="catalog-hero-actions">
+                <a class="catalog-primary-link" href="#catalog-products">
+                    <i class="bi bi-grid"></i>
+                    @T("Xem sản phẩm", "Browse")
+                </a>
+                <a class="catalog-cart-link" asp-controller="Cart" asp-action="Index">
+                    <i class="bi bi-bag"></i>
+                    @T("Giỏ hàng", "Cart")
+                </a>
+            </div>
         </div>
-        <a asp-controller="Cart" asp-action="Index" class="catalog-cart-link">
-            <i class="bi bi-cart3"></i>
-            @T("Giỏ hàng", "Cart")
-        </a>
-    </div>
+        <div class="catalog-hero-visual" aria-hidden="true">
+            @for (var i = 0; i < Math.Min(heroProducts.Count, 3); i++)
+            {
+                var heroProduct = heroProducts[i];
+                <div class="catalog-hero-shot catalog-hero-shot-@i">
+                    <img src="@heroProduct.Thumbnail" alt="" loading="eager" />
+                </div>
+            }
+            <div class="catalog-hero-note">
+                <strong>@totalItems</strong>
+                <span>@T("mẫu đang mở bán", "items live")</span>
+            </div>
+        </div>
+    </section>
 
-    <form method="get" class="catalog-filter-bar" id="catalogFilterPanel">
+    <form method="get" class="catalog-filter-bar" data-muva-reveal>
         <div class="filter-main-grid">
             <div class="filter-search-field">
                 <i class="bi bi-search"></i>
-                <input name="keyword"
-                       class="form-control"
-                       placeholder="@T("Tìm sản phẩm, ví dụ: áo, váy, nam...", "Search products, e.g. shirt, dress, men...")"
-                       value="@ViewBag.Keyword" />
+                <input class="form-control"
+                       name="keyword"
+                       value="@ViewBag.Keyword"
+                       placeholder="@T("Tìm áo nam, váy nữ, quần bé trai...", "Search men's shirt, women's dress, boys' pants...")" />
             </div>
 
-            <select name="categoryId" class="form-select">
+            <select class="form-select" name="categoryId">
                 <option value="">@T("Tất cả danh mục", "All categories")</option>
                 @foreach (var c in ViewBag.Categories)
                 {
-                    <option value="@c.CategoryId" selected="@(ViewBag.CategoryId == c.CategoryId)">
-                        @D(c.Name)
-                    </option>
+                    <option value="@c.CategoryId" selected="@(ViewBag.CategoryId == c.CategoryId)">@D(c.Name)</option>
                 }
             </select>
 
-            <select name="sort" class="form-select">
-                <option value="" selected="@(string.IsNullOrEmpty(ViewBag.Sort))">@T("Mới cập nhật", "Recently updated")</option>
-                <option value="price_asc" selected="@(ViewBag.Sort == "price_asc")">@T("Giá tăng dần", "Price: low to high")</option>
-                <option value="price_desc" selected="@(ViewBag.Sort == "price_desc")">@T("Giá giảm dần", "Price: high to low")</option>
+            <select class="form-select" name="sort">
+                <option value="" selected="@(string.IsNullOrEmpty(ViewBag.Sort))">@T("Nổi bật", "Featured")</option>
+                <option value="price_asc" selected="@(ViewBag.Sort == "price_asc")">@T("Giá tăng dần", "Price low to high")</option>
+                <option value="price_desc" selected="@(ViewBag.Sort == "price_desc")">@T("Giá giảm dần", "Price high to low")</option>
                 <option value="rating" selected="@(ViewBag.Sort == "rating")">@T("Đánh giá cao", "Top rated")</option>
-                <option value="stock" selected="@(ViewBag.Sort == "stock")">@T("Sẵn hàng", "Available")</option>
                 <option value="newest" selected="@(ViewBag.Sort == "newest")">@T("Mới nhất", "Newest")</option>
             </select>
 
-            <button class="btn btn-filter">
+            <button class="btn-filter" type="submit">
                 <i class="bi bi-funnel"></i>
-                @T("Áp dụng", "Apply")
+                @T("Lọc", "Filter")
             </button>
 
-            <button type="button"
-                    class="btn btn-filter-toggle @(hasAdvancedFilter ? "has-values" : "")"
-                    id="catalogFilterToggle"
-                    aria-controls="catalogAdvancedFilters"
-                    aria-expanded="false">
+            <a class="btn-filter-toggle @(ViewBag.MinPrice != null || ViewBag.MaxPrice != null || !string.IsNullOrWhiteSpace(ViewBag.Size) || !string.IsNullOrWhiteSpace(ViewBag.Color) || ViewBag.Sale == true ? "has-values" : "")"
+               href="#advanced-product-filter"
+               data-bs-toggle="collapse"
+               role="button"
+               aria-expanded="false"
+               aria-controls="advanced-product-filter">
                 <i class="bi bi-sliders"></i>
-                @T("Nâng cao", "More")
-            </button>
+                @T("Nâng cao", "Advanced")
+            </a>
 
             @if (hasActiveFilter)
             {
-                <a asp-action="Index" class="btn btn-clear-filter">
-                    <i class="bi bi-x-circle"></i>
+                <a asp-action="Index" class="btn-clear-filter">
+                    <i class="bi bi-x-lg"></i>
                     @T("Bỏ lọc", "Reset")
                 </a>
             }
         </div>
 
+        <div class="collapse @(ViewBag.MinPrice != null || ViewBag.MaxPrice != null || !string.IsNullOrWhiteSpace(ViewBag.Size) || !string.IsNullOrWhiteSpace(ViewBag.Color) || ViewBag.Sale == true ? "show" : "")" id="advanced-product-filter">
+            <div class="advanced-filter-grid">
+                <div>
+                    <label class="filter-label" for="minPrice">@T("Giá từ", "Min price")</label>
+                    <input class="form-control" id="minPrice" type="number" name="minPrice" value="@ViewBag.MinPrice" min="0" placeholder="0" />
+                </div>
+                <div>
+                    <label class="filter-label" for="maxPrice">@T("Giá đến", "Max price")</label>
+                    <input class="form-control" id="maxPrice" type="number" name="maxPrice" value="@ViewBag.MaxPrice" min="0" placeholder="999000" />
+                </div>
+                <div>
+                    <label class="filter-label" for="size">@T("Size", "Size")</label>
+                    <input class="form-control" id="size" name="size" value="@ViewBag.Size" placeholder="S, M, L" />
+                </div>
+                <div>
+                    <label class="filter-label" for="color">@T("Màu", "Color")</label>
+                    <select class="form-select" id="color" name="color">
+                        <option value="">@T("Tất cả màu", "All colors")</option>
+                        @foreach (var colorName in ViewBag.Colors)
+                        {
+                            <option value="@colorName" selected="@(ViewBag.Color == colorName)">@colorName</option>
+                        }
+                    </select>
+                </div>
+                <label class="sale-filter-check">
+                    <input type="checkbox" name="sale" value="true" checked="@(ViewBag.Sale == true)" />
+                    <span><i class="bi bi-lightning-charge"></i> Flash sale</span>
+                </label>
+                <div class="advanced-filter-actions">
+                    <button class="btn-filter" type="submit">@T("Áp dụng", "Apply")</button>
+                    <a asp-action="Index" class="btn-clear-filter">@T("Xóa", "Clear")</a>
+                </div>
+            </div>
+        </div>
+
         <div class="catalog-quick-categories">
             <a asp-action="Index"
-                   asp-route-keyword="@ViewBag.Keyword"
-                   asp-route-sort="@ViewBag.Sort"
-                   asp-route-sale="@ViewBag.Sale"
-                   class="category-chip @(ViewBag.CategoryId == null ? "is-active" : "")">@T("Tất cả", "All")</a>
+               asp-route-keyword="@ViewBag.Keyword"
+               asp-route-sort="@ViewBag.Sort"
+               asp-route-sale="@ViewBag.Sale"
+               class="category-chip @(ViewBag.CategoryId == null ? "is-active" : "")">@T("Tất cả", "All")</a>
             @foreach (var c in ViewBag.Categories)
             {
                 <a asp-action="Index"
@@ -98,139 +153,79 @@
                    class="category-chip @(ViewBag.CategoryId == c.CategoryId ? "is-active" : "")">@D(c.Name)</a>
             }
         </div>
-
-        <div id="catalogAdvancedFilters" class="advanced-filter-grid @(hasAdvancedFilter ? "" : "d-none")">
-            <div>
-                <label class="filter-label">@T("Giá từ", "Price from")</label>
-                <input name="minPrice" class="form-control" placeholder="0" value="@ViewBag.MinPrice" />
-            </div>
-            <div>
-                <label class="filter-label">@T("Giá đến", "Price to")</label>
-                <input name="maxPrice" class="form-control" placeholder="500000" value="@ViewBag.MaxPrice" />
-            </div>
-            <div>
-                <label class="filter-label">Size</label>
-                <select name="size" class="form-select">
-                    <option value="">@T("Tất cả", "All")</option>
-                    <option selected="@(ViewBag.Size == "S")">S</option>
-                    <option selected="@(ViewBag.Size == "M")">M</option>
-                    <option selected="@(ViewBag.Size == "L")">L</option>
-                    <option selected="@(ViewBag.Size == "XL")">XL</option>
-                </select>
-            </div>
-            <div>
-                <label class="filter-label">@T("Màu", "Color")</label>
-                <select name="color" class="form-select">
-                    <option value="">@T("Tất cả", "All")</option>
-                    @foreach (var colorOption in colorOptions)
-                    {
-                        <option value="@colorOption" selected="@(ViewBag.Color == colorOption)">@D(colorOption)</option>
-                    }
-                </select>
-            </div>
-            <label class="sale-filter-check">
-                <input type="checkbox" name="sale" value="true" checked="@(ViewBag.Sale == true)" />
-                <span>
-                    <i class="bi bi-tag"></i>
-                    @T("Ưu đãi", "Offer")
-                </span>
-            </label>
-            <div class="advanced-filter-actions">
-                <button class="btn btn-filter">
-                    <i class="bi bi-check2"></i>
-                    @T("Áp dụng", "Apply")
-                </button>
-                @if (hasActiveFilter)
-                {
-                    <a asp-action="Index" class="btn btn-clear-filter">
-                        <i class="bi bi-x-lg"></i>
-                        @T("Xóa lọc", "Clear")
-                    </a>
-                }
-            </div>
-        </div>
     </form>
 
-    <!-- PRODUCTS -->
-    <div id="catalogProductsColumn">
-        <div class="catalog-toolbar">
-            <div>
-                @if (hasActiveFilter)
-                {
-                    <strong>@totalItems</strong>
-                    <span>@T("thiết kế phù hợp", "matching pieces")</span>
-                }
-                else
-                {
-                    <span>@T("Những mẫu mới được tuyển chọn", "Newly selected pieces")</span>
-                }
-            </div>
-            <button type="button"
-                    class="btn btn-filter-toggle @(hasActiveFilter ? "has-values" : "")"
-                    id="catalogMainFilterToggle"
-                    aria-controls="catalogFilterPanel"
-                    aria-expanded="false">
-                <i class="bi bi-funnel"></i>
-                @T("Lọc", "Filter")
-            </button>
+    <div class="catalog-toolbar" data-muva-reveal>
+        <div>
+            <strong>@totalItems</strong>
+            <span>@T("sản phẩm phù hợp", "matching items")</span>
         </div>
+        <a class="catalog-cart-link" asp-controller="Wishlist" asp-action="Index">
+            <i class="bi bi-heart"></i>
+            @T("Yêu thích", "Wishlist")
+        </a>
+    </div>
 
-        <div class="row g-4">
-            @foreach (var p in Model)
+    @if (!productList.Any())
+    {
+        <div class="catalog-empty" data-muva-reveal>
+            <i class="bi bi-search"></i>
+            <strong>@T("Không tìm thấy sản phẩm phù hợp", "No matching products")</strong>
+            <span>@T("Hãy thử rút gọn từ khóa, đổi danh mục hoặc bỏ bớt bộ lọc.", "Try a shorter keyword, another category or fewer filters.")</span>
+        </div>
+    }
+    else
+    {
+        <div id="catalog-products" class="row g-3 g-md-4">
+            @foreach (var p in productList)
             {
                 var isFlashSale = p.IsFlashSaleActive;
-                var oldPrice = p.Price;
-                var finalPrice = p.FinalPrice;
                 var isWishlisted = wishlistProductIds.Contains(p.ProductId);
-                <div class="col-6 col-lg-4">
-                    <div class="catalog-product-card">
-                        <a asp-action="Details" asp-route-id="@p.ProductId" asp-route-slug="@p.Slug" class="catalog-product-image">
-                            <img src="@p.Thumbnail" alt="@p.Name" loading="lazy" />
-                            @if (isFlashSale)
-                            {
-                                <span class="catalog-promo-label">@T("Ưu đãi", "Offer")</span>
-                            }
-                        </a>
-                        <form asp-controller="Wishlist"
-                              asp-action="Toggle"
-                              method="post"
-                              class="catalog-wishlist-form">
+                <div class="col-6 col-md-4 col-xl-3" data-muva-reveal>
+                    <article class="catalog-product-card">
+                        <form class="catalog-wishlist-form" asp-controller="Wishlist" asp-action="Toggle" method="post">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="productId" value="@p.ProductId" />
                             <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
-                            <button type="submit"
-                                    class="catalog-wishlist-btn @(isWishlisted ? "is-saved" : "")"
-                                    aria-label="@T("Lưu sản phẩm yêu thích", "Save to wishlist")">
+                            <button class="catalog-wishlist-btn @(isWishlisted ? "is-saved" : "")"
+                                    type="submit"
+                                    aria-label="@T("Yêu thích", "Wishlist")"
+                                    title="@T("Yêu thích", "Wishlist")">
                                 <i class="bi @(isWishlisted ? "bi-heart-fill" : "bi-heart")"></i>
                             </button>
                         </form>
+                        <a class="catalog-product-image" asp-action="Details" asp-route-id="@p.ProductId" asp-route-slug="@p.Slug">
+                            <img src="@(p.Thumbnail ?? "/images/no-image.png")" alt="@D(p.Name)" loading="lazy" />
+                            <span class="catalog-promo-label">@(isFlashSale ? T("Ưu đãi", "Offer") : T("Mới", "New"))</span>
+                        </a>
                         <div class="catalog-product-body">
                             <small>@D(p.Category?.Name)</small>
                             <h6>@D(p.Name)</h6>
                             <div class="catalog-price-row">
                                 <div>
+                                    <div class="catalog-price">@p.FinalPrice.ToString("N0") VND</div>
                                     @if (isFlashSale)
                                     {
-                                        <span class="catalog-old-price">@oldPrice.ToString("N0") VND</span>
+                                        <span class="catalog-old-price">@p.Price.ToString("N0") VND</span>
                                     }
-                                    <div class="catalog-price">@finalPrice.ToString("N0") VND</div>
                                 </div>
                             </div>
                             <div class="catalog-card-actions">
-                                <a asp-action="Details" asp-route-id="@p.ProductId" asp-route-slug="@p.Slug" class="btn btn-detail">
-                                    @T("Xem sản phẩm", "View item")
-                                    <i class="bi bi-arrow-right"></i>
+                                <a class="btn-detail" asp-action="Details" asp-route-id="@p.ProductId" asp-route-slug="@p.Slug">
+                                    @T("Chi tiết", "Details")
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 </div>
             }
         </div>
+    }
 
-        <!-- PAGINATION -->
-        <nav>
-            <ul class="pagination catalog-pagination">
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav class="catalog-pagination" aria-label="@T("Phân trang", "Pagination")">
+            <ul class="pagination justify-content-center">
                 @for (int i = 1; i <= ViewBag.TotalPages; i++)
                 {
                     <li class="page-item @(ViewBag.Page == i ? "active" : "")">
@@ -249,40 +244,9 @@
                 }
             </ul>
         </nav>
-    </div>
+    }
 </div>
 
 @section Scripts {
-    <script>
-        (() => {
-            const filterPanel = document.getElementById("catalogFilterPanel");
-            const mainToggle = document.getElementById("catalogMainFilterToggle");
-            const advancedFilters = document.getElementById("catalogAdvancedFilters");
-            const toggle = document.getElementById("catalogFilterToggle");
-
-            if (!filterPanel || !mainToggle || !advancedFilters || !toggle) return;
-
-            const setFilterOpen = (open) => {
-                filterPanel.classList.toggle("d-none", !open);
-                mainToggle.setAttribute("aria-expanded", open.toString());
-                mainToggle.classList.toggle("is-active", open);
-            };
-
-            const setAdvancedOpen = (open) => {
-                advancedFilters.classList.toggle("d-none", !open);
-                toggle.setAttribute("aria-expanded", open.toString());
-                toggle.classList.toggle("is-active", open);
-            };
-
-            setAdvancedOpen(!advancedFilters.classList.contains("d-none"));
-
-            mainToggle.addEventListener("click", () => {
-                setFilterOpen(filterPanel.classList.contains("d-none"));
-            });
-
-            toggle.addEventListener("click", () => {
-                setAdvancedOpen(advancedFilters.classList.contains("d-none"));
-            });
-        })();
-    </script>
+    <script src="~/js/muva.js" asp-append-version="true"></script>
 }

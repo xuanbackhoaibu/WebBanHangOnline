@@ -823,3 +823,211 @@ body {
     padding-top: 34px;
   }
 }
+
+/* ================= BOUTIQUE EDITORIAL UPGRADE ================= */
+:root {
+  --xb-ink: #1b1712;
+  --xb-muted: rgba(27, 23, 18, 0.66);
+  --xb-line: rgba(27, 23, 18, 0.14);
+  --xb-paper: #faf7f0;
+  --xb-soft: #f4efe6;
+  --xb-soft-green: #edf3ea;
+  --xb-accent: #c75b2a;
+  --xb-accent-dark: #9f421d;
+  --xb-gold: #aa7d25;
+  --xb-shadow: 0 24px 60px rgba(27, 23, 18, 0.13);
+  --xb-radius: 10px;
+  --xb-serif: "Playfair Display", Georgia, serif;
+  --xb-sans: "Be Vietnam Pro", "Segoe UI", Arial, sans-serif;
+  --xb-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+body.coutura-body {
+  background:
+    linear-gradient(180deg, var(--xb-soft) 0%, #fbfaf7 420px, #f8f8f6 100%);
+  color: var(--xb-ink);
+  font-family: var(--xb-sans);
+}
+
+.coutura-topbar {
+  background: var(--xb-ink);
+  color: rgba(250, 247, 240, 0.82);
+  font-family: var(--xb-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coutura-topbar a {
+  color: rgba(250, 247, 240, 0.86);
+}
+
+.coutura-topbar i {
+  color: var(--xb-accent);
+}
+
+.coutura-header,
+.coutura-menu {
+  background: rgba(244, 239, 230, 0.92);
+  border-color: var(--xb-line);
+  backdrop-filter: blur(18px);
+}
+
+.coutura-logo {
+  font-family: var(--xb-serif);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.coutura-logo span {
+  color: var(--xb-accent);
+  font-style: italic;
+}
+
+.coutura-search {
+  border-color: var(--xb-line);
+  border-radius: 999px;
+  background: rgba(250, 247, 240, 0.92);
+  box-shadow: 0 12px 32px rgba(27, 23, 18, 0.08);
+}
+
+.coutura-search input {
+  background: transparent;
+  color: var(--xb-ink);
+  font-family: var(--xb-sans);
+  font-weight: 500;
+}
+
+.header-icons .icon-btn {
+  border-color: var(--xb-line);
+  background: var(--xb-paper);
+  color: var(--xb-ink);
+  box-shadow: 0 10px 26px rgba(27, 23, 18, 0.08);
+}
+
+.header-icons .icon-btn:hover,
+.header-icons .icon-btn:focus {
+  border-color: rgba(199, 91, 42, 0.42);
+  color: var(--xb-accent);
+  background: #fff;
+}
+
+.coutura-menu .nav {
+  gap: 4px;
+}
+
+.coutura-menu .nav-link {
+  position: relative;
+  color: rgba(27, 23, 18, 0.72);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.coutura-menu .nav-link::after {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 8px;
+  left: 0.5rem;
+  height: 2px;
+  background: var(--xb-accent);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: left;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.coutura-menu .nav-link:hover::after,
+.coutura-menu .nav-link:focus::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.site-shell {
+  max-width: 1240px;
+}
+
+.btn-primary,
+.btn-success,
+.btn-filter {
+  border-color: var(--xb-ink) !important;
+  background: var(--xb-ink) !important;
+  color: var(--xb-paper) !important;
+  box-shadow: none;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-filter:hover {
+  border-color: var(--xb-accent) !important;
+  background: var(--xb-accent) !important;
+  color: var(--xb-paper) !important;
+}
+
+.btn-outline-danger,
+.btn-warning,
+.btn-danger {
+  border-color: rgba(199, 91, 42, 0.34) !important;
+  background: rgba(250, 247, 240, 0.78) !important;
+  color: var(--xb-accent-dark) !important;
+}
+
+.mini-cart-menu {
+  border-radius: 10px !important;
+  background: var(--xb-paper) !important;
+}
+
+.mini-cart-cta {
+  border-radius: 6px;
+  background: var(--xb-ink);
+  color: var(--xb-paper);
+}
+
+.shop-footer {
+  background: var(--xb-ink);
+  color: rgba(250, 247, 240, 0.76);
+}
+
+.shop-footer .logo,
+.footer-col h6 {
+  color: var(--xb-paper);
+}
+
+.footer-col h6 {
+  font-family: var(--xb-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.shop-footer a,
+.shop-footer a:visited,
+.footer-col a,
+.footer-col a:visited,
+.footer-col p,
+.footer-bottom {
+  color: rgba(250, 247, 240, 0.68);
+}
+
+.shop-footer a:hover,
+.footer-col a:hover {
+  color: var(--xb-accent);
+}
+
+.newsletter input {
+  border-color: rgba(250, 247, 240, 0.18);
+  background: rgba(250, 247, 240, 0.08);
+  color: var(--xb-paper);
+}
+
+.newsletter button {
+  background: var(--xb-accent);
+  color: var(--xb-paper);
+}
+
+.footer-bottom {
+  border-top-color: rgba(250, 247, 240, 0.14);
+}

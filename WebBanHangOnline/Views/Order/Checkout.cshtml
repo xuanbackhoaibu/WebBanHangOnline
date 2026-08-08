@@ -9,6 +9,8 @@ string selectedDiscountCode = ViewBag.SelectedDiscountCode as string ?? string.E
 string manualDiscountCode = ViewBag.ManualDiscountCode as string ?? string.Empty;
 var publicVouchers = ViewBag.PublicDiscounts as List<CheckoutVoucherViewModel> ?? new List<CheckoutVoucherViewModel>();
 var hasAddress = !string.IsNullOrWhiteSpace(ViewBag.Address as string);
+decimal freeShipGoal = 999000;
+var totalItems = Model.Sum(item => item.Quantity);
 var paymentMethods = new[]
 {
     new { Value = "COD", Title = "Thanh toán khi nhận hàng", Note = "Kiểm tra hàng và thanh toán trực tiếp cho đơn vị giao hàng.", Icon = "bi-cash-stack" },
@@ -23,16 +25,48 @@ var paymentMethods = new[]
     <link rel="stylesheet" href="~/css/pages/checkout.css" asp-append-version="true" />
 }
 
-<div class="checkout-page">
-    <div class="checkout-heading">
-        <div>
-            <span class="catalog-kicker">Checkout</span>
-            <h1>Xác nhận đơn hàng</h1>
-            <p>Kiểm tra địa chỉ, sản phẩm và phương thức thanh toán trước khi hoàn tất đơn hàng.</p>
+<div class="checkout-page checkout-premium-page">
+    <div class="checkout-topbar" aria-hidden="true">
+        <div class="checkout-marquee">
+            <span>✦ Miễn phí vận chuyển cho đơn từ <b>999K</b></span>
+            <span>✦ Voucher <b>COUTURA10</b> giảm 10%</span>
+            <span>✦ Đổi trả miễn phí trong <b>7 ngày</b></span>
+            <span>✦ Thanh toán bảo mật chuẩn <b>SSL 256-bit</b></span>
+            <span>✦ Miễn phí vận chuyển cho đơn từ <b>999K</b></span>
+            <span>✦ Voucher <b>COUTURA10</b> giảm 10%</span>
+            <span>✦ Đổi trả miễn phí trong <b>7 ngày</b></span>
+            <span>✦ Thanh toán bảo mật chuẩn <b>SSL 256-bit</b></span>
         </div>
-        <div class="checkout-secure-badge">
-            <i class="bi bi-shield-check"></i>
-            <span>Bảo mật thanh toán</span>
+    </div>
+
+    <header class="checkout-shell-header">
+        <a class="checkout-brand" asp-controller="Home" asp-action="Index">
+            <span>COUT<em>U</em>RA</span><b>✦</b>
+        </a>
+        <a class="checkout-back-shop" asp-controller="Product" asp-action="Index">
+            <i class="bi bi-arrow-left"></i>
+            Tiếp tục mua sắm
+        </a>
+        <div class="checkout-secure-pill">
+            <span></span>
+            Thanh toán an toàn
+        </div>
+    </header>
+
+    <div class="checkout-steps" aria-label="Tiến trình thanh toán">
+        <div class="checkout-step is-done">
+            <span><i class="bi bi-check-lg"></i></span>
+            <b>Giỏ hàng</b>
+        </div>
+        <i></i>
+        <div class="checkout-step is-active">
+            <span>2</span>
+            <b>Thanh toán</b>
+        </div>
+        <i></i>
+        <div class="checkout-step">
+            <span>3</span>
+            <b>Hoàn tất</b>
         </div>
     </div>
 
@@ -58,12 +92,11 @@ var paymentMethods = new[]
             <div class="checkout-main">
 
                 <!-- ================= ĐỊA CHỈ ================= -->
-                <section class="checkout-card checkout-section">
+                <section class="checkout-card checkout-section checkout-address-card">
                     <div class="checkout-section-head">
-                        <div>
-                            <i class="bi bi-geo-alt"></i>
-                            <span>Địa chỉ nhận hàng</span>
-                        </div>
+                        <span class="checkout-head-num">1</span>
+                        <h3>Thông tin giao hàng</h3>
+                        <span class="checkout-gold-line"></span>
                         @if (hasAddress)
                         {
                             <button type="button"
@@ -156,14 +189,60 @@ var paymentMethods = new[]
                     </div>
                 </section>
 
-                <!-- ================= SẢN PHẨM ================= -->
-                <section class="checkout-card checkout-section">
+                <!-- ================= THANH TOÁN ================= -->
+                <section class="checkout-card checkout-section checkout-payment-panel">
                     <div class="checkout-section-head">
-                        <div>
-                            <i class="bi bi-bag-check"></i>
-                            <span>Sản phẩm trong đơn hàng</span>
-                        </div>
-                        <small>@Model.Count sản phẩm</small>
+                        <span class="checkout-head-num">2</span>
+                        <h3>Phương thức thanh toán</h3>
+                        <span class="checkout-gold-line"></span>
+                    </div>
+
+                    <div class="checkout-payment-list">
+                        @foreach (var method in paymentMethods)
+                        {
+                            var isDefault = method.Value == "COD";
+                            <label class="checkout-payment-option">
+                                <input class="form-check-input"
+                                       type="radio"
+                                       name="paymentMethod"
+                                       value="@method.Value"
+                                       required
+                                       @(isDefault ? "checked" : "") />
+                                <span class="checkout-payment-icon">
+                                    <i class="bi @method.Icon"></i>
+                                </span>
+                                <span class="checkout-payment-copy">
+                                    <strong>
+                                        @method.Title
+                                        @if (method.Value == "Momo")
+                                        {
+                                            <em>Ví điện tử</em>
+                                        }
+                                        else if (method.Value == "VNPay" || method.Value == "VietQR")
+                                        {
+                                            <em>QR/Bank</em>
+                                        }
+                                    </strong>
+                                    <small>@method.Note</small>
+                                </span>
+                                <span class="checkout-payment-radio"></span>
+                            </label>
+                        }
+                    </div>
+
+                    <div class="checkout-pay-note">
+                        <i class="bi bi-lock"></i>
+                        <span>Thông tin thanh toán được xử lý qua cổng bảo mật. Bạn có thể đổi phương thức trước khi đặt hàng.</span>
+                    </div>
+                </section>
+
+                <!-- ================= SẢN PHẨM ================= -->
+                <section class="checkout-card checkout-section checkout-products-card">
+                    <div class="checkout-section-head">
+                        <span class="checkout-head-num">3</span>
+                        <h3>Sản phẩm trong đơn hàng</h3>
+                        <span class="checkout-gold-line"></span>
+                        <small>@totalItems sản phẩm</small>
                     </div>
 
                     <div class="checkout-products">
@@ -203,8 +282,49 @@ var paymentMethods = new[]
 
                 <section class="checkout-card checkout-total">
                     <div class="checkout-total-head">
-                        <span>Tóm tắt đơn hàng</span>
-                        <i class="bi bi-receipt"></i>
+                        <span>Đơn hàng của bạn</span>
+                        <b>@totalItems sản phẩm</b>
+                    </div>
+
+                    <div class="checkout-mini-products">
+                        @foreach (var item in Model.Take(3))
+                        {
+                            var price = item.ProductVariant.Price > 0
+                                ? item.ProductVariant.Price
+                                : item.ProductVariant.Product.FinalPrice;
+                            <div class="checkout-mini-product">
+                                <img src="@item.ProductVariant.Product.Thumbnail"
+                                     alt="@item.ProductVariant.Product.Name"
+                                     loading="lazy" />
+                                <span>
+                                    <b>@item.ProductVariant.Product.Name</b>
+                                    <small>x @item.Quantity · @price.ToString("N0") VND</small>
+                                </span>
+                            </div>
+                        }
+                        @if (Model.Count > 3)
+                        {
+                            <small class="checkout-more-items">+ @(Model.Count - 3) sản phẩm khác</small>
+                        }
+                    </div>
+
+                    @{
+                        var shipPercent = total <= 0 ? 0 : Math.Min(100, (int)Math.Round(total / freeShipGoal * 100));
+                        var remainFreeShip = Math.Max(0, freeShipGoal - total);
+                    }
+                    <div class="checkout-ship-progress">
+                        <div>
+                            <i class="bi bi-truck"></i>
+                            @if (remainFreeShip <= 0)
+                            {
+                                <span>Đơn hàng đã được miễn phí vận chuyển.</span>
+                            }
+                            else
+                            {
+                                <span>Mua thêm <b>@remainFreeShip.ToString("N0") VND</b> để đạt mốc freeship.</span>
+                            }
+                        </div>
+                        <span><i style="width:@shipPercent%"></i></span>
                     </div>
 
                     <div class="checkout-voucher-box" data-subtotal="@total.ToString(System.Globalization.CultureInfo.InvariantCulture)">
@@ -296,65 +416,22 @@ var paymentMethods = new[]
                             <span data-checkout-final>@(finalTotal > 0 || discountAmount > 0 ? finalTotal.ToString("N0") : total.ToString("N0")) VND</span>
                     </div>
 
-                    <button type="button"
-                            id="continuePaymentBtn"
+                    <button type="submit"
                             class="checkout-submit-btn">
-                        <i class="bi bi-arrow-right-circle"></i>
-                        Tiến hành đặt hàng
+                        <span class="checkout-submit-spinner"></span>
+                        Đặt hàng · <span data-checkout-button-total>@(finalTotal > 0 || discountAmount > 0 ? finalTotal.ToString("N0") : total.ToString("N0")) VND</span>
                     </button>
 
-                    <p class="checkout-safe-note">
-                        <i class="bi bi-lock"></i>
-                        Thông tin thanh toán được xử lý qua cổng bảo mật.
-                    </p>
+                    <div class="checkout-trust-row">
+                        <span><i class="bi bi-shield-check"></i> Bảo mật SSL</span>
+                        <span><i class="bi bi-arrow-counterclockwise"></i> Đổi trả 7 ngày</span>
+                        <span><i class="bi bi-cash-coin"></i> Hoàn tiền 100%</span>
+                    </div>
                 </section>
 
             </aside>
 
         </div>
-
-        <section id="paymentStep" class="checkout-card checkout-section checkout-payment-step">
-            <div class="checkout-section-head">
-                <div>
-                    <i class="bi bi-credit-card"></i>
-                    <span>Chọn phương thức thanh toán</span>
-                </div>
-            </div>
-
-            <div class="checkout-payment-list">
-                @foreach (var method in paymentMethods)
-                {
-                <label class="checkout-payment-option">
-                    <input class="form-check-input"
-                           type="radio"
-                           name="paymentMethod"
-                           value="@method.Value"
-                           disabled />
-                    <span class="checkout-payment-icon">
-                        <i class="bi @method.Icon"></i>
-                    </span>
-                    <span class="checkout-payment-copy">
-                        <strong>@method.Title</strong>
-                        <small>@method.Note</small>
-                    </span>
-                </label>
-                }
-            </div>
-
-            <div class="checkout-payment-actions">
-                <button type="button"
-                        id="backToReviewBtn"
-                        class="checkout-secondary-btn">
-                    <i class="bi bi-arrow-left"></i>
-                    Xem lại đơn
-                </button>
-                <button type="submit"
-                        class="checkout-submit-btn">
-                    <i class="bi bi-bag-check"></i>
-                    Xác nhận đặt hàng
-                </button>
-            </div>
-        </section>
     </form>
 </div>
 
@@ -390,35 +467,15 @@ var paymentMethods = new[]
 
         document.getElementById("addressPreview")?.addEventListener("click", toggleEdit);
 
-        (function setupPaymentStep() {
-            const form = document.querySelector(".checkout-form");
-            const paymentStep = document.getElementById("paymentStep");
-            const continueBtn = document.getElementById("continuePaymentBtn");
-            const backBtn = document.getElementById("backToReviewBtn");
-            const paymentInputs = [...document.querySelectorAll("input[name='paymentMethod']")];
-
-            function setPaymentEnabled(enabled) {
-                paymentInputs.forEach(input => {
-                    input.disabled = !enabled;
-                    input.required = enabled;
+        (function setupPaymentCards() {
+            const options = [...document.querySelectorAll(".checkout-payment-option")];
+            options.forEach(option => {
+                const input = option.querySelector("input[name='paymentMethod']");
+                option.classList.toggle("is-selected", Boolean(input?.checked));
+                input?.addEventListener("change", () => {
+                    options.forEach(item => item.classList.remove("is-selected"));
+                    option.classList.add("is-selected");
                 });
-            }
-
-            setPaymentEnabled(false);
-
-            continueBtn?.addEventListener("click", () => {
-                if (form && !form.reportValidity()) return;
-
-                paymentStep?.classList.add("is-open");
-                setPaymentEnabled(true);
-                paymentStep?.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-
-            backBtn?.addEventListener("click", () => {
-                setPaymentEnabled(false);
-                paymentInputs.forEach(input => input.checked = false);
-                paymentStep?.classList.remove("is-open");
-                document.querySelector(".checkout-total")?.scrollIntoView({ behavior: "smooth", block: "center" });
             });
         })();
 
@@ -432,9 +489,10 @@ var paymentMethods = new[]
             const manualInput = voucherBox.querySelector("input[name='manualDiscountCode']");
             const applyManualBtn = voucherBox.querySelector("[data-apply-manual-voucher]");
             const voucherMessage = voucherBox.querySelector("[data-voucher-message]");
-            const discountNode = document.querySelector("[data-checkout-discount]");
-            const finalNode = document.querySelector("[data-checkout-final]");
-            const formatter = new Intl.NumberFormat("vi-VN");
+                const discountNode = document.querySelector("[data-checkout-discount]");
+                const finalNode = document.querySelector("[data-checkout-final]");
+                const buttonTotalNode = document.querySelector("[data-checkout-button-total]");
+                const formatter = new Intl.NumberFormat("vi-VN");
 
             function parseMoney(value) {
                 const raw = String(value || "").trim();
@@ -453,6 +511,7 @@ var paymentMethods = new[]
                 const finalTotal = Math.max(0, subtotal - discount);
                 if (discountNode) discountNode.textContent = `-${formatter.format(discount)} VND`;
                 if (finalNode) finalNode.textContent = `${formatter.format(finalTotal)} VND`;
+                if (buttonTotalNode) buttonTotalNode.textContent = `${formatter.format(finalTotal)} VND`;
             }
 
             function setVoucherMessage(message, isValid) {

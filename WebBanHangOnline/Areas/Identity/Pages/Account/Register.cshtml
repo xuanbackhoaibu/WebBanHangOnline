@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model RegisterModel
 
 @{
@@ -7,89 +7,130 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/pages/auth.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/muva.css" asp-append-version="true" />
 }
 
-<div class="auth-shell">
-    <div class="auth-card">
-        <div class="auth-card-body">
-            <div class="auth-head">
-                <div class="auth-icon">
-                    <i class="bi bi-person-plus"></i>
-                </div>
-                <span class="catalog-kicker">Account</span>
-                <h3>Đăng ký tài khoản</h3>
-                <p>Tạo tài khoản để lưu địa chỉ, theo dõi đơn và mua hàng nhanh hơn.</p>
-            </div>
-
-            <form method="post" asp-route-returnUrl="@Model.ReturnUrl">
-                <div asp-validation-summary="ModelOnly" class="auth-alert"></div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Email"
-                           class="form-control"
-                           placeholder="email@example.com"
-                           autocomplete="username" />
-                    <label asp-for="Input.Email">Email</label>
-                    <span asp-validation-for="Input.Email" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Password"
-                           class="form-control"
-                           placeholder="Mật khẩu"
-                           autocomplete="new-password" />
-                    <label asp-for="Input.Password">Mật khẩu</label>
-                    <span asp-validation-for="Input.Password" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-4">
-                    <input asp-for="Input.ConfirmPassword"
-                           class="form-control"
-                           placeholder="Nhập lại mật khẩu"
-                           autocomplete="new-password" />
-                    <label asp-for="Input.ConfirmPassword">Xác nhận mật khẩu</label>
-                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                </div>
-
-                <button type="submit" class="auth-submit">
-                    Đăng ký
-                </button>
-
-                <div class="text-center">
-                    <span class="small">Đã có tài khoản?</span>
-                    <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">
-                        Đăng nhập
-                    </a>
-                </div>
-            </form>
-
-            @if ((Model.ExternalLogins?.Count ?? 0) > 0)
-            {
-                <hr />
-                <div class="text-center">
-                    <p class="text-muted mb-2">Hoặc đăng ký bằng</p>
-
-                    <form asp-page="./ExternalLogin"
-                          asp-route-returnUrl="@Model.ReturnUrl"
-                          method="post">
-                        @foreach (var provider in Model.ExternalLogins!)
-                        {
-                            <button type="submit"
-                                    class="btn btn-outline-secondary me-2 mb-2"
-                                    name="provider"
-                                    value="@provider.Name">
-                                @provider.DisplayName
-                            </button>
-                        }
-                    </form>
-                </div>
-            }
-
+<div class="muva-page muva-auth-page muva-auth-register">
+    <div class="muva-shop-ticker" aria-hidden="true">
+        <div class="muva-marquee-track">
+            <span>TAO TAI KHOAN THANH VIEN</span><span>*</span><span>LUU DIA CHI NHANH HON</span><span>*</span><span>THEO DOI DON HANG DE DANG</span><span>*</span>
         </div>
     </div>
+
+    <header class="muva-nav muva-shop-nav">
+        <div class="muva-wrap">
+            <a class="muva-logo" asp-area="" asp-controller="Home" asp-action="Index">XuanBac<em>.</em></a>
+            <nav aria-label="Auth navigation">
+                <a asp-area="" asp-controller="Home" asp-action="Index">Cửa hàng</a>
+                <a asp-area="" asp-controller="Product" asp-action="Index">Sản phẩm</a>
+                <a asp-area="" asp-controller="Home" asp-action="About">Giới thiệu</a>
+            </nav>
+            <div class="muva-nav-actions">
+                <a class="muva-icon-link" asp-area="" asp-controller="Wishlist" asp-action="Index" aria-label="Yêu thích" title="Yêu thích">
+                    <i class="bi bi-heart"></i>
+                </a>
+                <a class="muva-icon-link" asp-area="" asp-controller="Cart" asp-action="Index" aria-label="Giỏ hàng" title="Giỏ hàng">
+                    <i class="bi bi-bag"></i>
+                </a>
+                <a class="muva-nav-cta" asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Đăng nhập</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="muva-auth-hero">
+        <div class="muva-wrap muva-auth-grid">
+            <div class="muva-auth-story" data-muva-reveal>
+                <div class="muva-kicker">XuanBac Atelier</div>
+                <h1 class="muva-title">
+                    <span class="muva-line"><span>Bắt đầu</span></span>
+                    <span class="muva-line"><span>một tủ đồ <em>có gu.</em></span></span>
+                </h1>
+                <p class="muva-sub">Tạo tài khoản để lưu địa chỉ, theo dõi đơn hàng và giữ lại những thiết kế bạn muốn quay lại.</p>
+                <div class="muva-auth-benefits">
+                    <span><i class="bi bi-truck"></i> Đặt hàng nhanh</span>
+                    <span><i class="bi bi-clock-history"></i> Theo dõi đơn</span>
+                    <span><i class="bi bi-heart"></i> Lưu yêu thích</span>
+                </div>
+                <div class="muva-auth-visual">
+                    <img src="https://image.qwenlm.ai/public_source/e753910b-f450-4d13-b2e0-e6c2535f0a02/136e73d8b-f2eb-4360-8994-160fc97ac652.png" alt="XuanBac new member look" />
+                    <div class="muva-auth-note">
+                        <b>MEMBER FIT</b>
+                        <span>Tài khoản mới, trải nghiệm mua sắm gọn hơn.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="muva-auth-card" data-muva-reveal>
+                <div class="muva-auth-card-head">
+                    <span><i class="bi bi-person-plus"></i></span>
+                    <div>
+                        <p>Account</p>
+                        <h2>Đăng ký tài khoản</h2>
+                    </div>
+                </div>
+
+                <form method="post" asp-route-returnUrl="@Model.ReturnUrl" class="muva-auth-form">
+                    <div asp-validation-summary="ModelOnly" class="muva-auth-alert"></div>
+
+                    <div class="muva-auth-field">
+                        <label asp-for="Input.Email">Email</label>
+                        <input asp-for="Input.Email"
+                               placeholder="email@example.com"
+                               autocomplete="username" />
+                        <span asp-validation-for="Input.Email" class="muva-auth-error"></span>
+                    </div>
+
+                    <div class="muva-auth-field">
+                        <label asp-for="Input.Password">Mật khẩu</label>
+                        <input asp-for="Input.Password"
+                               placeholder="Tạo mật khẩu"
+                               autocomplete="new-password" />
+                        <span asp-validation-for="Input.Password" class="muva-auth-error"></span>
+                    </div>
+
+                    <div class="muva-auth-field">
+                        <label asp-for="Input.ConfirmPassword">Xác nhận mật khẩu</label>
+                        <input asp-for="Input.ConfirmPassword"
+                               placeholder="Nhập lại mật khẩu"
+                               autocomplete="new-password" />
+                        <span asp-validation-for="Input.ConfirmPassword" class="muva-auth-error"></span>
+                    </div>
+
+                    <button type="submit" class="muva-auth-submit">
+                        <i class="bi bi-person-plus"></i>
+                        Đăng ký
+                    </button>
+
+                    <p class="muva-auth-switch">
+                        Đã có tài khoản?
+                        <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Đăng nhập</a>
+                    </p>
+                </form>
+
+                @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+                {
+                    <div class="muva-auth-providers">
+                        <p>Hoặc đăng ký bằng</p>
+                        <form asp-page="./ExternalLogin"
+                              asp-route-returnUrl="@Model.ReturnUrl"
+                              method="post">
+                            @foreach (var provider in Model.ExternalLogins!)
+                            {
+                                <button type="submit"
+                                        name="provider"
+                                        value="@provider.Name">
+                                    @provider.DisplayName
+                                </button>
+                            }
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/muva.js" asp-append-version="true"></script>
 }

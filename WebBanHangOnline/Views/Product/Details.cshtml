@@ -32,9 +32,29 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/pages/product-detail.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/muva.css" asp-append-version="true" />
 }
 
-<div class="product-detail-page">
+<div class="muva-page muva-detail-page product-detail-page">
+    <header class="muva-nav muva-shop-nav">
+        <div class="muva-wrap">
+            <a class="muva-nav-back" asp-controller="Product" asp-action="Index"><i class="bi bi-arrow-left"></i> Cửa hàng</a>
+            <a class="muva-logo" asp-controller="Home" asp-action="About">XuanBac<em>.</em></a>
+            <nav aria-label="Product navigation">
+                <a asp-controller="Product" asp-action="Index">@T("Sản phẩm", "Products")</a>
+                <a asp-controller="Home" asp-action="About">@T("Giới thiệu", "About")</a>
+            </nav>
+            <div class="muva-nav-actions">
+                <a class="muva-icon-link" asp-controller="Wishlist" asp-action="Index" aria-label="@T("Yêu thích", "Wishlist")" title="@T("Yêu thích", "Wishlist")">
+                    <i class="bi bi-heart"></i>
+                </a>
+                <a class="muva-icon-link" asp-controller="Cart" asp-action="Index" aria-label="@T("Giỏ hàng", "Cart")" title="@T("Giỏ hàng", "Cart")">
+                    <i class="bi bi-bag"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
     <div class="detail-shell">
         <div class="detail-gallery">
             <div class="detail-main-image">
@@ -439,6 +459,7 @@
 </div>
 
 @section Scripts {
+<script src="~/js/muva.js" asp-append-version="true"></script>
 <script>
     const variants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
         variants.Select(v => new { v.Id, v.Size, v.Color, ColorText = WebBanHangOnline.Helpers.CatalogTextHelper.Display(v.Color), v.Stock })

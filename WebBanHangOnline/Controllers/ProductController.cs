@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Security.Claims;
+using System.Text;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
 
@@ -52,37 +54,41 @@ namespace WebBanHangOnline.Controllers
             // Search
             if (!string.IsNullOrWhiteSpace(displayKeyword))
             {
-                var searchKeyword = displayKeyword.ToLower();
+                var searchIntent = BuildSearchIntent(displayKeyword);
 
-                // ===== ĐỒ NAM =====
-                if (searchKeyword.Contains("nam"))
+                if (!string.IsNullOrWhiteSpace(searchIntent.CategoryKeyword))
                 {
                     query = query.Where(p =>
-                        EF.Functions.Like(p.Category.Name, "%Đồ Nam%"));
+                        p.Category != null &&
+                        EF.Functions.Like(EF.Functions.Collate(p.Category.Name, "Latin1_General_CI_AI"), $"%{searchIntent.CategoryKeyword}%"));
                 }
-                // ===== ĐỒ NỮ =====
-                else if (searchKeyword.Contains("nữ") || searchKeyword.Contains("nu"))
+
+                foreach (var term in searchIntent.ProductTerms)
                 {
+                    var startsWithPattern = $"{term}%";
+                    var wordPattern = $"% {term}%";
+                    var hyphenPattern = $"%-{term}%";
                     query = query.Where(p =>
-                        EF.Functions.Like(p.Category.Name, "%Đồ Nữ%"));
-                }
-                // ===== BÉ TRAI =====
-                else if (searchKeyword.Contains("bé trai") || searchKeyword.Contains("be trai") || searchKeyword.Contains("trai"))
-                {
-                    query = query.Where(p =>
-                        EF.Functions.Like(p.Category.Name, "%Bé trai%"));
-                }
-                // ===== BÉ GÁI =====
-                else if (searchKeyword.Contains("bé gái") || searchKeyword.Contains("be gai") || searchKeyword.Contains("gái") || searchKeyword.Contains("gai"))
-                {
-                    query = query.Where(p =>
-                        EF.Functions.Like(p.Category.Name, "%Bé Gái%"));
-                }
-                // ===== TÌM THEO TÊN SẢN PHẨM =====
-                else
-                {
-                    query = query.Where(p =>
-                        EF.Functions.Like(p.Name, $"%{searchKeyword}%"));
+                        EF.Functions.Like(EF.Functions.Collate(p.Name, "Latin1_General_CI_AI"), startsWithPattern) ||
+                        EF.Functions.Like(EF.Functions.Collate(p.Name, "Latin1_General_CI_AI"), wordPattern) ||
+                        EF.Functions.Like(EF.Functions.Collate(p.Name, "Latin1_General_CI_AI"), hyphenPattern) ||
+                        (p.Description != null && (
+                            EF.Functions.Like(EF.Functions.Collate(p.Description, "Latin1_General_CI_AI"), startsWithPattern) ||
+                            EF.Functions.Like(EF.Functions.Collate(p.Description, "Latin1_General_CI_AI"), wordPattern) ||
+                            EF.Functions.Like(EF.Functions.Collate(p.Description, "Latin1_General_CI_AI"), hyphenPattern))) ||
+                        (p.Category != null && (
+                            EF.Functions.Like(EF.Functions.Collate(p.Category.Name, "Latin1_General_CI_AI"), startsWithPattern) ||
+                            EF.Functions.Like(EF.Functions.Collate(p.Category.Name, "Latin1_General_CI_AI"), wordPattern) ||
+                            EF.Functions.Like(EF.Functions.Collate(p.Category.Name, "Latin1_General_CI_AI"), hyphenPattern))) ||
+                        p.Variants.Any(v =>
+                            (!string.IsNullOrEmpty(v.Size) && (
+                                EF.Functions.Like(EF.Functions.Collate(v.Size, "Latin1_General_CI_AI"), startsWithPattern) ||
+                                EF.Functions.Like(EF.Functions.Collate(v.Size, "Latin1_General_CI_AI"), wordPattern) ||
+                                EF.Functions.Like(EF.Functions.Collate(v.Size, "Latin1_General_CI_AI"), hyphenPattern))) ||
+                            (!string.IsNullOrEmpty(v.Color) && (
+                                EF.Functions.Like(EF.Functions.Collate(v.Color, "Latin1_General_CI_AI"), startsWithPattern) ||
+                                EF.Functions.Like(EF.Functions.Collate(v.Color, "Latin1_General_CI_AI"), wordPattern) ||
+                                EF.Functions.Like(EF.Functions.Collate(v.Color, "Latin1_General_CI_AI"), hyphenPattern)))));
                 }
             }
             
@@ -167,6 +173,59 @@ namespace WebBanHangOnline.Controllers
 
             return View(products);
         }
+
+        private static ProductSearchIntent BuildSearchIntent(string keyword)
+        {
+            var normalized = RemoveDiacritics(keyword).ToLowerInvariant();
+            var tokens = normalized
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(token => token.Length > 1 && token != "do" && token != "thoi" && token != "trang")
+                .ToList();
+
+            string? categoryKeyword = null;
+
+            if (normalized.Contains("be trai") || tokens.Contains("trai"))
+            {
+                categoryKeyword = "Be Trai";
+                tokens.RemoveAll(token => token is "be" or "trai");
+            }
+            else if (normalized.Contains("be gai") || tokens.Contains("gai"))
+            {
+                categoryKeyword = "Be Gai";
+                tokens.RemoveAll(token => token is "be" or "gai");
+            }
+            else if (tokens.Contains("nam"))
+            {
+                categoryKeyword = "Do Nam";
+                tokens.RemoveAll(token => token == "nam");
+            }
+            else if (tokens.Contains("nu"))
+            {
+                categoryKeyword = "Do Nu";
+                tokens.RemoveAll(token => token == "nu");
+            }
+
+            return new ProductSearchIntent(categoryKeyword, tokens.Distinct().ToList());
+        }
+
+        private static string RemoveDiacritics(string value)
+        {
+            var normalized = value.Normalize(NormalizationForm.FormD);
+            var builder = new StringBuilder(normalized.Length);
+
+            foreach (var character in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(character);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    builder.Append(character == 'đ' || character == 'Đ' ? 'd' : character);
+                }
+            }
+
+            return builder.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        private sealed record ProductSearchIntent(string? CategoryKeyword, IReadOnlyList<string> ProductTerms);
 
         public IActionResult Sale()
         {
