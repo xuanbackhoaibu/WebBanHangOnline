@@ -16,7 +16,7 @@ public class AuditController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(string? entity, string? action, int page = 1)
+    public async Task<IActionResult> Index(string? entity, string? auditAction, int page = 1)
     {
         const int pageSize = 30;
         page = Math.Max(1, page);
@@ -28,12 +28,15 @@ public class AuditController : Controller
             query = query.Where(log => log.EntityName == entity);
         }
 
-        if (!string.IsNullOrWhiteSpace(action))
+        if (!string.IsNullOrWhiteSpace(auditAction))
         {
-            query = query.Where(log => log.Action == action);
+            query = query.Where(log => log.Action == auditAction);
         }
 
         var totalItems = await query.CountAsync();
+        var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+        page = Math.Min(page, totalPages);
+
         var logs = await query
             .OrderByDescending(log => log.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -53,9 +56,9 @@ public class AuditController : Controller
             .OrderBy(name => name)
             .ToListAsync();
         ViewBag.Entity = entity;
-        ViewBag.Action = action;
+        ViewBag.Action = auditAction;
         ViewBag.Page = page;
-        ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+        ViewBag.TotalPages = totalPages;
 
         return View(logs);
     }

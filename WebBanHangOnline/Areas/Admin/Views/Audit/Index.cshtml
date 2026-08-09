@@ -30,7 +30,7 @@
                 <option value="@entity" selected="@(entity == selectedEntity)">@entity</option>
             }
         </select>
-        <select name="action">
+        <select name="auditAction">
             <option value="">Tất cả hành động</option>
             @foreach (var action in actions)
             {
@@ -41,6 +41,10 @@
             <i class="fas fa-filter"></i>
             <span>Lọc</span>
         </button>
+        <a asp-action="Index" class="date-picker">
+            <i class="fas fa-rotate-left"></i>
+            <span>Xóa lọc</span>
+        </a>
     </form>
 
     <table class="order-table audit-table">
@@ -87,14 +91,14 @@
     <div class="audit-pagination">
         @if (page > 1)
         {
-            <a class="view-all" asp-action="Index" asp-route-page="@(page - 1)" asp-route-entity="@selectedEntity" asp-route-action="@selectedAction">
+            <a class="view-all" asp-action="Index" asp-route-page="@(page - 1)" asp-route-entity="@selectedEntity" asp-route-auditAction="@selectedAction">
                 <i class="fas fa-arrow-left"></i>
             </a>
         }
         <span>Trang @(page) / @Math.Max(1, totalPages)</span>
         @if (page < totalPages)
         {
-            <a class="view-all" asp-action="Index" asp-route-page="@(page + 1)" asp-route-entity="@selectedEntity" asp-route-action="@selectedAction">
+            <a class="view-all" asp-action="Index" asp-route-page="@(page + 1)" asp-route-entity="@selectedEntity" asp-route-auditAction="@selectedAction">
                 <i class="fas fa-arrow-right"></i>
             </a>
         }

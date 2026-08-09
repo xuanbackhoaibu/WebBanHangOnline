@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Models;
@@ -10,18 +11,26 @@ namespace WebBanHangOnline.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        private static readonly HashSet<string> AuditedEntities =
+        private static readonly HashSet<Type> AuditedEntityTypes =
         [
-            nameof(Product),
-            nameof(ProductVariant),
-            nameof(Category),
-            nameof(Order),
-            nameof(OrderDetail),
-            nameof(DiscountCode),
-            nameof(Notification)
+            typeof(Product),
+            typeof(ProductVariant),
+            typeof(Category),
+            typeof(Order),
+            typeof(OrderDetail),
+            typeof(DiscountCode),
+            typeof(Notification),
+            typeof(ApplicationUser),
+            typeof(IdentityUserRole<string>),
+            typeof(SupportRequest),
+            typeof(SupportFaq),
+            typeof(Review)
         ];
 
         private readonly IHttpContextAccessor? _httpContextAccessor;
+        private bool _isSavingAuditLogs;
+
+        public bool AuditEnabled { get; set; } = true;
 
         public ApplicationDbContext(
             DbContextOptions<ApplicationDbContext> options,
@@ -276,19 +285,53 @@ namespace WebBanHangOnline.Data
 
         }
 
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override int SaveChanges()
         {
-            var auditLogs = BuildAuditLogs();
-            if (auditLogs.Any())
-            {
-                AuditLogs.AddRange(auditLogs);
-            }
-
-            return await base.SaveChangesAsync(cancellationToken);
+            return SaveChanges(true);
         }
 
-        private List<AuditLog> BuildAuditLogs()
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
+            if (_isSavingAuditLogs)
+            {
+                return base.SaveChanges(acceptAllChangesOnSuccess);
+            }
+
+            var auditEntries = BuildAuditEntries();
+            var result = base.SaveChanges(acceptAllChangesOnSuccess);
+            SaveAuditLogs(auditEntries);
+
+            return result;
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return SaveChangesAsync(true, cancellationToken);
+        }
+
+        public override async Task<int> SaveChangesAsync(
+            bool acceptAllChangesOnSuccess,
+            CancellationToken cancellationToken = default)
+        {
+            if (_isSavingAuditLogs)
+            {
+                return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            }
+
+            var auditEntries = BuildAuditEntries();
+            var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            await SaveAuditLogsAsync(auditEntries, cancellationToken);
+
+            return result;
+        }
+
+        private List<PendingAuditEntry> BuildAuditEntries()
+        {
+            if (!AuditEnabled)
+            {
+                return [];
+            }
+
             ChangeTracker.DetectChanges();
 
             var httpContext = _httpContextAccessor?.HttpContext;
@@ -306,7 +349,7 @@ namespace WebBanHangOnline.Data
 
             return ChangeTracker.Entries()
                 .Where(ShouldAudit)
-                .Select(entry => CreateAuditLog(entry, userId, userName, roles))
+                .Select(entry => CreatePendingAuditEntry(entry, userId, userName, roles))
                 .ToList();
         }
 
@@ -314,10 +357,10 @@ namespace WebBanHangOnline.Data
         {
             return entry.Entity is not AuditLog &&
                    entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
-                   AuditedEntities.Contains(entry.Metadata.ClrType.Name);
+                   AuditedEntityTypes.Contains(entry.Metadata.ClrType);
         }
 
-        private static AuditLog CreateAuditLog(EntityEntry entry, string userId, string userName, string roles)
+        private static PendingAuditEntry CreatePendingAuditEntry(EntityEntry entry, string userId, string userName, string roles)
         {
             var oldValues = new Dictionary<string, object?>();
             var newValues = new Dictionary<string, object?>();
@@ -344,16 +387,69 @@ namespace WebBanHangOnline.Data
                 }
             }
 
+            return new PendingAuditEntry(
+                entry,
+                userId,
+                userName,
+                roles,
+                entry.State.ToString(),
+                entry.Metadata.ClrType.Name,
+                oldValues,
+                newValues);
+        }
+
+        private void SaveAuditLogs(IReadOnlyCollection<PendingAuditEntry> auditEntries)
+        {
+            if (auditEntries.Count == 0)
+            {
+                return;
+            }
+
+            _isSavingAuditLogs = true;
+            try
+            {
+                AuditLogs.AddRange(auditEntries.Select(CreateAuditLog));
+                base.SaveChanges();
+            }
+            finally
+            {
+                _isSavingAuditLogs = false;
+            }
+        }
+
+        private async Task SaveAuditLogsAsync(
+            IReadOnlyCollection<PendingAuditEntry> auditEntries,
+            CancellationToken cancellationToken)
+        {
+            if (auditEntries.Count == 0)
+            {
+                return;
+            }
+
+            _isSavingAuditLogs = true;
+            try
+            {
+                await AuditLogs.AddRangeAsync(auditEntries.Select(CreateAuditLog), cancellationToken);
+                await base.SaveChangesAsync(cancellationToken);
+            }
+            finally
+            {
+                _isSavingAuditLogs = false;
+            }
+        }
+
+        private static AuditLog CreateAuditLog(PendingAuditEntry auditEntry)
+        {
             return new AuditLog
             {
-                UserId = userId,
-                UserName = userName,
-                Roles = roles,
-                Action = entry.State.ToString(),
-                EntityName = entry.Metadata.ClrType.Name,
-                EntityId = GetPrimaryKeyValue(entry),
-                OldValues = JsonSerializer.Serialize(oldValues),
-                NewValues = JsonSerializer.Serialize(newValues),
+                UserId = auditEntry.UserId,
+                UserName = auditEntry.UserName,
+                Roles = auditEntry.Roles,
+                Action = auditEntry.Action,
+                EntityName = auditEntry.EntityName,
+                EntityId = GetPrimaryKeyValue(auditEntry.Entry),
+                OldValues = JsonSerializer.Serialize(auditEntry.OldValues),
+                NewValues = JsonSerializer.Serialize(auditEntry.NewValues),
                 CreatedAt = DateTime.Now
             };
         }
@@ -369,5 +465,15 @@ namespace WebBanHangOnline.Data
             return string.Join(",", primaryKey.Properties
                 .Select(property => entry.Property(property.Name).CurrentValue?.ToString() ?? string.Empty));
         }
+
+        private sealed record PendingAuditEntry(
+            EntityEntry Entry,
+            string UserId,
+            string UserName,
+            string Roles,
+            string Action,
+            string EntityName,
+            IReadOnlyDictionary<string, object?> OldValues,
+            IReadOnlyDictionary<string, object?> NewValues);
     }
 }

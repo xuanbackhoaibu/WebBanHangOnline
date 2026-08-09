@@ -20,63 +20,72 @@ namespace WebBanHangOnline.Data
             // ============================
             await context.Database.MigrateAsync();
 
-            // ============================
-            // 2️⃣ SEED ROLES (ADMIN + USER + CLIEND)
-            // ============================
-            string[] roles = { "Admin", "User", "Client" };
+            context.AuditEnabled = false;
 
-            foreach (var role in roles)
+            try
             {
-                if (!await roleManager.RoleExistsAsync(role))
+                // ============================
+                // 2️⃣ SEED ROLES (ADMIN + USER + CLIEND)
+                // ============================
+                string[] roles = { "Admin", "User", "Client" };
+
+                foreach (var role in roles)
                 {
-                    await roleManager.CreateAsync(new IdentityRole(role));
+                    if (!await roleManager.RoleExistsAsync(role))
+                    {
+                        await roleManager.CreateAsync(new IdentityRole(role));
+                    }
                 }
-            }
 
 
-            // ============================
-            // 3️⃣ SEED ADMIN USER
-            // ============================
-            var adminEmail = "admin@shop.com";
-            var adminPassword = "Admin@123";
+                // ============================
+                // 3️⃣ SEED ADMIN USER
+                // ============================
+                var adminEmail = "admin@shop.com";
+                var adminPassword = "Admin@123";
 
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+                var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-            if (adminUser == null)
-            {
-                adminUser = new ApplicationUser
+                if (adminUser == null)
                 {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true,
-                    FullName = "Administrator"
-                };
+                    adminUser = new ApplicationUser
+                    {
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        EmailConfirmed = true,
+                        FullName = "Administrator"
+                    };
 
-                await userManager.CreateAsync(adminUser, adminPassword);
+                    await userManager.CreateAsync(adminUser, adminPassword);
+                }
+
+                // GÁN ROLE ADMIN (PHÒNG TRƯỜNG HỢP CHƯA CÓ)
+                if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
+
+                // ============================
+                // 4️⃣ SEED CATEGORY (WEB BÁN HÀNG)
+                // ============================
+                if (!await context.Categories.AnyAsync())
+                {
+                    context.Categories.AddRange(
+                        new Category { Name = "Đồ Nam", IsActive = true },
+                        new Category { Name = "Đồ Nữ", IsActive = true },
+                        new Category { Name = "Bé Trai", IsActive = true },
+                        new Category { Name = "Bé Gái", IsActive = true }
+                    );
+
+                    await context.SaveChangesAsync();
+                }
+
+                await SeedFashionStoreDataAsync(context, userManager);
             }
-
-            // GÁN ROLE ADMIN (PHÒNG TRƯỜNG HỢP CHƯA CÓ)
-            if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+            finally
             {
-                await userManager.AddToRoleAsync(adminUser, "Admin");
+                context.AuditEnabled = true;
             }
-
-            // ============================
-            // 4️⃣ SEED CATEGORY (WEB BÁN HÀNG)
-            // ============================
-            if (!await context.Categories.AnyAsync())
-            {
-                context.Categories.AddRange(
-                    new Category { Name = "Đồ Nam", IsActive = true },
-                    new Category { Name = "Đồ Nữ", IsActive = true },
-                    new Category { Name = "Bé Trai", IsActive = true },
-                    new Category { Name = "Bé Gái", IsActive = true }
-                );
-
-                await context.SaveChangesAsync();
-            }
-
-            await SeedFashionStoreDataAsync(context, userManager);
         }
 
         private static async Task SeedFashionStoreDataAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)

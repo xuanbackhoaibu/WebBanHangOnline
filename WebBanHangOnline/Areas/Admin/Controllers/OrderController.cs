@@ -151,6 +151,12 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             if (previousStatus != status)
             {
                 AddOrderHistory(order, "OrderStatus", previousStatus, status, "Cập nhật trạng thái đơn hàng.");
+                AddOrderAuditLog(
+                    order.Id,
+                    "Status",
+                    previousStatus,
+                    status,
+                    "Admin cập nhật trạng thái đơn hàng.");
             }
 
             try
@@ -192,6 +198,12 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             if (previousPaymentStatus != paymentStatus)
             {
                 AddOrderHistory(order, "PaymentStatus", previousPaymentStatus, paymentStatus, "Cập nhật trạng thái thanh toán.");
+                AddOrderAuditLog(
+                    order.Id,
+                    "PaymentStatus",
+                    previousPaymentStatus,
+                    paymentStatus,
+                    "Admin cập nhật trạng thái thanh toán.");
             }
 
             try
@@ -222,10 +234,17 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
             if ((order.AdminNote ?? string.Empty) != cleanNote)
             {
+                var previousNote = order.AdminNote ?? string.Empty;
                 order.AdminNote = cleanNote;
                 AddOrderHistory(order, "AdminNote", null, null, string.IsNullOrWhiteSpace(cleanNote)
                     ? "Đã xóa ghi chú nội bộ."
                     : "Đã cập nhật ghi chú nội bộ.");
+                AddOrderAuditLog(
+                    order.Id,
+                    "AdminNote",
+                    previousNote,
+                    cleanNote,
+                    "Admin cập nhật ghi chú nội bộ.");
             }
 
             await _context.SaveChangesAsync();
@@ -271,6 +290,30 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 Note = note,
                 ChangedBy = User.Identity?.Name ?? "Admin",
                 ChangedAt = DateTime.Now
+            });
+        }
+
+        private void AddOrderAuditLog(int orderId, string fieldName, string? oldValue, string? newValue, string description)
+        {
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "system",
+                UserName = User.Identity?.Name ?? "Admin",
+                Roles = User.IsInRole("Admin") ? "Admin" : string.Empty,
+                Action = "Modified",
+                EntityName = nameof(Order),
+                EntityId = orderId.ToString(),
+                OldValues = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string?>
+                {
+                    [fieldName] = oldValue,
+                    ["Description"] = description
+                }),
+                NewValues = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, string?>
+                {
+                    [fieldName] = newValue,
+                    ["Description"] = description
+                }),
+                CreatedAt = DateTime.Now
             });
         }
 
