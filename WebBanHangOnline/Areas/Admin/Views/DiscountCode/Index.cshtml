@@ -7,6 +7,7 @@
     {
         "Percent" => "Phần trăm",
         "FixedAmount" => "Số tiền",
+        "FreeShipping" => "Miễn phí vận chuyển",
         _ => type
     };
 }
@@ -94,6 +95,7 @@
                 <select name="DiscountType" class="form-select" id="discountType">
                     <option value="Percent">Phần trăm</option>
                     <option value="FixedAmount">Số tiền</option>
+                    <option value="FreeShipping">Miễn phí vận chuyển</option>
                 </select>
                 <div class="form-text" id="discountTypeHelp">Phần trăm dùng số từ 1 đến 100.</div>
             </div>
@@ -185,7 +187,9 @@
                         <td>
                             @(code.DiscountType == "Percent"
                                 ? $"{code.DiscountValue:N0}%"
-                                : $"{code.DiscountValue:N0} VND")
+                                : code.DiscountType == "FreeShipping"
+                                    ? "Miễn phí vận chuyển"
+                                    : $"{code.DiscountValue:N0} VND")
                             @if (code.MaximumDiscountAmount.HasValue)
                             {
                                 <div class="text-muted small">Tối đa @code.MaximumDiscountAmount.Value.ToString("N0") VND</div>
@@ -240,14 +244,23 @@
 
             const syncDiscountHints = () => {
                 const isPercent = typeSelect.value === 'Percent';
+                const isFreeShipping = typeSelect.value === 'FreeShipping';
+
                 valueInput.step = isPercent ? '1' : '1000';
-                valueInput.placeholder = isPercent ? '10' : '50000';
+                valueInput.min = isFreeShipping ? '0' : '1';
+                valueInput.required = !isFreeShipping;
+                valueInput.value = isFreeShipping ? '0' : valueInput.value;
+                valueInput.placeholder = isPercent ? '10' : isFreeShipping ? '0' : '50000';
                 typeHelp.textContent = isPercent
                     ? 'Phần trăm dùng số từ 1 đến 100.'
-                    : 'Số tiền được tính theo VND.';
+                    : isFreeShipping
+                        ? 'Miễn phí vận chuyển không cần nhập giá trị giảm.'
+                        : 'Số tiền được tính theo VND.';
                 valueHelp.textContent = isPercent
                     ? 'Nhập 10 nghĩa là giảm 10%.'
-                    : 'Nhập 50000 nghĩa là giảm 50.000 VND.';
+                    : isFreeShipping
+                        ? 'Hệ thống tự tính phần phí vận chuyển được miễn.'
+                        : 'Nhập 50000 nghĩa là giảm 50.000 VND.';
             };
 
             typeSelect.addEventListener('change', syncDiscountHints);

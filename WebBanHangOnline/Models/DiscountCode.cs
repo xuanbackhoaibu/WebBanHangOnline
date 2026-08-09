@@ -34,16 +34,21 @@ public class DiscountCode
     public bool IsPublic { get; set; } = true;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    [Timestamp]
+    public byte[] RowVersion { get; set; } = [];
 }
 
 public static class DiscountTypes
 {
     public const string Percent = "Percent";
     public const string FixedAmount = "FixedAmount";
+    public const string FreeShipping = "FreeShipping";
 
     public static readonly string[] All =
     {
         Percent,
-        FixedAmount
+        FixedAmount,
+        FreeShipping
     };
 }

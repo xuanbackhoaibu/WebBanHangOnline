@@ -133,6 +133,10 @@ namespace WebBanHangOnline.Data
                 .Property(code => code.IsPublic)
                 .HasDefaultValue(true);
 
+            builder.Entity<DiscountCode>()
+                .Property(code => code.RowVersion)
+                .IsRowVersion();
+
             builder.Entity<OrderDetail>()
                 .Property(od => od.Price)
                 .HasPrecision(18, 2);

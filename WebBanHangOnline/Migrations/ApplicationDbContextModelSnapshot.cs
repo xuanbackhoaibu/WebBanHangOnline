@@ -588,6 +588,11 @@ namespace WebBanHangOnline.Migrations
                     b.Property<decimal>("MinimumOrderAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<DateTime?>("StartsAt")
                         .HasColumnType("datetime2");
 

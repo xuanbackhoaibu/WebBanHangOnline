@@ -477,6 +477,7 @@ BEGIN
         [IsPublic] bit NOT NULL DEFAULT 1,
         [IsActive] bit NOT NULL,
         [CreatedAt] datetime2 NOT NULL,
+        [RowVersion] rowversion NOT NULL,
         CONSTRAINT [PK_DiscountCodes] PRIMARY KEY ([Id])
     );
 
@@ -494,6 +495,9 @@ IF COL_LENGTH('Orders', 'DiscountCode') IS NULL
 
 IF COL_LENGTH('DiscountCodes', 'IsPublic') IS NULL
     ALTER TABLE [DiscountCodes] ADD [IsPublic] bit NOT NULL CONSTRAINT [DF_DiscountCodes_IsPublic] DEFAULT 1;
+
+IF COL_LENGTH('DiscountCodes', 'RowVersion') IS NULL
+    ALTER TABLE [DiscountCodes] ADD [RowVersion] rowversion NOT NULL;
 
 EXEC(N'UPDATE [Orders] SET [SubtotalAmount] = [TotalAmount] WHERE [SubtotalAmount] = 0;');
 

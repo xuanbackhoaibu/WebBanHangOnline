@@ -2,12 +2,14 @@ using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Data.SqlClient;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System.Globalization;
+using System.Threading.RateLimiting;
 using WebBanHangOnline.Controllers;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Hubs;
@@ -45,6 +47,54 @@ builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ICatalogCacheService, CatalogCacheService>();
 builder.Services.AddTransient<OrderMaintenanceJobs>();
+builder.Services.AddHealthChecks()
+    .AddCheck<SqlServerHealthCheck>("sql-server")
+    .AddCheck<HangfireStorageHealthCheck>("hangfire-storage");
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsync(
+            "{\"message\":\"Too many requests. Please try again later.\"}",
+            cancellationToken);
+    };
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var path = httpContext.Request.Path;
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        if (path.StartsWithSegments("/api/payments/demo-webhook"))
+        {
+            return RateLimitPartition.GetFixedWindowLimiter(
+                $"payment-webhook:{ip}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                });
+        }
+
+        if (HttpMethods.IsPost(httpContext.Request.Method) &&
+            path.StartsWithSegments("/Identity/Account/Login"))
+        {
+            return RateLimitPartition.GetFixedWindowLimiter(
+                $"identity-login:{ip}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 5,
+                    Window = TimeSpan.FromMinutes(15),
+                    QueueLimit = 0
+                });
+        }
+
+        return RateLimitPartition.GetNoLimiter("default");
+    });
+});
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -175,6 +225,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 
 app.UseRouting();
 
+app.UseRateLimiter();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -227,6 +278,14 @@ RecurringJob.AddOrUpdate<OrderMaintenanceJobs>(
     job => job.SendDailyRevenueReportAsync(),
     Cron.Daily(8),
     new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
+
+RecurringJob.AddOrUpdate<OrderMaintenanceJobs>(
+    "discounts:disable-expired",
+    job => job.DisableExpiredDiscountCodesAsync(),
+    Cron.Daily(),
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
+
+app.MapHealthChecks("/health");
 
 app.Run();
 

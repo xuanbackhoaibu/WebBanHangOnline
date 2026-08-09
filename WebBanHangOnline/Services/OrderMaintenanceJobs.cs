@@ -101,6 +101,32 @@ public sealed class OrderMaintenanceJobs
             revenue);
     }
 
+    public async Task DisableExpiredDiscountCodesAsync()
+    {
+        var now = DateTime.Now;
+        var expiredCodes = await _context.DiscountCodes
+            .Where(code => code.IsActive && code.EndsAt.HasValue && code.EndsAt.Value < now)
+            .ToListAsync();
+
+        foreach (var code in expiredCodes)
+        {
+            code.IsActive = false;
+        }
+
+        try
+        {
+            var affectedRows = await _context.SaveChangesAsync();
+            _logger.LogInformation("Expired discount codes disabled. Codes: {CodeCount}, Rows: {Rows}",
+                expiredCodes.Count,
+                affectedRows);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            _logger.LogWarning(exception, "Concurrency conflict while disabling expired discount codes. Hangfire will retry this job.");
+            throw;
+        }
+    }
+
     public async Task SyncPaymentStatusAsync(
         int orderId,
         string status,

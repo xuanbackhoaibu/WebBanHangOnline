@@ -39,7 +39,13 @@ public class DiscountCodeController : Controller
             ModelState.AddModelError(nameof(model.DiscountType), "Kiểu giảm giá không hợp lệ.");
         }
 
-        if (model.DiscountValue <= 0)
+        if (model.DiscountType == DiscountTypes.FreeShipping)
+        {
+            model.DiscountValue = 0;
+            model.MaximumDiscountAmount = null;
+        }
+
+        if (model.DiscountType != DiscountTypes.FreeShipping && model.DiscountValue <= 0)
         {
             ModelState.AddModelError(nameof(model.DiscountValue), "Giá trị giảm phải lớn hơn 0.");
         }

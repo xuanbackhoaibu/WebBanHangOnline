@@ -265,6 +265,17 @@ public class OrderController : Controller
 
                 if (discountResult.DiscountCode != null)
                 {
+                    await _context.Entry(discountResult.DiscountCode).ReloadAsync();
+                    if (discountResult.DiscountCode.UsageLimit.HasValue &&
+                        discountResult.DiscountCode.UsedCount >= discountResult.DiscountCode.UsageLimit.Value)
+                    {
+                        await transaction.RollbackAsync();
+                        SetUserInfoToViewBag(user);
+                        await SetDiscountToViewBag(cart, selectedDiscountCode, manualDiscountCode);
+                        ViewBag.DiscountError = "Mã giảm giá đã hết lượt sử dụng.";
+                        return View("Checkout", cart);
+                    }
+
                     discountResult.DiscountCode.UsedCount += 1;
                 }
 
@@ -336,7 +347,7 @@ public class OrderController : Controller
                 await transaction.RollbackAsync();
                 DetachChangedEntries();
                 _logger.LogWarning(exception,
-                    "Stock concurrency conflict while placing order. UserId: {UserId}, Attempt: {Attempt}",
+                    "Stock or voucher concurrency conflict while placing order. UserId: {UserId}, Attempt: {Attempt}",
                     user.Id,
                     attempt);
             }
@@ -345,11 +356,11 @@ public class OrderController : Controller
                 await transaction.RollbackAsync();
                 DetachChangedEntries();
                 _logger.LogWarning(exception,
-                    "Stock concurrency conflict was not resolved after retries. UserId: {UserId}, Attempts: {Attempts}",
+                    "Stock or voucher concurrency conflict was not resolved after retries. UserId: {UserId}, Attempts: {Attempts}",
                     user.Id,
                     maxConcurrencyAttempts);
 
-                return Conflict("Tồn kho vừa thay đổi do có khách khác đặt cùng lúc. Vui lòng kiểm tra giỏ hàng và thử lại.");
+                return Conflict("Tồn kho hoặc mã giảm giá vừa thay đổi do có khách khác thao tác cùng lúc. Vui lòng kiểm tra lại và thử lại.");
             }
             catch (Exception exception)
             {
@@ -359,7 +370,7 @@ public class OrderController : Controller
             }
         }
 
-        return Conflict("Tồn kho vừa thay đổi. Vui lòng thử lại.");
+        return Conflict("Tồn kho hoặc mã giảm giá vừa thay đổi. Vui lòng thử lại.");
     }
 
     // =========================================================
@@ -535,7 +546,7 @@ public class OrderController : Controller
 
         return codes.Select(code =>
         {
-            var discount = CalculateDiscountAmount(code, subtotal);
+            var discount = DiscountCalculator.CalculateDiscountAmount(code, subtotal);
             var isAvailable = subtotal >= code.MinimumOrderAmount;
 
             return new CheckoutVoucherViewModel
@@ -572,49 +583,10 @@ public class OrderController : Controller
             return DiscountCalculation.Invalid("Mã giảm giá không tồn tại.");
         }
 
-        var now = DateTime.Now;
-        if (!discountCode.IsActive)
-        {
-            return DiscountCalculation.Invalid("Mã giảm giá đã bị tắt.");
-        }
-
-        if (discountCode.StartsAt.HasValue && discountCode.StartsAt.Value > now)
-        {
-            return DiscountCalculation.Invalid("Mã giảm giá chưa đến thời gian sử dụng.");
-        }
-
-        if (discountCode.EndsAt.HasValue && discountCode.EndsAt.Value < now)
-        {
-            return DiscountCalculation.Invalid("Mã giảm giá đã hết hạn.");
-        }
-
-        if (discountCode.UsageLimit.HasValue && discountCode.UsedCount >= discountCode.UsageLimit.Value)
-        {
-            return DiscountCalculation.Invalid("Mã giảm giá đã hết lượt sử dụng.");
-        }
-
-        if (subtotal < discountCode.MinimumOrderAmount)
-        {
-            return DiscountCalculation.Invalid(
-                $"Đơn hàng cần tối thiểu {discountCode.MinimumOrderAmount:N0} VND để dùng mã này.");
-        }
-
-        var amount = CalculateDiscountAmount(discountCode, subtotal);
-        return DiscountCalculation.Valid(discountCode, normalizedCode, amount);
-    }
-
-    private static decimal CalculateDiscountAmount(DiscountCode discountCode, decimal subtotal)
-    {
-        var amount = discountCode.DiscountType == DiscountTypes.Percent
-            ? subtotal * discountCode.DiscountValue / 100
-            : discountCode.DiscountValue;
-
-        if (discountCode.MaximumDiscountAmount.HasValue)
-        {
-            amount = Math.Min(amount, discountCode.MaximumDiscountAmount.Value);
-        }
-
-        return Math.Min(amount, subtotal);
+        var calculation = DiscountCalculator.CalculateCartTotalWithVoucher(subtotal, discountCode, DateTime.Now);
+        return calculation.IsValid
+            ? DiscountCalculation.Valid(discountCode, normalizedCode, calculation.DiscountAmount)
+            : DiscountCalculation.Invalid(calculation.Message ?? "Mã giảm giá không hợp lệ.");
     }
 
     private static string GetDiscountText(DiscountCode discountCode)
@@ -626,6 +598,11 @@ public class OrderController : Controller
                 : string.Empty;
 
             return $"Giảm {discountCode.DiscountValue:N0}%{maxText}";
+        }
+
+        if (discountCode.DiscountType == DiscountTypes.FreeShipping)
+        {
+            return "Miễn phí vận chuyển";
         }
 
         return $"Giảm {discountCode.DiscountValue:N0} VND";
