@@ -11,4 +11,6 @@ public class CartItem
     public ProductVariant ProductVariant { get; set; }
 
     public int Quantity { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime? UpdatedAt { get; set; }
 }

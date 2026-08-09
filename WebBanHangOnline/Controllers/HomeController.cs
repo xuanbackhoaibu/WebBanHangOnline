@@ -3,31 +3,46 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Services;
 
 namespace WebBanHangOnline.Controllers;
 
 public class HomeController : Controller
 {
+    private const string HasEnteredShopSessionKey = "HasEnteredShop";
     private readonly ILogger<HomeController> _logger;
     private readonly ApplicationDbContext _context;
+    private readonly ICatalogCacheService _catalogCache;
 
-    public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+    public HomeController(
+        ILogger<HomeController> logger,
+        ApplicationDbContext context,
+        ICatalogCacheService catalogCache)
     {
         _logger = logger;
         _context = context;
+        _catalogCache = catalogCache;
     }
 
     public IActionResult Welcome()
     {
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(About));
     }
 
     public async Task<IActionResult> Index(int? categoryId, bool enterShop = false)
     {
+        if (enterShop)
+        {
+            HttpContext.Session.SetString(HasEnteredShopSessionKey, "true");
+        }
+        else if (HttpContext.Session.GetString(HasEnteredShopSessionKey) != "true")
+        {
+            return RedirectToAction(nameof(About));
+        }
+
         // Lấy danh sách danh mục để hiển thị filter
-        ViewBag.Categories = await _context.Categories
-            .Where(c => c.IsActive)
-            .ToListAsync();
+        ViewBag.Categories = await _catalogCache.GetActiveCategoriesAsync();
+        ViewBag.TopSellingProducts = await _catalogCache.GetTopSellingProductsAsync();
 
         // Lấy danh sách sản phẩm
         var productsQuery = _context.Products

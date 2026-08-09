@@ -1,15 +1,34 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Models;
 using System;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace WebBanHangOnline.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        private static readonly HashSet<string> AuditedEntities =
+        [
+            nameof(Product),
+            nameof(ProductVariant),
+            nameof(Category),
+            nameof(Order),
+            nameof(OrderDetail),
+            nameof(DiscountCode),
+            nameof(Notification)
+        ];
+
+        private readonly IHttpContextAccessor? _httpContextAccessor;
+
+        public ApplicationDbContext(
+            DbContextOptions<ApplicationDbContext> options,
+            IHttpContextAccessor? httpContextAccessor = null)
             : base(options)
         {
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // 🛍️ Sản phẩm
@@ -33,6 +52,7 @@ namespace WebBanHangOnline.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }
         public DbSet<DiscountCode> DiscountCodes { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
         // 📢 Thông báo
         public DbSet<Notification> Notifications { get; set; } // <-- Thêm mới
 
@@ -111,6 +131,44 @@ namespace WebBanHangOnline.Data
             builder.Entity<ProductVariant>()
                 .Property(v => v.Price)
                 .HasPrecision(18, 2);
+
+            builder.Entity<ProductVariant>()
+                .Property(v => v.RowVersion)
+                .IsRowVersion();
+
+            builder.Entity<CartItem>()
+                .Property(item => item.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            builder.Entity<AuditLog>()
+                .Property(log => log.UserId)
+                .HasMaxLength(450);
+
+            builder.Entity<AuditLog>()
+                .Property(log => log.UserName)
+                .HasMaxLength(256);
+
+            builder.Entity<AuditLog>()
+                .Property(log => log.Roles)
+                .HasMaxLength(512);
+
+            builder.Entity<AuditLog>()
+                .Property(log => log.Action)
+                .HasMaxLength(32);
+
+            builder.Entity<AuditLog>()
+                .Property(log => log.EntityName)
+                .HasMaxLength(128);
+
+            builder.Entity<AuditLog>()
+                .Property(log => log.EntityId)
+                .HasMaxLength(128);
+
+            builder.Entity<AuditLog>()
+                .HasIndex(log => new { log.EntityName, log.EntityId });
+
+            builder.Entity<AuditLog>()
+                .HasIndex(log => log.CreatedAt);
 
             // =========================
             // RELATIONSHIPS
@@ -216,6 +274,100 @@ namespace WebBanHangOnline.Data
                 }
             );
 
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var auditLogs = BuildAuditLogs();
+            if (auditLogs.Any())
+            {
+                AuditLogs.AddRange(auditLogs);
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private List<AuditLog> BuildAuditLogs()
+        {
+            ChangeTracker.DetectChanges();
+
+            var httpContext = _httpContextAccessor?.HttpContext;
+            var user = httpContext?.User;
+            var userId = user?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
+            var userName = user?.Identity?.IsAuthenticated == true
+                ? user.Identity.Name ?? "AuthenticatedUser"
+                : "System";
+            var roles = user == null
+                ? string.Empty
+                : string.Join(",", user.Claims
+                    .Where(claim => claim.Type == ClaimTypes.Role)
+                    .Select(claim => claim.Value)
+                    .Distinct());
+
+            return ChangeTracker.Entries()
+                .Where(ShouldAudit)
+                .Select(entry => CreateAuditLog(entry, userId, userName, roles))
+                .ToList();
+        }
+
+        private static bool ShouldAudit(EntityEntry entry)
+        {
+            return entry.Entity is not AuditLog &&
+                   entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
+                   AuditedEntities.Contains(entry.Metadata.ClrType.Name);
+        }
+
+        private static AuditLog CreateAuditLog(EntityEntry entry, string userId, string userName, string roles)
+        {
+            var oldValues = new Dictionary<string, object?>();
+            var newValues = new Dictionary<string, object?>();
+
+            foreach (var property in entry.Properties)
+            {
+                if (property.Metadata.IsPrimaryKey() || property.Metadata.IsConcurrencyToken)
+                {
+                    continue;
+                }
+
+                if (entry.State == EntityState.Added)
+                {
+                    newValues[property.Metadata.Name] = property.CurrentValue;
+                }
+                else if (entry.State == EntityState.Deleted)
+                {
+                    oldValues[property.Metadata.Name] = property.OriginalValue;
+                }
+                else if (property.IsModified)
+                {
+                    oldValues[property.Metadata.Name] = property.OriginalValue;
+                    newValues[property.Metadata.Name] = property.CurrentValue;
+                }
+            }
+
+            return new AuditLog
+            {
+                UserId = userId,
+                UserName = userName,
+                Roles = roles,
+                Action = entry.State.ToString(),
+                EntityName = entry.Metadata.ClrType.Name,
+                EntityId = GetPrimaryKeyValue(entry),
+                OldValues = JsonSerializer.Serialize(oldValues),
+                NewValues = JsonSerializer.Serialize(newValues),
+                CreatedAt = DateTime.Now
+            };
+        }
+
+        private static string GetPrimaryKeyValue(EntityEntry entry)
+        {
+            var primaryKey = entry.Metadata.FindPrimaryKey();
+            if (primaryKey == null)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(",", primaryKey.Properties
+                .Select(property => entry.Property(property.Name).CurrentValue?.ToString() ?? string.Empty));
         }
     }
 }

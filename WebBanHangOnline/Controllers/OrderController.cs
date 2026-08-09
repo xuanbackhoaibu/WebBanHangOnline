@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
+using WebBanHangOnline.Hubs;
 using WebBanHangOnline.Models;
 using WebBanHangOnline.Services;
 
@@ -11,12 +13,18 @@ public class OrderController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<OrderController> _logger;
+    private readonly IHubContext<AdminNotificationHub> _adminNotificationHub;
 
     public OrderController(ApplicationDbContext context,
-                           UserManager<ApplicationUser> userManager)
+                           UserManager<ApplicationUser> userManager,
+                           ILogger<OrderController> logger,
+                           IHubContext<AdminNotificationHub> adminNotificationHub)
     {
         _context = context;
         _userManager = userManager;
+        _logger = logger;
+        _adminNotificationHub = adminNotificationHub;
     }
 
     // =========================================================
@@ -190,119 +198,168 @@ public class OrderController : Controller
         if (needUpdate)
             await _userManager.UpdateAsync(user);
 
-        // ================= TRANSACTION =================
+        const int maxConcurrencyAttempts = 3;
 
-        using var transaction = await _context.Database.BeginTransactionAsync();
-
-        try
+        for (var attempt = 1; attempt <= maxConcurrencyAttempts; attempt++)
         {
-            // 🔹 Check tồn kho trên dữ liệu mới nhất
-            foreach (var item in cart)
-            {
-                await _context.Entry(item.ProductVariant).ReloadAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-                if (!InventoryService.CanReserve(item.ProductVariant, item.Quantity))
+            try
+            {
+                if (attempt > 1)
+                {
+                    cart = await GetCheckoutItems(user.Id, selectedItems, variantId, quantity);
+                    if (!cart.Any())
+                    {
+                        await transaction.RollbackAsync();
+                        return RedirectToAction("Index", "Cart");
+                    }
+                }
+
+                // 🔹 Check tồn kho trên dữ liệu mới nhất
+                foreach (var item in cart)
+                {
+                    await _context.Entry(item.ProductVariant).ReloadAsync();
+
+                    if (!InventoryService.CanReserve(item.ProductVariant, item.Quantity))
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(
+                            $"Sản phẩm {item.ProductVariant.Product?.Name ?? "này"} không đủ số lượng.");
+                    }
+                }
+
+                var discountCode = ResolveDiscountCode(selectedDiscountCode, manualDiscountCode);
+                var subtotal = cart.Sum(x => GetItemPrice(x) * x.Quantity);
+                var discountResult = await CalculateDiscount(discountCode, subtotal);
+                if (!discountResult.IsValid)
                 {
                     await transaction.RollbackAsync();
-                    return BadRequest(
-                        $"Sản phẩm {item.ProductVariant.Product?.Name ?? "này"} không đủ số lượng.");
+                    SetUserInfoToViewBag(user);
+                    await SetDiscountToViewBag(cart, selectedDiscountCode, manualDiscountCode);
+                    ViewBag.DiscountError = discountResult.Message;
+                    return View("Checkout", cart);
                 }
-            }
 
-            var discountCode = ResolveDiscountCode(selectedDiscountCode, manualDiscountCode);
-            var subtotal = cart.Sum(x => GetItemPrice(x) * x.Quantity);
-            var discountResult = await CalculateDiscount(discountCode, subtotal);
-            if (!discountResult.IsValid)
-            {
-                await transaction.RollbackAsync();
-                SetUserInfoToViewBag(user);
-                await SetDiscountToViewBag(cart, selectedDiscountCode, manualDiscountCode);
-                ViewBag.DiscountError = discountResult.Message;
-                return View("Checkout", cart);
-            }
+                var finalTotal = Math.Max(0, subtotal - discountResult.DiscountAmount);
 
-            var finalTotal = Math.Max(0, subtotal - discountResult.DiscountAmount);
-
-            // 🔹 Tạo Order
-            var order = new Order
-            {
-                UserId = user.Id,
-                ShippingAddress = address,
-                PhoneNumber = phone,
-                SubtotalAmount = subtotal,
-                DiscountAmount = discountResult.DiscountAmount,
-                DiscountCode = discountResult.Code,
-                TotalAmount = finalTotal,
-                Status = OrderStatuses.Pending,
-                OrderDate = DateTime.Now,
-                PaymentMethod = paymentMethod,
-                PaymentStatus = PaymentStatuses.Unpaid
-            };
-
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
-
-            if (discountResult.DiscountCode != null)
-            {
-                discountResult.DiscountCode.UsedCount += 1;
-            }
-
-            // 🔹 Tạo OrderDetails + trừ kho
-            foreach (var item in cart)
-            {
-                _context.OrderDetails.Add(new OrderDetail
+                // 🔹 Tạo Order
+                var order = new Order
                 {
-                    OrderId = order.Id,
-                    ProductVariantId = item.ProductVariantId,
-                    Quantity = item.Quantity,
-                    Price = GetItemPrice(item)
+                    UserId = user.Id,
+                    ShippingAddress = address,
+                    PhoneNumber = phone,
+                    SubtotalAmount = subtotal,
+                    DiscountAmount = discountResult.DiscountAmount,
+                    DiscountCode = discountResult.Code,
+                    TotalAmount = finalTotal,
+                    Status = paymentMethod == PaymentMethods.Cod ? OrderStatuses.Confirmed : OrderStatuses.Pending,
+                    OrderDate = DateTime.Now,
+                    PaymentMethod = paymentMethod,
+                    PaymentStatus = PaymentStatuses.Unpaid,
+                    PaymentDate = null
+                };
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                if (discountResult.DiscountCode != null)
+                {
+                    discountResult.DiscountCode.UsedCount += 1;
+                }
+
+                // 🔹 Tạo OrderDetails + trừ kho
+                foreach (var item in cart)
+                {
+                    _context.OrderDetails.Add(new OrderDetail
+                    {
+                        OrderId = order.Id,
+                        ProductVariantId = item.ProductVariantId,
+                        Quantity = item.Quantity,
+                        Price = GetItemPrice(item)
+                    });
+
+                    InventoryService.Reserve(item.ProductVariant, item.Quantity);
+                }
+
+                if (!isBuyNow)
+                {
+                    _context.CartItems.RemoveRange(cart);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _adminNotificationHub.Clients.All.SendAsync("OrderPlaced", new
+                {
+                    orderId = order.Id,
+                    orderCode = $"ORD{order.Id:D6}",
+                    customerName = user.FullName ?? user.UserName ?? "Khách hàng",
+                    totalAmount = order.TotalAmount,
+                    paymentMethod = order.PaymentMethod,
+                    orderDate = order.OrderDate.ToString("dd/MM/yyyy HH:mm")
                 });
 
-                InventoryService.Reserve(item.ProductVariant, item.Quantity);
+                _logger.LogInformation("Order placed successfully. OrderId: {OrderId}, UserId: {UserId}, PaymentMethod: {PaymentMethod}, Attempt: {Attempt}",
+                    order.Id,
+                    user.Id,
+                    paymentMethod,
+                    attempt);
+
+                // ================= REDIRECT THANH TOÁN =================
+
+                switch (paymentMethod)
+                {
+                    case PaymentMethods.VnPay:
+                        return RedirectToAction("VNPay", "Payment",
+                            new { orderId = order.Id });
+
+                    case PaymentMethods.Momo:
+                        return RedirectToAction("Momo", "Payment",
+                            new { orderId = order.Id });
+
+                    case PaymentMethods.VietQr:
+                        return RedirectToAction("VietQR", "Payment",
+                            new { orderId = order.Id });
+
+                    case PaymentMethods.Card:
+                        return RedirectToAction("Card", "Payment",
+                            new { orderId = order.Id });
+
+                    default: // COD
+                        return RedirectToAction("OrderSuccess",
+                            new { id = order.Id });
+                }
             }
-
-            if (!isBuyNow)
+            catch (DbUpdateConcurrencyException exception) when (attempt < maxConcurrencyAttempts)
             {
-                _context.CartItems.RemoveRange(cart);
+                await transaction.RollbackAsync();
+                DetachChangedEntries();
+                _logger.LogWarning(exception,
+                    "Stock concurrency conflict while placing order. UserId: {UserId}, Attempt: {Attempt}",
+                    user.Id,
+                    attempt);
             }
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            // ================= REDIRECT THANH TOÁN =================
-
-            switch (paymentMethod)
+            catch (DbUpdateConcurrencyException exception)
             {
-                case PaymentMethods.VnPay:
-                    return RedirectToAction("VNPay", "Payment",
-                        new { orderId = order.Id });
+                await transaction.RollbackAsync();
+                DetachChangedEntries();
+                _logger.LogWarning(exception,
+                    "Stock concurrency conflict was not resolved after retries. UserId: {UserId}, Attempts: {Attempts}",
+                    user.Id,
+                    maxConcurrencyAttempts);
 
-                case PaymentMethods.Momo:
-                    return RedirectToAction("Momo", "Payment",
-                        new { orderId = order.Id });
-
-                case PaymentMethods.VietQr:
-                    return RedirectToAction("VietQR", "Payment",
-                        new { orderId = order.Id });
-
-                case PaymentMethods.Card:
-                    return RedirectToAction("Card", "Payment",
-                        new { orderId = order.Id });
-
-                default: // COD
-                    order.Status = OrderStatuses.Confirmed;
-                    order.PaymentStatus = PaymentStatuses.Unpaid;
-                    order.PaymentDate = null;
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("OrderSuccess",
-                        new { id = order.Id });
+                return Conflict("Tồn kho vừa thay đổi do có khách khác đặt cùng lúc. Vui lòng kiểm tra giỏ hàng và thử lại.");
+            }
+            catch (Exception exception)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(exception, "Failed to place order for user {UserId}", user.Id);
+                return StatusCode(500, "Đã xảy ra lỗi khi tạo đơn hàng.");
             }
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            return StatusCode(500, "Đã xảy ra lỗi khi tạo đơn hàng.");
-        }
+
+        return Conflict("Tồn kho vừa thay đổi. Vui lòng thử lại.");
     }
 
     // =========================================================
@@ -579,6 +636,16 @@ public class OrderController : Controller
         ViewBag.FullName = user.FullName;
         ViewBag.Phone = user.PhoneNumber;
         ViewBag.Address = user.StreetAddress;
+    }
+
+    private void DetachChangedEntries()
+    {
+        foreach (var entry in _context.ChangeTracker.Entries()
+                     .Where(entry => entry.State != EntityState.Unchanged && entry.State != EntityState.Detached)
+                     .ToList())
+        {
+            entry.State = EntityState.Detached;
+        }
     }
 
     private sealed record DiscountCalculation(

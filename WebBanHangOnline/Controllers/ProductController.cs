@@ -5,17 +5,20 @@ using System.Security.Claims;
 using System.Text;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Services;
 
 namespace WebBanHangOnline.Controllers
 {
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICatalogCacheService _catalogCache;
         private const int PAGE_SIZE = 9;
 
-        public ProductController(ApplicationDbContext context)
+        public ProductController(ApplicationDbContext context, ICatalogCacheService catalogCache)
         {
             _context = context;
+            _catalogCache = catalogCache;
         }
 
         // ============================
@@ -147,9 +150,7 @@ namespace WebBanHangOnline.Controllers
                     .Select(item => item.ProductId)
                     .ToHashSetAsync();
 
-            ViewBag.Categories = await _context.Categories
-                .Where(c => c.IsActive)
-                .ToListAsync();
+            ViewBag.Categories = await _catalogCache.GetActiveCategoriesAsync();
 
             ViewBag.Colors = await _context.ProductVariants
                 .Where(variant => variant.Product.IsActive && variant.Color != "")

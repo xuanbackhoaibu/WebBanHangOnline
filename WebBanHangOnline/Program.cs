@@ -1,9 +1,12 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Data.SqlClient;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Globalization;
 using WebBanHangOnline.Controllers;
 using WebBanHangOnline.Data;
@@ -15,6 +18,14 @@ using WebBanHangOnline.Services.Momo;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+{
+    loggerConfiguration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext();
+});
 
 // ===============================
 // 1️⃣ DATABASE & IDENTITY
@@ -28,8 +39,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddSignalR();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ChatBotController>();
 builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICatalogCacheService, CatalogCacheService>();
+builder.Services.AddTransient<OrderMaintenanceJobs>();
+
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+    {
+        PrepareSchemaIfNecessary = true,
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+    }));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddTransient<IEmailSender, LocalEmailSender>();
@@ -104,6 +134,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
@@ -148,6 +179,11 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = [new HangfireDashboardAuthorizationFilter()]
+});
+
 // ===============================
 // 7️⃣ ROUTES
 // ===============================
@@ -178,6 +214,20 @@ app.MapRazorPages();
 // ===============================
 await SeedDatabaseWithRetryAsync(app);
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<AdminNotificationHub>("/adminNotificationHub");
+
+RecurringJob.AddOrUpdate<OrderMaintenanceJobs>(
+    "orders:auto-cancel-unpaid",
+    job => job.CancelExpiredUnpaidOrdersAsync(),
+    "*/5 * * * *",
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
+
+RecurringJob.AddOrUpdate<OrderMaintenanceJobs>(
+    "reports:daily-revenue-email",
+    job => job.SendDailyRevenueReportAsync(),
+    Cron.Daily(8),
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
+
 app.Run();
 
 static async Task SeedDatabaseWithRetryAsync(WebApplication app)

@@ -82,6 +82,9 @@ namespace WebBanHangOnline.Data
         private static async Task SeedFashionStoreDataAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             await EnsureFashionColumnsAsync(context);
+            await EnsureProductVariantRowVersionAsync(context);
+            await EnsureCartTrackingColumnsAsync(context);
+            await EnsureAuditLogTableAsync(context);
             await EnsureOrderPaymentStatusAsync(context);
             await EnsureReviewTableAsync(context);
             await EnsureWishlistTableAsync(context);
@@ -293,6 +296,51 @@ IF COL_LENGTH('Products', 'FlashSaleStart') IS NULL
 
 IF COL_LENGTH('Products', 'FlashSaleEnd') IS NULL
     ALTER TABLE Products ADD FlashSaleEnd datetime2 NULL;
+");
+        }
+
+        private static async Task EnsureProductVariantRowVersionAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[ProductVariants]', N'U') IS NOT NULL
+    AND COL_LENGTH('ProductVariants', 'RowVersion') IS NULL
+    ALTER TABLE [ProductVariants] ADD [RowVersion] rowversion NOT NULL;
+");
+        }
+
+        private static async Task EnsureCartTrackingColumnsAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF COL_LENGTH('CartItems', 'CreatedAt') IS NULL
+    ALTER TABLE [CartItems] ADD [CreatedAt] datetime2 NOT NULL CONSTRAINT [DF_CartItems_CreatedAt] DEFAULT GETDATE();
+
+IF COL_LENGTH('CartItems', 'UpdatedAt') IS NULL
+    ALTER TABLE [CartItems] ADD [UpdatedAt] datetime2 NULL;
+");
+        }
+
+        private static async Task EnsureAuditLogTableAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[AuditLogs]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [AuditLogs] (
+        [Id] bigint NOT NULL IDENTITY,
+        [UserId] nvarchar(450) NOT NULL,
+        [UserName] nvarchar(256) NOT NULL,
+        [Roles] nvarchar(512) NOT NULL,
+        [Action] nvarchar(32) NOT NULL,
+        [EntityName] nvarchar(128) NOT NULL,
+        [EntityId] nvarchar(128) NOT NULL,
+        [OldValues] nvarchar(max) NOT NULL,
+        [NewValues] nvarchar(max) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_AuditLogs] PRIMARY KEY ([Id])
+    );
+
+    CREATE INDEX [IX_AuditLogs_EntityName_EntityId] ON [AuditLogs] ([EntityName], [EntityId]);
+    CREATE INDEX [IX_AuditLogs_CreatedAt] ON [AuditLogs] ([CreatedAt]);
+END
 ");
         }
 

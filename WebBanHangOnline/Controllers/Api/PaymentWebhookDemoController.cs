@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Services;
 
 namespace WebBanHangOnline.Controllers.Api;
 
@@ -18,10 +20,12 @@ public class PaymentWebhookDemoController : ControllerBase
         PaymentStatuses.Refunded
     };
     private readonly ApplicationDbContext _context;
+    private readonly IBackgroundJobClient _backgroundJobs;
 
-    public PaymentWebhookDemoController(ApplicationDbContext context)
+    public PaymentWebhookDemoController(ApplicationDbContext context, IBackgroundJobClient backgroundJobs)
     {
         _context = context;
+        _backgroundJobs = backgroundJobs;
     }
 
     [HttpPost]
@@ -69,17 +73,18 @@ public class PaymentWebhookDemoController : ControllerBase
             });
         }
 
-        order.PaymentStatus = request.Status;
-        if (request.Status == PaymentStatuses.Paid && order.Status == OrderStatuses.Pending)
-        {
-            order.Status = OrderStatuses.Confirmed;
-        }
-        order.PaymentDate = DateTime.Now;
-        await _context.SaveChangesAsync();
+        var jobId = _backgroundJobs.Enqueue<OrderMaintenanceJobs>(job =>
+            job.SyncPaymentStatusAsync(
+                request.OrderId,
+                request.Status,
+                request.Amount,
+                request.Provider,
+                request.TransactionCode));
 
-        return Ok(new
+        return Accepted(new
         {
-            message = "Payment status updated",
+            message = "Payment webhook accepted and queued for background synchronization",
+            jobId,
             orderId = order.Id,
             order.Status,
             order.PaymentStatus,

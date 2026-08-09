@@ -1,0 +1,102 @@
+@model IReadOnlyList<WebBanHangOnline.Models.AuditLog>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Audit Trail";
+    var entities = ViewBag.Entities as IEnumerable<string> ?? [];
+    var actions = ViewBag.Actions as IEnumerable<string> ?? [];
+    var selectedEntity = ViewBag.Entity as string;
+    var selectedAction = ViewBag.Action as string;
+    var page = ViewBag.Page as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/admin-dashboard.css" asp-append-version="true" />
+}
+
+<div class="dashboard-header">
+    <div>
+        <p class="dashboard-kicker">Enterprise</p>
+        <h2>Nhật ký kiểm toán</h2>
+    </div>
+</div>
+
+<section class="recent-orders">
+    <form method="get" class="audit-filter">
+        <select name="entity">
+            <option value="">Tất cả thực thể</option>
+            @foreach (var entity in entities)
+            {
+                <option value="@entity" selected="@(entity == selectedEntity)">@entity</option>
+            }
+        </select>
+        <select name="action">
+            <option value="">Tất cả hành động</option>
+            @foreach (var action in actions)
+            {
+                <option value="@action" selected="@(action == selectedAction)">@action</option>
+            }
+        </select>
+        <button type="submit" class="date-picker">
+            <i class="fas fa-filter"></i>
+            <span>Lọc</span>
+        </button>
+    </form>
+
+    <table class="order-table audit-table">
+        <thead>
+            <tr>
+                <th>Thời gian</th>
+                <th>Người dùng</th>
+                <th>Hành động</th>
+                <th>Thực thể</th>
+                <th>Giá trị cũ</th>
+                <th>Giá trị mới</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@log.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <strong>@log.UserName</strong>
+                            <span>@log.Roles</span>
+                        </td>
+                        <td><span class="status-badge status-processing">@log.Action</span></td>
+                        <td>
+                            <strong>@log.EntityName</strong>
+                            <span>#@log.EntityId</span>
+                        </td>
+                        <td><code>@log.OldValues</code></td>
+                        <td><code>@log.NewValues</code></td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6">Chưa có audit log phù hợp</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="audit-pagination">
+        @if (page > 1)
+        {
+            <a class="view-all" asp-action="Index" asp-route-page="@(page - 1)" asp-route-entity="@selectedEntity" asp-route-action="@selectedAction">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        }
+        <span>Trang @(page) / @Math.Max(1, totalPages)</span>
+        @if (page < totalPages)
+        {
+            <a class="view-all" asp-action="Index" asp-route-page="@(page + 1)" asp-route-entity="@selectedEntity" asp-route-action="@selectedAction">
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        }
+    </div>
+</section>

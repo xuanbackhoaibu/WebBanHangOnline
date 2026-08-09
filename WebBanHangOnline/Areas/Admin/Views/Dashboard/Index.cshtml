@@ -12,6 +12,9 @@
 
     var recentOrdersList = ViewBag.RecentOrders as IEnumerable<dynamic>;
     var lowStockVariants = ViewBag.LowStockVariants as IEnumerable<dynamic>;
+    var rfmSegments = ViewBag.RfmSegments as IEnumerable<dynamic>;
+    dynamic cartAbandonment = ViewBag.CartAbandonment;
+    var cohortRows = ViewBag.CohortRows as IEnumerable<dynamic>;
 
     string StatusClass(string status)
     {
@@ -95,6 +98,106 @@
             <div class="stat-trend">Mặt hàng đang bán</div>
         </div>
     </div>
+</div>
+
+<div class="bi-grid">
+    <section class="chart-card bi-card">
+        <div class="chart-header">
+            <div>
+                <h4>RFM khách hàng</h4>
+                <span>Phân nhóm theo Recency, Frequency, Monetary</span>
+            </div>
+        </div>
+        <div class="rfm-list" id="rfmList">
+            @if (rfmSegments != null && rfmSegments.Any())
+            {
+                @foreach (var segment in rfmSegments)
+                {
+                    <div class="rfm-item">
+                        <div>
+                            <strong>@segment.Segment</strong>
+                            <span>R @segment.AverageRecencyDays ngày · F @segment.AverageFrequency</span>
+                        </div>
+                        <div>
+                            <b>@segment.CustomerCount</b>
+                            <span>@String.Format("{0:N0}", segment.TotalMonetary) VND</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state compact"><p>Chưa đủ dữ liệu RFM</p></div>
+            }
+        </div>
+    </section>
+
+    <section class="chart-card bi-card">
+        <div class="chart-header">
+            <div>
+                <h4>Bỏ giỏ hàng</h4>
+                <span>Người đã thêm giỏ nhưng chưa checkout</span>
+            </div>
+        </div>
+        <div class="abandonment-metric">
+            <div class="abandonment-rate" id="abandonmentRate">@String.Format("{0:N1}", cartAbandonment?.AbandonmentRate ?? 0)%</div>
+            <div class="abandonment-bars">
+                <div>
+                    <span>Giỏ bỏ lại</span>
+                    <b id="abandonedCartUsers">@(cartAbandonment?.AbandonedCartUsers ?? 0)</b>
+                </div>
+                <div>
+                    <span>Checkout 30 ngày</span>
+                    <b id="recentCheckoutUsers">@(cartAbandonment?.RecentCheckoutUsers ?? 0)</b>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="chart-card bi-card bi-card-wide">
+        <div class="chart-header">
+            <div>
+                <h4>Cohort quay lại mua</h4>
+                <span>Tỷ lệ khách trong cohort mua lại theo tháng</span>
+            </div>
+        </div>
+        <div class="cohort-table-wrap">
+            <table class="cohort-table" id="cohortTable">
+                <thead>
+                    <tr>
+                        <th>Cohort</th>
+                        <th>KH</th>
+                        <th>M0</th>
+                        <th>M1</th>
+                        <th>M2</th>
+                        <th>M3</th>
+                        <th>M4</th>
+                        <th>M5</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (cohortRows != null && cohortRows.Any())
+                    {
+                        @foreach (var row in cohortRows)
+                        {
+                            <tr>
+                                <td>@row.CohortMonth</td>
+                                <td>@row.CustomerCount</td>
+                                @foreach (var rate in row.RetentionRates)
+                                {
+                                    <td><span class="cohort-cell" style="--heat:@((decimal)rate / 100m)">@String.Format("{0:N0}", rate)%</span></td>
+                                }
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="8">Chưa đủ dữ liệu cohort</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 
 <div class="dashboard-grid">
@@ -249,6 +352,7 @@
 
 @section Scripts {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 
 <script>
     const moneyFormatter = new Intl.NumberFormat('vi-VN', {
@@ -264,6 +368,7 @@
     let paymentStatusChart;
     let categorySalesChart;
     let selectedRevenueMode = '7days';
+    let audioContext;
 
     @{
         var revenueLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels ?? new List<string>());
@@ -448,6 +553,83 @@
         renderBarChart(data.categoryLabels, data.categoryData);
     }
 
+    function renderBusinessIntelligence(data) {
+        if (!data) return;
+
+        const rfmList = document.getElementById('rfmList');
+        if (rfmList) {
+            const segments = data.rfmSegments || [];
+            rfmList.innerHTML = segments.length
+                ? segments.map(segment => `
+                    <div class="rfm-item">
+                        <div>
+                            <strong>${segment.segment}</strong>
+                            <span>R ${segment.averageRecencyDays} ngày · F ${segment.averageFrequency}</span>
+                        </div>
+                        <div>
+                            <b>${segment.customerCount}</b>
+                            <span>${moneyFormatter.format(segment.totalMonetary || 0)}</span>
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="empty-state compact"><p>Chưa đủ dữ liệu RFM</p></div>';
+        }
+
+        document.getElementById('abandonmentRate').textContent = `${Number(data.cartAbandonment?.abandonmentRate || 0).toFixed(1)}%`;
+        document.getElementById('abandonedCartUsers').textContent = data.cartAbandonment?.abandonedCartUsers || 0;
+        document.getElementById('recentCheckoutUsers').textContent = data.cartAbandonment?.recentCheckoutUsers || 0;
+
+        const cohortBody = document.querySelector('#cohortTable tbody');
+        if (cohortBody) {
+            const rows = data.cohortRows || [];
+            cohortBody.innerHTML = rows.length
+                ? rows.map(row => `
+                    <tr>
+                        <td>${row.cohortMonth}</td>
+                        <td>${row.customerCount}</td>
+                        ${(row.retentionRates || []).map(rate => `<td><span class="cohort-cell" style="--heat:${Number(rate) / 100}">${Number(rate).toFixed(0)}%</span></td>`).join('')}
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="8">Chưa đủ dữ liệu cohort</td></tr>';
+        }
+    }
+
+    function playOrderBell() {
+        try {
+            audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(660, audioContext.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.05, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.45);
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.45);
+        } catch {
+        }
+    }
+
+    function showAdminToast(order) {
+        const toast = document.createElement('div');
+        toast.className = 'admin-live-toast';
+        toast.innerHTML = `
+            <div class="toast-icon"><i class="fas fa-bell"></i></div>
+            <div>
+                <strong>Đơn mới ${order.orderCode}</strong>
+                <span>${order.customerName} · ${moneyFormatter.format(order.totalAmount || 0)}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 20);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 240);
+        }, 5200);
+    }
+
     async function refreshData() {
         const refreshButton = document.getElementById('refreshButton');
         refreshButton?.classList.add('refreshing');
@@ -471,6 +653,7 @@
             document.getElementById('totalUsers').textContent = data.totalUsers.toLocaleString('vi-VN');
             document.getElementById('totalProducts').textContent = data.totalProducts.toLocaleString('vi-VN');
             renderAllCharts(data);
+            renderBusinessIntelligence(data.businessIntelligence);
         } catch (error) {
             console.error('Lỗi khi tải dashboard:', error);
         } finally {
@@ -519,6 +702,21 @@
         document.getElementById('revenueMonthInput')?.addEventListener('change', refreshData);
         document.getElementById('refreshButton')?.addEventListener('click', refreshData);
         setInterval(refreshData, 30000);
+
+        if (window.signalR) {
+            const adminConnection = new signalR.HubConnectionBuilder()
+                .withUrl('/adminNotificationHub')
+                .withAutomaticReconnect()
+                .build();
+
+            adminConnection.on('OrderPlaced', order => {
+                playOrderBell();
+                showAdminToast(order);
+                refreshData();
+            });
+
+            adminConnection.start().catch(error => console.error('Không kết nối được admin realtime:', error));
+        }
     });
 
     function viewOrderDetail(orderId) {

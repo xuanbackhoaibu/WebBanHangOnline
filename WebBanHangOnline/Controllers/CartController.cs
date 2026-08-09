@@ -76,7 +76,8 @@ public class CartController : Controller
             {
                 UserId = userId,
                 ProductVariantId = variantId,
-                Quantity = quantity
+                Quantity = quantity,
+                CreatedAt = DateTime.Now
             };
 
             _context.CartItems.Add(cartItem);
@@ -84,6 +85,7 @@ public class CartController : Controller
         else
         {
             cartItem.Quantity += quantity;
+            cartItem.UpdatedAt = DateTime.Now;
         }
 
         await _context.SaveChangesAsync();
@@ -116,6 +118,7 @@ public class CartController : Controller
         }
 
         item.Quantity = quantity;
+        item.UpdatedAt = DateTime.Now;
         await _context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));

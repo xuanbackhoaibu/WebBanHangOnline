@@ -156,6 +156,11 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
                 ViewBag.LowStockVariants = lowStockVariants;
 
+                var biSnapshot = await BuildBusinessIntelligenceSnapshot();
+                ViewBag.RfmSegments = biSnapshot.RfmSegments;
+                ViewBag.CartAbandonment = biSnapshot.CartAbandonment;
+                ViewBag.CohortRows = biSnapshot.CohortRows;
+
                 // ==================== ĐƠN HÀNG GẦN NHẤT ====================
                 var recentOrders = await _context.Orders
                     .Include(o => o.User)
@@ -211,6 +216,9 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ViewBag.CategorySalesData = new List<decimal>();
                 ViewBag.LowStockVariants = new List<object>();
                 ViewBag.RecentOrders = new List<object>();
+                ViewBag.RfmSegments = new List<RfmSegmentViewModel>();
+                ViewBag.CartAbandonment = new CartAbandonmentViewModel(0, 0, 0);
+                ViewBag.CohortRows = new List<CohortRowViewModel>();
                 
                 return View();
             }
@@ -312,8 +320,139 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 paymentLabels = paymentStats.Select(x => x.Label).ToList(),
                 paymentData = paymentStats.Select(x => x.Count).ToList(),
                 categoryLabels = categorySales.Select(x => x.Label).ToList(),
-                categoryData = categorySales.Select(x => x.Revenue).ToList()
+                categoryData = categorySales.Select(x => x.Revenue).ToList(),
+                businessIntelligence = await BuildBusinessIntelligenceSnapshot()
             });
+        }
+
+        private async Task<BusinessIntelligenceSnapshot> BuildBusinessIntelligenceSnapshot()
+        {
+            var validStatus = OrderStatuses.RevenueStatuses;
+            var paidOrders = await _context.Orders
+                .AsNoTracking()
+                .Where(order => validStatus.Contains(order.Status) || order.PaymentStatus == PaymentStatuses.Paid)
+                .Select(order => new
+                {
+                    order.UserId,
+                    order.OrderDate,
+                    order.TotalAmount
+                })
+                .ToListAsync();
+
+            var now = DateTime.Now;
+            var rfmSegments = paidOrders
+                .Where(order => !string.IsNullOrWhiteSpace(order.UserId))
+                .GroupBy(order => order.UserId)
+                .Select(group =>
+                {
+                    var recencyDays = (int)Math.Max(0, (now.Date - group.Max(order => order.OrderDate).Date).TotalDays);
+                    var frequency = group.Count();
+                    var monetary = group.Sum(order => order.TotalAmount);
+                    var segment = ClassifyRfm(recencyDays, frequency, monetary);
+
+                    return new
+                    {
+                        Segment = segment,
+                        RecencyDays = recencyDays,
+                        Frequency = frequency,
+                        Monetary = monetary
+                    };
+                })
+                .GroupBy(item => item.Segment)
+                .Select(group => new RfmSegmentViewModel(
+                    group.Key,
+                    group.Count(),
+                    group.Any() ? Math.Round(group.Average(item => item.RecencyDays), 1) : 0,
+                    group.Any() ? Math.Round(group.Average(item => item.Frequency), 1) : 0,
+                    group.Sum(item => item.Monetary)))
+                .OrderByDescending(item => item.CustomerCount)
+                .ToList();
+
+            var cartUserIds = await _context.CartItems
+                .AsNoTracking()
+                .Where(item => item.CreatedAt <= now.AddHours(-1))
+                .Select(item => item.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            var recentCheckoutUserIds = paidOrders
+                .Where(order => order.OrderDate >= now.AddDays(-30))
+                .Select(order => order.UserId)
+                .Where(userId => !string.IsNullOrWhiteSpace(userId))
+                .Distinct()
+                .ToList();
+
+            var abandonmentDenominator = cartUserIds.Count + recentCheckoutUserIds.Count;
+            var abandonmentRate = abandonmentDenominator == 0
+                ? 0
+                : Math.Round(cartUserIds.Count * 100m / abandonmentDenominator, 1);
+
+            var cohortRows = BuildCohortRows(paidOrders
+                .Where(order => !string.IsNullOrWhiteSpace(order.UserId))
+                .Select(order => new CustomerOrderPoint(order.UserId, new DateTime(order.OrderDate.Year, order.OrderDate.Month, 1)))
+                .ToList());
+
+            return new BusinessIntelligenceSnapshot(
+                rfmSegments,
+                new CartAbandonmentViewModel(cartUserIds.Count, recentCheckoutUserIds.Count, abandonmentRate),
+                cohortRows);
+        }
+
+        private static string ClassifyRfm(int recencyDays, int frequency, decimal monetary)
+        {
+            if (recencyDays <= 30 && frequency >= 3 && monetary >= 1000000)
+            {
+                return "Khách hàng VIP";
+            }
+
+            if (recencyDays > 90 && frequency >= 2)
+            {
+                return "Có nguy cơ rời bỏ";
+            }
+
+            if (recencyDays <= 30 && frequency == 1)
+            {
+                return "Khách hàng mới";
+            }
+
+            if (frequency >= 2)
+            {
+                return "Khách hàng trung thành";
+            }
+
+            return "Cần nuôi dưỡng";
+        }
+
+        private static List<CohortRowViewModel> BuildCohortRows(List<CustomerOrderPoint> orders)
+        {
+            return orders
+                .GroupBy(order => order.UserId)
+                .Select(group => new
+                {
+                    UserId = group.Key,
+                    FirstMonth = group.Min(order => order.Month),
+                    Months = group.Select(order => order.Month).Distinct().ToHashSet()
+                })
+                .GroupBy(customer => customer.FirstMonth)
+                .OrderByDescending(group => group.Key)
+                .Take(6)
+                .OrderBy(group => group.Key)
+                .Select(group =>
+                {
+                    var customers = group.ToList();
+                    var cohortSize = customers.Count;
+                    var rates = Enumerable.Range(0, 6)
+                        .Select(offset =>
+                        {
+                            var targetMonth = group.Key.AddMonths(offset);
+                            var retained = customers.Count(customer => customer.Months.Contains(targetMonth));
+                            return cohortSize == 0 ? 0 : Math.Round(retained * 100m / cohortSize, 1);
+                        })
+                        .ToList();
+
+                    return new CohortRowViewModel(group.Key.ToString("MM/yyyy"), cohortSize, rates);
+                })
+                .ToList();
         }
 
         private static DateTime? TryParseMonth(string? value)
@@ -332,5 +471,29 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ? new DateTime(month.Year, month.Month, 1)
                 : null;
         }
+
+        private sealed record CustomerOrderPoint(string UserId, DateTime Month);
+
+        public sealed record BusinessIntelligenceSnapshot(
+            List<RfmSegmentViewModel> RfmSegments,
+            CartAbandonmentViewModel CartAbandonment,
+            List<CohortRowViewModel> CohortRows);
+
+        public sealed record RfmSegmentViewModel(
+            string Segment,
+            int CustomerCount,
+            double AverageRecencyDays,
+            double AverageFrequency,
+            decimal TotalMonetary);
+
+        public sealed record CartAbandonmentViewModel(
+            int AbandonedCartUsers,
+            int RecentCheckoutUsers,
+            decimal AbandonmentRate);
+
+        public sealed record CohortRowViewModel(
+            string CohortMonth,
+            int CustomerCount,
+            List<decimal> RetentionRates);
     }
 }
