@@ -21,7 +21,7 @@
     {
         status = status ?? string.Empty;
         if (status == "Paid" || status == "Completed" || status == "Delivered") return "status-completed";
-        if (status == "Unpaid" || status == "Pending") return "status-pending";
+        if (status == "Unpaid" || status == "Pending" || status == "AwaitingConfirmation") return "status-pending";
         if (status == "Cancelled" || status == "Failed") return "status-cancelled";
         if (status == "Shipping" || status == "Confirmed" || status == "Processing") return "status-processing";
         return "status-pending";
@@ -37,6 +37,7 @@
             "Completed" => "Hoàn thành",
             "Cancelled" => "Đã hủy",
             "Unpaid" => "Chưa thanh toán",
+            "AwaitingConfirmation" => "Chờ xác nhận",
             "Paid" => "Đã thanh toán",
             "Failed" => "Thất bại",
             "Refunded" => "Đã hoàn tiền",

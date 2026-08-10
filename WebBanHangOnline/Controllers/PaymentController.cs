@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using WebBanHangOnline.Data;
 using WebBanHangOnline.Helpers;
 using WebBanHangOnline.Models;
+using WebBanHangOnline.Models.Momo;
 using WebBanHangOnline.Services.Momo;
 
 namespace WebBanHangOnline.Controllers
@@ -19,6 +21,8 @@ namespace WebBanHangOnline.Controllers
         private readonly IConfiguration _config;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMomoService _momoService;
+        private readonly MomoOptionModel _momoOptions;
+        private readonly IWebHostEnvironment _environment;
         // ================================
         // 💳 VIETQR PAYMENT
         // ================================
@@ -58,9 +62,22 @@ namespace WebBanHangOnline.Controllers
             if (order == null)
                 return NotFound();
 
-            order.Status = OrderStatuses.Confirmed;
-            order.PaymentStatus = PaymentStatuses.Paid;
-            order.PaymentDate = DateTime.Now;
+            if (!PaymentStatuses.IsFinal(order.PaymentStatus))
+            {
+                order.PaymentStatus = PaymentStatuses.AwaitingConfirmation;
+                order.PaymentDate = null;
+                order.AdminNote = AppendPaymentNote(order.AdminNote, "Khách hàng báo đã chuyển khoản VietQR, chờ admin xác nhận.");
+
+                AddPaymentTransaction(
+                    order.Id,
+                    "VietQR",
+                    $"VQR-{order.Id}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
+                    order.TotalAmount,
+                    PaymentStatuses.AwaitingConfirmation,
+                    true,
+                    "{}",
+                    "Customer submitted bank transfer confirmation.");
+            }
 
             await _context.SaveChangesAsync();
 
@@ -70,12 +87,16 @@ namespace WebBanHangOnline.Controllers
             ApplicationDbContext context,
             IConfiguration config,
             UserManager<ApplicationUser> userManager,
-            IMomoService momoService)
+            IMomoService momoService,
+            IOptions<MomoOptionModel> momoOptions,
+            IWebHostEnvironment environment)
         {
             _context = context;
             _config = config;
             _userManager = userManager;
             _momoService = momoService;
+            _momoOptions = momoOptions.Value;
+            _environment = environment;
         }
 
         public async Task<IActionResult> Momo(int orderId)
@@ -114,20 +135,52 @@ namespace WebBanHangOnline.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> MomoReturn()
         {
-            var order = await FindMomoOrderFromRequest();
+            var parameters = Request.Query
+                .Where(item => !string.IsNullOrWhiteSpace(item.Key))
+                .ToDictionary(item => item.Key, item => item.Value.ToString(), StringComparer.OrdinalIgnoreCase);
+
+            var signatureValid = VerifyMomoSignature(parameters);
+            var order = await FindMomoOrder(parameters.TryGetValue("orderId", out var momoOrderId) ? momoOrderId : null);
             if (order == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy đơn hàng MoMo.";
                 return RedirectToAction("MyOrders", "Order");
             }
 
-            var resultCode = Request.Query["resultCode"].ToString();
-            order.PaymentStatus = resultCode == "0" ? PaymentStatuses.Paid : PaymentStatuses.Failed;
-            if (resultCode == "0" && order.Status == OrderStatuses.Pending)
+            AddPaymentTransaction(
+                order.Id,
+                "MoMo",
+                parameters.TryGetValue("transId", out var returnTransId) ? returnTransId : string.Empty,
+                TryReadDecimal(parameters, "amount") ?? 0,
+                parameters.TryGetValue("resultCode", out var returnCode) && returnCode == "0" ? PaymentStatuses.Paid : PaymentStatuses.Failed,
+                signatureValid,
+                JsonSerializer.Serialize(parameters),
+                signatureValid ? "MoMo return received." : "MoMo return rejected: invalid signature.");
+
+            if (!signatureValid)
             {
-                order.Status = OrderStatuses.Confirmed;
+                await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "MoMo trả về chữ ký không hợp lệ.";
+                return RedirectToAction("MyOrders", "Order");
             }
-            order.PaymentDate = DateTime.Now;
+
+            if (!IsPaymentAmountValid(order, parameters))
+            {
+                await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "MoMo trả về số tiền không khớp đơn hàng.";
+                return RedirectToAction("MyOrders", "Order");
+            }
+
+            var resultCode = Request.Query["resultCode"].ToString();
+            if (!PaymentStatuses.IsFinal(order.PaymentStatus))
+            {
+                order.PaymentStatus = resultCode == "0" ? PaymentStatuses.Paid : PaymentStatuses.Failed;
+                if (resultCode == "0" && order.Status == OrderStatuses.Pending)
+                {
+                    order.Status = OrderStatuses.Confirmed;
+                }
+                order.PaymentDate = DateTime.Now;
+            }
             await _context.SaveChangesAsync();
 
             TempData[resultCode == "0" ? "SuccessMessage" : "ErrorMessage"] =
@@ -144,6 +197,8 @@ namespace WebBanHangOnline.Controllers
             var body = await reader.ReadToEndAsync();
             using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(body) ? "{}" : body);
             var root = document.RootElement;
+            var parameters = ReadJsonObjectAsDictionary(root);
+            var signatureValid = VerifyMomoSignature(parameters);
 
             var order = await FindMomoOrder(root.TryGetProperty("orderId", out var orderIdElement)
                 ? orderIdElement.GetString()
@@ -151,6 +206,32 @@ namespace WebBanHangOnline.Controllers
 
             if (order == null)
                 return Ok(new { resultCode = 1, message = "Order not found" });
+
+            var paymentStatus = root.TryGetProperty("resultCode", out var statusElement) && statusElement.GetInt32() == 0
+                ? PaymentStatuses.Paid
+                : PaymentStatuses.Failed;
+
+            AddPaymentTransaction(
+                order.Id,
+                "MoMo",
+                parameters.TryGetValue("transId", out var transId) ? transId : string.Empty,
+                TryReadDecimal(parameters, "amount") ?? 0,
+                paymentStatus,
+                signatureValid,
+                body,
+                signatureValid ? "MoMo IPN received." : "MoMo IPN rejected: invalid signature.");
+
+            if (!signatureValid)
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { resultCode = 1, message = "Invalid signature" });
+            }
+
+            if (!IsPaymentAmountValid(order, parameters))
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { resultCode = 1, message = "Invalid amount" });
+            }
 
             var resultCode = root.TryGetProperty("resultCode", out var resultCodeElement)
                 ? resultCodeElement.GetInt32()
@@ -172,6 +253,11 @@ namespace WebBanHangOnline.Controllers
 
         public async Task<IActionResult> Card(int orderId)
         {
+            if (!_environment.IsDevelopment())
+            {
+                return Forbid();
+            }
+
             var order = await GetCurrentUserOrder(orderId);
             if (order == null)
                 return NotFound("Đơn hàng không tồn tại");
@@ -182,6 +268,15 @@ namespace WebBanHangOnline.Controllers
                 order.Status = OrderStatuses.Confirmed;
             }
             order.PaymentDate = DateTime.Now;
+            AddPaymentTransaction(
+                order.Id,
+                "CardDemo",
+                $"CARD-DEMO-{order.Id}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
+                order.TotalAmount,
+                PaymentStatuses.Paid,
+                true,
+                "{}",
+                "Development-only demo card payment.");
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Thanh toán thẻ demo thành công.";
@@ -547,6 +642,150 @@ namespace WebBanHangOnline.Controllers
             using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(key));
             var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
             return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+        }
+
+        private bool VerifyMomoSignature(IReadOnlyDictionary<string, string> data)
+        {
+            if (string.IsNullOrWhiteSpace(_momoOptions.SecretKey) ||
+                !data.TryGetValue("signature", out var receivedSignature) ||
+                string.IsNullOrWhiteSpace(receivedSignature))
+            {
+                return false;
+            }
+
+            var rawData = BuildMomoResponseRawData(data);
+            if (string.IsNullOrWhiteSpace(rawData))
+            {
+                return false;
+            }
+
+            var computedSignature = HmacSha256(_momoOptions.SecretKey, rawData);
+            if (string.Equals(computedSignature, receivedSignature, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            var fallbackRawData = BuildCanonicalSignatureData(data, "signature");
+            var fallbackSignature = HmacSha256(_momoOptions.SecretKey, fallbackRawData);
+            return string.Equals(fallbackSignature, receivedSignature, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string BuildMomoResponseRawData(IReadOnlyDictionary<string, string> data)
+        {
+            var orderedKeys = new[]
+            {
+                "accessKey",
+                "amount",
+                "extraData",
+                "message",
+                "orderId",
+                "orderInfo",
+                "orderType",
+                "partnerCode",
+                "payType",
+                "requestId",
+                "responseTime",
+                "resultCode",
+                "transId"
+            };
+
+            var values = orderedKeys
+                .Where(key => data.TryGetValue(key, out var value) && value != null)
+                .Select(key => $"{key}={data[key]}");
+
+            return string.Join("&", values);
+        }
+
+        private static string BuildCanonicalSignatureData(
+            IReadOnlyDictionary<string, string> data,
+            params string[] excludedKeys)
+        {
+            var excluded = excludedKeys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            return string.Join("&", data
+                .Where(item => !excluded.Contains(item.Key) && item.Value != null)
+                .OrderBy(item => item.Key, StringComparer.Ordinal)
+                .Select(item => $"{item.Key}={item.Value}"));
+        }
+
+        private static string HmacSha256(string key, string input)
+        {
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
+            var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(input));
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+
+        private static Dictionary<string, string> ReadJsonObjectAsDictionary(JsonElement root)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return result;
+            }
+
+            foreach (var property in root.EnumerateObject())
+            {
+                result[property.Name] = property.Value.ValueKind switch
+                {
+                    JsonValueKind.String => property.Value.GetString() ?? string.Empty,
+                    JsonValueKind.Number => property.Value.GetRawText(),
+                    JsonValueKind.True => "true",
+                    JsonValueKind.False => "false",
+                    JsonValueKind.Null => string.Empty,
+                    _ => property.Value.GetRawText()
+                };
+            }
+
+            return result;
+        }
+
+        private static decimal? TryReadDecimal(IReadOnlyDictionary<string, string> data, string key)
+        {
+            return data.TryGetValue(key, out var value) && decimal.TryParse(value, out var amount)
+                ? amount
+                : null;
+        }
+
+        private static bool IsPaymentAmountValid(Order order, IReadOnlyDictionary<string, string> data)
+        {
+            var amount = TryReadDecimal(data, "amount");
+            if (!amount.HasValue)
+            {
+                return false;
+            }
+
+            var expectedAmount = Math.Round(order.TotalAmount, 0, MidpointRounding.AwayFromZero);
+            return amount.Value == expectedAmount;
+        }
+
+        private void AddPaymentTransaction(
+            int orderId,
+            string provider,
+            string transactionCode,
+            decimal amount,
+            string status,
+            bool isSignatureValid,
+            string rawPayload,
+            string note)
+        {
+            _context.PaymentTransactions.Add(new PaymentTransaction
+            {
+                OrderId = orderId,
+                Provider = provider,
+                TransactionCode = transactionCode,
+                Amount = amount,
+                Status = status,
+                IsSignatureValid = isSignatureValid,
+                RawPayload = rawPayload,
+                Note = note
+            });
+        }
+
+        private static string AppendPaymentNote(string? currentNote, string note)
+        {
+            var line = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] {note}";
+            return string.IsNullOrWhiteSpace(currentNote)
+                ? line
+                : $"{currentNote}{Environment.NewLine}{line}";
         }
 
         private string GetClientIpAddress()

@@ -1,21 +1,53 @@
 .vietqr-page {
-  max-width: 560px;
+  max-width: 920px;
   margin: 0 auto;
+  padding: 18px;
+}
+
+.vietqr-card,
+.vietqr-info,
+.vietqr-warning,
+.vietqr-submit {
+  box-shadow: 0 8px 24px rgba(42, 34, 28, 0.055);
+}
+
+.vietqr-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(240px, 0.95fr);
+  gap: 22px;
+  align-items: center;
   border: 1px solid var(--xb-line, #eee);
   border-radius: 12px;
   background:
     radial-gradient(circle at 92% 12%, rgba(217, 79, 61, 0.08), transparent 28%),
     #fff;
-  box-shadow: 0 8px 24px rgba(42, 34, 28, 0.055);
   padding: 24px;
-  text-align: center;
+}
+
+.vietqr-copy {
+  text-align: left;
 }
 
 .vietqr-page h1 {
-  margin: 0 0 18px;
+  margin: 6px 0 12px;
   color: var(--xb-ink, #151515);
-  font-size: clamp(1.55rem, 3vw, 2rem);
+  font-size: clamp(1.8rem, 4vw, 3rem);
   font-weight: 840;
+  line-height: 1.04;
+}
+
+.vietqr-page p {
+  margin: 0;
+  color: var(--xb-muted, #6f6f78);
+}
+
+.vietqr-visual {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--xb-line, #e9e5df);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 14px;
 }
 
 .vietqr-image {
@@ -23,7 +55,7 @@
   border: 1px solid var(--xb-line, #e9e5df);
   border-radius: 12px;
   background: #fff;
-  margin: 10px auto 22px;
+  margin: 0 auto;
   padding: 12px;
 }
 
@@ -31,7 +63,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 14px;
+  margin: 14px 0;
 }
 
 .vietqr-info div {
@@ -59,7 +91,14 @@
 }
 
 .vietqr-warning {
+  border: 1px solid rgba(217, 79, 61, 0.24);
+  border-radius: 10px;
+  background: rgba(217, 79, 61, 0.08);
+  color: var(--xb-ink, #151515);
   font-weight: 740;
+  padding: 12px 14px;
+  margin: 0 0 14px;
+  text-align: left;
 }
 
 .vietqr-submit {
@@ -76,6 +115,7 @@
   font-weight: 820;
   box-shadow: 0 14px 28px rgba(217, 79, 61, 0.2);
   padding: 10px 14px;
+  gap: 8px;
 }
 
 .vietqr-submit:hover {
@@ -83,6 +123,15 @@
 }
 
 @media (max-width: 520px) {
+  .vietqr-page {
+    padding: 0;
+  }
+
+  .vietqr-card {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
   .vietqr-info {
     grid-template-columns: 1fr;
   }

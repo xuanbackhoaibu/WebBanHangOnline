@@ -13,7 +13,7 @@ namespace WebBanHangOnline.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ICatalogCacheService _catalogCache;
-        private const int PAGE_SIZE = 9;
+        private const int PAGE_SIZE = 12;
 
         public ProductController(ApplicationDbContext context, ICatalogCacheService catalogCache)
         {

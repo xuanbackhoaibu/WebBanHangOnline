@@ -21,6 +21,7 @@
 
     string PaymentStatusText(string? status) => status switch
     {
+        "AwaitingConfirmation" => "Chờ xác nhận chuyển khoản",
         "Paid" => "Đã thanh toán",
         "Failed" => "Thanh toán thất bại",
         "Refunded" => "Đã hoàn tiền",
@@ -99,9 +100,9 @@
                         <span></span>
                         <strong>Đã đặt</strong>
                     </div>
-                    <div class="timeline-step @(Model.PaymentStatus == "Paid" ? "active" : "")">
+                    <div class="timeline-step @(Model.PaymentStatus == "Paid" || Model.PaymentStatus == "AwaitingConfirmation" ? "active" : "")">
                         <span></span>
-                        <strong>Thanh toán</strong>
+                        <strong>@(Model.PaymentStatus == "AwaitingConfirmation" ? "Chờ xác nhận" : "Thanh toán")</strong>
                     </div>
                     <div class="timeline-step @(Model.Status == "Shipping" || Model.Status == "Completed" ? "active" : "")">
                         <span></span>

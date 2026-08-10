@@ -105,6 +105,11 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
             if (order == null) return NotFound();
 
+            ViewBag.PaymentTransactions = await _context.PaymentTransactions
+                .Where(transaction => transaction.OrderId == id)
+                .OrderByDescending(transaction => transaction.CreatedAt)
+                .ToListAsync();
+
             return View(order);
         }
 

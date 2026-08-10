@@ -11,6 +11,7 @@
         "Completed" => "Đã hoàn thành",
         "Cancelled" => "Đã hủy",
         "Unpaid" => "Chưa thanh toán",
+        "AwaitingConfirmation" => "Chờ xác nhận",
         "Paid" => "Đã thanh toán",
         "Failed" => "Thanh toán lỗi",
         "Refunded" => "Đã hoàn tiền",
@@ -30,6 +31,8 @@
     var orderedHistories = Model.StatusHistories?
         .OrderByDescending(item => item.ChangedAt)
         .ToList() ?? new List<WebBanHangOnline.Models.OrderStatusHistory>();
+    var paymentTransactions = ViewBag.PaymentTransactions as IEnumerable<WebBanHangOnline.Models.PaymentTransaction>
+        ?? Enumerable.Empty<WebBanHangOnline.Models.PaymentTransaction>();
 }
 
 <h2><i class="bi bi-receipt"></i> Chi tiết đơn #@Model.Id</h2>
@@ -47,6 +50,53 @@
 <p><strong>Tổng tiền:</strong> <span class="text-danger fw-bold">
     @String.Format("{0:N0} VND", Model.TotalAmount)
 </span></p>
+
+<hr />
+
+<h5><i class="bi bi-shield-check"></i> Nhật ký thanh toán</h5>
+
+@if (paymentTransactions.Any())
+{
+    <div class="table-responsive mb-4">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Cổng</th>
+                    <th>Mã giao dịch</th>
+                    <th>Số tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Chữ ký</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tx in paymentTransactions)
+                {
+                    <tr>
+                        <td>@tx.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@tx.Provider</td>
+                        <td>@(string.IsNullOrWhiteSpace(tx.TransactionCode) ? "-" : tx.TransactionCode)</td>
+                        <td>@String.Format("{0:N0} VND", tx.Amount)</td>
+                        <td>@StatusText(tx.Status)</td>
+                        <td>
+                            <span class="badge @(tx.IsSignatureValid ? "text-bg-success" : "text-bg-danger")">
+                                @(tx.IsSignatureValid ? "Hợp lệ" : "Không hợp lệ")
+                            </span>
+                        </td>
+                        <td>@tx.Note</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-light border mb-4">
+        Chưa có giao dịch thanh toán nào được ghi nhận cho đơn này.
+    </div>
+}
 
 <hr />
 
@@ -172,6 +222,7 @@
 
     <select name="paymentStatus" class="form-select d-inline w-auto">
         <option value="Unpaid" selected="@(Model.PaymentStatus == "Unpaid")">Chưa thanh toán</option>
+        <option value="AwaitingConfirmation" selected="@(Model.PaymentStatus == "AwaitingConfirmation")">Chờ xác nhận chuyển khoản</option>
         <option value="Paid" selected="@(Model.PaymentStatus == "Paid")">Đã thanh toán</option>
         <option value="Failed" selected="@(Model.PaymentStatus == "Failed")">Thanh toán lỗi</option>
         <option value="Refunded" selected="@(Model.PaymentStatus == "Refunded")">Đã hoàn tiền</option>

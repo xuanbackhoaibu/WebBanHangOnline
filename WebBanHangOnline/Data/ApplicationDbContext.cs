@@ -62,6 +62,7 @@ namespace WebBanHangOnline.Data
         public DbSet<WishlistItem> WishlistItems { get; set; }
         public DbSet<DiscountCode> DiscountCodes { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         // 📢 Thông báo
         public DbSet<Notification> Notifications { get; set; } // <-- Thêm mới
 
@@ -182,6 +183,28 @@ namespace WebBanHangOnline.Data
 
             builder.Entity<AuditLog>()
                 .HasIndex(log => log.CreatedAt);
+
+            builder.Entity<PaymentTransaction>()
+                .Property(transaction => transaction.Provider)
+                .HasMaxLength(32);
+
+            builder.Entity<PaymentTransaction>()
+                .Property(transaction => transaction.TransactionCode)
+                .HasMaxLength(128);
+
+            builder.Entity<PaymentTransaction>()
+                .Property(transaction => transaction.Status)
+                .HasMaxLength(32);
+
+            builder.Entity<PaymentTransaction>()
+                .Property(transaction => transaction.Note)
+                .HasMaxLength(256);
+
+            builder.Entity<PaymentTransaction>()
+                .HasIndex(transaction => transaction.OrderId);
+
+            builder.Entity<PaymentTransaction>()
+                .HasIndex(transaction => new { transaction.Provider, transaction.TransactionCode });
 
             // =========================
             // RELATIONSHIPS

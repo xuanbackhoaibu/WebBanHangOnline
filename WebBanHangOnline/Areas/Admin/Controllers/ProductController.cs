@@ -13,6 +13,21 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private const long MaxImageBytes = 5 * 1024 * 1024;
+        private static readonly HashSet<string> AllowedImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp"
+        };
+
+        private static readonly HashSet<string> AllowedImageContentTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+        };
 
         public ProductController(ApplicationDbContext context, IWebHostEnvironment env)
         {
@@ -96,6 +111,11 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             {
                 foreach (var img in imageFiles)
                 {
+                    if (!ValidateImageFile(img, errors))
+                    {
+                        continue;
+                    }
+
                     var key = Path.GetFileName(img.FileName);
                     if (!string.IsNullOrWhiteSpace(key) && !imageFileByName.ContainsKey(key))
                         imageFileByName[key] = img;
@@ -448,9 +468,13 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
         {
             // ✅ BẮT BUỘC – sinh Slug
             product.GenerateSlug();
+            product.ImageUrl = string.IsNullOrWhiteSpace(product.ImageUrl)
+                ? product.Thumbnail
+                : product.ImageUrl;
 
-            // 🔥 QUAN TRỌNG – clear lỗi ModelState của Slug
-            ModelState.Remove(nameof(Product.Slug));
+            RemoveProductBindingNoise();
+            ValidateProductBusinessRules(product);
+            ValidateImageFiles(ThumbnailFile, ImageFiles);
 
             if (!ModelState.IsValid || product.CategoryId == 0)
             {
@@ -534,8 +558,9 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             // ✅ BẮT BUỘC – cập nhật Slug
             model.GenerateSlug();
 
-            // 🔥 QUAN TRỌNG – clear lỗi ModelState của Slug
-            ModelState.Clear();
+            RemoveProductBindingNoise();
+            ValidateProductBusinessRules(model);
+            ValidateImageFiles(ThumbnailFile, ImageFiles);
 
             if (!ModelState.IsValid || model.CategoryId == 0)
             {
@@ -573,6 +598,7 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
                 var thumbName = await SaveFileAsync(ThumbnailFile);
                 product.Thumbnail = "/images/products/" + thumbName;
+                product.ImageUrl = product.Thumbnail;
             }
 
             // Delete selected images
@@ -652,6 +678,12 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
         private async Task<string> SaveFileAsync(IFormFile file)
         {
+            var validationErrors = new List<string>();
+            if (!ValidateImageFile(file, validationErrors))
+            {
+                throw new InvalidOperationException(string.Join(" ", validationErrors));
+            }
+
             var folder = Path.Combine(_env.WebRootPath, "images", "products");
             if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
@@ -662,6 +694,157 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             await file.CopyToAsync(stream);
 
             return fileName;
+        }
+
+        private void RemoveProductBindingNoise()
+        {
+            ModelState.Remove(nameof(Product.Slug));
+            ModelState.Remove(nameof(Product.ImageUrl));
+            ModelState.Remove(nameof(Product.Category));
+            ModelState.Remove(nameof(Product.Images));
+            ModelState.Remove(nameof(Product.Variants));
+            ModelState.Remove(nameof(Product.Reviews));
+            ModelState.Remove(nameof(Product.WishlistItems));
+        }
+
+        private void ValidateProductBusinessRules(Product product)
+        {
+            if (string.IsNullOrWhiteSpace(product.Name))
+            {
+                ModelState.AddModelError(nameof(Product.Name), "Vui lòng nhập tên sản phẩm.");
+            }
+
+            if (product.Price <= 0)
+            {
+                ModelState.AddModelError(nameof(Product.Price), "Giá sản phẩm phải lớn hơn 0.");
+            }
+
+            if (product.CategoryId <= 0)
+            {
+                ModelState.AddModelError(nameof(Product.CategoryId), "Vui lòng chọn danh mục.");
+            }
+
+            if (product.FlashSalePrice.HasValue)
+            {
+                if (product.FlashSalePrice <= 0)
+                {
+                    ModelState.AddModelError(nameof(Product.FlashSalePrice), "Giá flash sale phải lớn hơn 0.");
+                }
+
+                if (product.FlashSalePrice >= product.Price)
+                {
+                    ModelState.AddModelError(nameof(Product.FlashSalePrice), "Giá flash sale phải nhỏ hơn giá gốc.");
+                }
+            }
+
+            if (product.FlashSaleStart.HasValue && product.FlashSaleEnd.HasValue &&
+                product.FlashSaleEnd <= product.FlashSaleStart)
+            {
+                ModelState.AddModelError(nameof(Product.FlashSaleEnd), "Thời gian kết thúc flash sale phải sau thời gian bắt đầu.");
+            }
+        }
+
+        private void ValidateImageFiles(IFormFile? thumbnailFile, IEnumerable<IFormFile>? imageFiles)
+        {
+            var errors = new List<string>();
+
+            if (thumbnailFile != null)
+            {
+                ValidateImageFile(thumbnailFile, errors);
+            }
+
+            if (imageFiles != null)
+            {
+                foreach (var file in imageFiles)
+                {
+                    ValidateImageFile(file, errors);
+                }
+            }
+
+            foreach (var error in errors.Distinct())
+            {
+                ModelState.AddModelError(string.Empty, error);
+            }
+        }
+
+        private static bool ValidateImageFile(IFormFile file, ICollection<string> errors)
+        {
+            if (file.Length <= 0)
+            {
+                errors.Add($"File {file.FileName} không có dữ liệu.");
+                return false;
+            }
+
+            if (file.Length > MaxImageBytes)
+            {
+                errors.Add($"File {file.FileName} vượt quá giới hạn 5MB.");
+                return false;
+            }
+
+            var extension = Path.GetExtension(file.FileName);
+            if (!AllowedImageExtensions.Contains(extension))
+            {
+                errors.Add($"File {file.FileName} không đúng định dạng ảnh cho phép (.jpg, .jpeg, .png, .webp).");
+                return false;
+            }
+
+            if (!AllowedImageContentTypes.Contains(file.ContentType))
+            {
+                errors.Add($"File {file.FileName} có MIME type không hợp lệ.");
+                return false;
+            }
+
+            if (!HasValidImageSignature(file, extension))
+            {
+                errors.Add($"File {file.FileName} không khớp chữ ký ảnh hợp lệ.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool HasValidImageSignature(IFormFile file, string extension)
+        {
+            Span<byte> buffer = stackalloc byte[12];
+            using var stream = file.OpenReadStream();
+            var bytesRead = stream.Read(buffer);
+
+            if (extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                return bytesRead >= 3 &&
+                       buffer[0] == 0xFF &&
+                       buffer[1] == 0xD8 &&
+                       buffer[2] == 0xFF;
+            }
+
+            if (extension.Equals(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                return bytesRead >= 8 &&
+                       buffer[0] == 0x89 &&
+                       buffer[1] == 0x50 &&
+                       buffer[2] == 0x4E &&
+                       buffer[3] == 0x47 &&
+                       buffer[4] == 0x0D &&
+                       buffer[5] == 0x0A &&
+                       buffer[6] == 0x1A &&
+                       buffer[7] == 0x0A;
+            }
+
+            if (extension.Equals(".webp", StringComparison.OrdinalIgnoreCase))
+            {
+                return bytesRead >= 12 &&
+                       buffer[0] == 0x52 &&
+                       buffer[1] == 0x49 &&
+                       buffer[2] == 0x46 &&
+                       buffer[3] == 0x46 &&
+                       buffer[8] == 0x57 &&
+                       buffer[9] == 0x45 &&
+                       buffer[10] == 0x42 &&
+                       buffer[11] == 0x50;
+            }
+
+            return false;
         }
 
         private void DeleteFile(string relativePath)

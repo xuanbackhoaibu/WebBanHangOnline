@@ -94,6 +94,7 @@ namespace WebBanHangOnline.Data
             await EnsureProductVariantRowVersionAsync(context);
             await EnsureCartTrackingColumnsAsync(context);
             await EnsureAuditLogTableAsync(context);
+            await EnsurePaymentTransactionTableAsync(context);
             await EnsureOrderPaymentStatusAsync(context);
             await EnsureReviewTableAsync(context);
             await EnsureWishlistTableAsync(context);
@@ -350,6 +351,42 @@ BEGIN
     CREATE INDEX [IX_AuditLogs_EntityName_EntityId] ON [AuditLogs] ([EntityName], [EntityId]);
     CREATE INDEX [IX_AuditLogs_CreatedAt] ON [AuditLogs] ([CreatedAt]);
 END
+");
+        }
+
+        private static async Task EnsurePaymentTransactionTableAsync(ApplicationDbContext context)
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID(N'[PaymentTransactions]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [PaymentTransactions] (
+        [Id] int NOT NULL IDENTITY,
+        [OrderId] int NOT NULL,
+        [Provider] nvarchar(32) NOT NULL,
+        [TransactionCode] nvarchar(128) NOT NULL,
+        [Amount] decimal(18,2) NOT NULL,
+        [Status] nvarchar(32) NOT NULL,
+        [IsSignatureValid] bit NOT NULL,
+        [RawPayload] nvarchar(max) NOT NULL,
+        [Note] nvarchar(256) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_PaymentTransactions] PRIMARY KEY ([Id])
+    );
+END
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE [name] = N'IX_PaymentTransactions_OrderId'
+      AND [object_id] = OBJECT_ID(N'[PaymentTransactions]')
+)
+    CREATE INDEX [IX_PaymentTransactions_OrderId] ON [PaymentTransactions] ([OrderId]);
+
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE [name] = N'IX_PaymentTransactions_Provider_TransactionCode'
+      AND [object_id] = OBJECT_ID(N'[PaymentTransactions]')
+)
+    CREATE INDEX [IX_PaymentTransactions_Provider_TransactionCode] ON [PaymentTransactions] ([Provider], [TransactionCode]);
 ");
         }
 

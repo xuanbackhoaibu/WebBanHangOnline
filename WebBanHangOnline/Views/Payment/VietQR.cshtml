@@ -7,33 +7,41 @@
 }
 
 <div class="vietqr-page">
-    <span class="catalog-kicker">VietQR</span>
-    <h1>Quét mã để thanh toán</h1>
+    <section class="vietqr-card">
+        <div class="vietqr-copy">
+            <span class="catalog-kicker">VietQR bảo mật</span>
+            <h1>Quét mã để chuyển khoản</h1>
+            <p>Sau khi chuyển khoản, gửi yêu cầu xác nhận. Admin sẽ kiểm tra giao dịch trước khi đơn được ghi nhận đã thanh toán.</p>
+        </div>
 
-    <img src="@ViewBag.QrUrl"
-         class="vietqr-image"
-         alt="Mã QR thanh toán VietQR" />
+        <div class="vietqr-visual">
+            <img src="@ViewBag.QrUrl"
+                 class="vietqr-image"
+                 alt="Mã QR thanh toán VietQR" />
+        </div>
+    </section>
 
-    <div class="vietqr-info">
+    <section class="vietqr-info">
         <div>
             <span>Số tiền</span>
             <strong>@ViewBag.Amount VND</strong>
         </div>
         <div>
             <span>Nội dung</span>
-            <strong>Chuyển tiền</strong>
+            <strong>DH@ViewBag.OrderId</strong>
         </div>
-    </div>
+    </section>
 
     <p class="vietqr-warning">
-        Vui lòng chuyển đúng nội dung để xác nhận.
+        Vui lòng chuyển đúng số tiền và nội dung. Trạng thái sẽ chuyển sang chờ xác nhận, không tự đánh dấu đã thanh toán.
     </p>
 
     <form method="post" asp-area="" asp-controller="Payment" asp-action="ConfirmPaid">
         @Html.AntiForgeryToken()
         <input type="hidden" name="orderId" value="@ViewBag.OrderId" />
         <button type="submit" class="vietqr-submit">
-            Tôi đã thanh toán
+            <i class="bi bi-shield-check"></i>
+            Gửi yêu cầu xác nhận
         </button>
     </form>
 </div>

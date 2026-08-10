@@ -10,7 +10,7 @@
     {
         value = value ?? string.Empty;
         if (value == "Paid" || value == "Completed") return "text-bg-success";
-        if (value == "Unpaid" || value == "Pending") return "text-bg-warning";
+        if (value == "Unpaid" || value == "Pending" || value == "AwaitingConfirmation") return "text-bg-warning";
         if (value == "Cancelled" || value == "Failed") return "text-bg-danger";
         if (value == "Shipping" || value == "Confirmed") return "text-bg-info";
         if (value == "Refunded") return "text-bg-secondary";
@@ -27,6 +27,7 @@
             "Completed" => "Hoàn thành",
             "Cancelled" => "Đã hủy",
             "Unpaid" => "Chưa thanh toán",
+            "AwaitingConfirmation" => "Chờ xác nhận",
             "Paid" => "Đã thanh toán",
             "Failed" => "Thất bại",
             "Refunded" => "Đã hoàn tiền",
@@ -192,7 +193,7 @@
                                     </form>
                                 }
 
-                                @if (o.PaymentStatus == "Unpaid")
+                                @if (o.PaymentStatus == "Unpaid" || o.PaymentStatus == "AwaitingConfirmation")
                                 {
                                     <form asp-area="Admin" asp-controller="Order" asp-action="UpdatePaymentStatus" method="post">
                                         @Html.AntiForgeryToken()
