@@ -5,6 +5,8 @@ namespace WebBanHangOnline.Tests;
 
 public class InventoryServiceTests
 {
+    private readonly IInventoryService _inventoryService = new InventoryService();
+
     [Theory]
     [InlineData(5, 1)]
     [InlineData(5, 5)]
@@ -12,7 +14,7 @@ public class InventoryServiceTests
     {
         var variant = new ProductVariant { Stock = stock };
 
-        Assert.True(InventoryService.CanReserve(variant, quantity));
+        Assert.True(_inventoryService.CanReserve(variant, quantity));
     }
 
     [Theory]
@@ -23,7 +25,7 @@ public class InventoryServiceTests
     {
         var variant = new ProductVariant { Stock = stock };
 
-        Assert.False(InventoryService.CanReserve(variant, quantity));
+        Assert.False(_inventoryService.CanReserve(variant, quantity));
     }
 
     [Fact]
@@ -31,7 +33,7 @@ public class InventoryServiceTests
     {
         var variant = new ProductVariant { Stock = 8 };
 
-        InventoryService.Reserve(variant, 3);
+        _inventoryService.Reserve(variant, 3);
 
         Assert.Equal(5, variant.Stock);
     }
@@ -41,7 +43,7 @@ public class InventoryServiceTests
     {
         var variant = new ProductVariant { Stock = 2 };
 
-        Assert.Throws<InvalidOperationException>(() => InventoryService.Reserve(variant, 3));
+        Assert.Throws<InvalidOperationException>(() => _inventoryService.Reserve(variant, 3));
         Assert.Equal(2, variant.Stock);
     }
 
@@ -50,7 +52,7 @@ public class InventoryServiceTests
     {
         var variant = new ProductVariant { Stock = 2 };
 
-        InventoryService.Release(variant, 3);
+        _inventoryService.Release(variant, 3);
 
         Assert.Equal(5, variant.Stock);
     }
