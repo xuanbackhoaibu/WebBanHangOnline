@@ -37,7 +37,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#d94f3d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="ShopOnline" />
     <title>@ViewData["Title"] - WebBanHangOnline</title>
+    <link rel="manifest" href="~/manifest.json" />
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem("xb-theme");
+            const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+            document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
+        })();
+    </script>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -169,6 +180,14 @@
                     <i class="bi bi-search"></i>
                 </a>
 
+                <button type="button"
+                        id="themeToggle"
+                        class="icon-btn theme-toggle"
+                        title="@T("Chuyển giao diện sáng/tối", "Toggle light/dark theme")"
+                        aria-label="@T("Chuyển giao diện sáng/tối", "Toggle light/dark theme")">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
+
                 <a asp-area=""
                    asp-controller="Wishlist"
                    asp-action="Index"
@@ -182,13 +201,14 @@
                 </a>
 
                 <!-- CART -->
-                <div class="dropdown mini-cart-wrap">
+                <div class="cart-action-wrap">
                     <a asp-area=""
                        asp-controller="Cart"
                        asp-action="Index"
-                       class="icon-btn position-relative"
-                       data-bs-toggle="dropdown"
-                       data-bs-auto-close="outside"
+                       class="icon-btn position-relative xb-cart-target"
+                       data-bs-toggle="offcanvas"
+                       data-bs-target="#cartDrawer"
+                       aria-controls="cartDrawer"
                        title="@T($"Giỏ hàng: {cartCount} sản phẩm", $"Cart: {cartCount} items")">
                         <i class="bi bi-bag"></i>
                         @if (cartCount > 0)
@@ -196,45 +216,6 @@
                             <span class="cart-badge">@cartCount</span>
                         }
                     </a>
-                    <div class="dropdown-menu dropdown-menu-end mini-cart-menu">
-                        <div class="mini-cart-head">
-                            <strong>@T("Giỏ hàng", "Cart")</strong>
-                            <span>@cartCount @T("sản phẩm", "items")</span>
-                        </div>
-                        @if (cartPreviewItems.Any())
-                        {
-                            <div class="mini-cart-list">
-                                @foreach (var item in cartPreviewItems)
-                                {
-                                    var product = item.ProductVariant?.Product;
-                                    <a asp-area=""
-                                       asp-controller="Product"
-                                       asp-action="Details"
-                                       asp-route-id="@product?.ProductId"
-                                       asp-route-slug="@product?.Slug"
-                                       class="mini-cart-item">
-                                        <img src="@(product?.Thumbnail ?? "/images/no-image.png")" alt="@(product?.Name ?? "Product")" />
-                                        <span>
-                                            <strong>@(product?.Name ?? T("Sản phẩm", "Product"))</strong>
-                                            <small>@item.Quantity x @((item.ProductVariant?.Price ?? product?.FinalPrice ?? 0).ToString("N0")) VND</small>
-                                        </span>
-                                    </a>
-                                }
-                            </div>
-                            <a asp-area="" asp-controller="Cart" asp-action="Index" class="mini-cart-cta">
-                                @T("Xem giỏ hàng", "View cart")
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-                        }
-                        else
-                        {
-                            <div class="mini-cart-empty">
-                                <i class="bi bi-bag"></i>
-                                <span>@T("Giỏ hàng đang trống", "Your cart is empty")</span>
-                                <a asp-area="" asp-controller="Product" asp-action="Index">@T("Mua sắm ngay", "Shop now")</a>
-                            </div>
-                        }
-                    </div>
                 </div>
             </div>
         </div>
@@ -335,6 +316,19 @@
     </nav>
 
     <!-- ================= MAIN ================= -->
+    <div class="page-loader" aria-hidden="true">
+        <div class="page-loader-card">
+            <span class="skeleton-line wide"></span>
+            <span class="skeleton-line"></span>
+            <span class="skeleton-grid">
+                <i></i>
+                <i></i>
+                <i></i>
+            </span>
+        </div>
+    </div>
+    <div id="toastRoot" class="toast-root" aria-live="polite" aria-atomic="true"></div>
+
     <div class="container site-shell">
         <main role="main">
             @RenderBody()
@@ -430,6 +424,63 @@
             }
         </a>
     </nav>
+
+    <aside class="offcanvas offcanvas-end cart-drawer" tabindex="-1" id="cartDrawer" aria-labelledby="cartDrawerLabel">
+        <div class="cart-drawer-header">
+            <div>
+                <small>@T("Giỏ hàng của bạn", "Your cart")</small>
+                <h5 id="cartDrawerLabel">@cartCount @T("sản phẩm", "items")</h5>
+            </div>
+            <button type="button" class="cart-drawer-close" data-bs-dismiss="offcanvas" aria-label="@T("Đóng", "Close")">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="cart-drawer-body">
+            @if (cartPreviewItems.Any())
+            {
+                <div class="cart-drawer-list">
+                    @foreach (var item in cartPreviewItems)
+                    {
+                        var product = item.ProductVariant?.Product;
+                        var unitPrice = item.ProductVariant?.Price ?? product?.FinalPrice ?? 0;
+                        <a asp-area=""
+                           asp-controller="Product"
+                           asp-action="Details"
+                           asp-route-id="@product?.ProductId"
+                           asp-route-slug="@product?.Slug"
+                           class="cart-drawer-item">
+                            <img src="@(product?.Thumbnail ?? "/images/no-image.png")" alt="@(product?.Name ?? "Product")" />
+                            <span>
+                                <strong>@(product?.Name ?? T("Sản phẩm", "Product"))</strong>
+                                <small>@item.Quantity x @unitPrice.ToString("N0") VND</small>
+                            </span>
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="cart-drawer-empty">
+                    <i class="bi bi-bag"></i>
+                    <strong>@T("Giỏ hàng đang trống", "Your cart is empty")</strong>
+                    <span>@T("Chọn vài sản phẩm yêu thích để bắt đầu đơn hàng.", "Pick a few favorites to start your order.")</span>
+                </div>
+            }
+        </div>
+
+        <div class="cart-drawer-footer">
+            <a asp-area="" asp-controller="Cart" asp-action="Index" class="cart-drawer-secondary">
+                <i class="bi bi-basket2"></i>
+                @T("Xem giỏ hàng", "View cart")
+            </a>
+            <a asp-area="" asp-controller="Order" asp-action="Checkout" class="cart-drawer-primary">
+                <i class="bi bi-credit-card"></i>
+                @T("Thanh toán", "Checkout")
+            </a>
+        </div>
+    </aside>
 
     @RenderSection("Scripts", required: false)
 

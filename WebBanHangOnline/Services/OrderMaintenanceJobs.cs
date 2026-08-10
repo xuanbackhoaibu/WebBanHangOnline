@@ -9,6 +9,7 @@ namespace WebBanHangOnline.Services;
 public sealed class OrderMaintenanceJobs
 {
     private readonly ApplicationDbContext _context;
+    private readonly AdminReportService _reportService;
     private readonly IEmailSender _emailSender;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
@@ -16,12 +17,14 @@ public sealed class OrderMaintenanceJobs
 
     public OrderMaintenanceJobs(
         ApplicationDbContext context,
+        AdminReportService reportService,
         IEmailSender emailSender,
         UserManager<ApplicationUser> userManager,
         IConfiguration configuration,
         ILogger<OrderMaintenanceJobs> logger)
     {
         _context = context;
+        _reportService = reportService;
         _emailSender = emailSender;
         _userManager = userManager;
         _configuration = configuration;
@@ -68,15 +71,8 @@ public sealed class OrderMaintenanceJobs
     public async Task SendDailyRevenueReportAsync()
     {
         var reportDate = DateTime.Today.AddDays(-1);
-        var nextDate = reportDate.AddDays(1);
 
-        var orders = await _context.Orders
-            .AsNoTracking()
-            .Where(order => order.OrderDate >= reportDate && order.OrderDate < nextDate)
-            .Where(order =>
-                OrderStatuses.RevenueStatuses.Contains(order.Status) ||
-                order.PaymentStatus == PaymentStatuses.Paid)
-            .ToListAsync();
+        var report = await _reportService.BuildRevenueReportAsync(reportDate, reportDate, topProductTake: 5);
 
         var recipient = await ResolveReportRecipientAsync();
         if (string.IsNullOrWhiteSpace(recipient))
@@ -85,20 +81,24 @@ public sealed class OrderMaintenanceJobs
             return;
         }
 
-        var revenue = orders.Sum(order => order.TotalAmount);
         var subject = $"Bao cao doanh thu ngay {reportDate:dd/MM/yyyy}";
         var body = $"""
             <h2>Bao cao doanh thu {reportDate:dd/MM/yyyy}</h2>
-            <p>Tong don: {orders.Count}</p>
-            <p>Doanh thu: {revenue:N0} VND</p>
-            <p>Don da thanh toan: {orders.Count(order => order.PaymentStatus == PaymentStatuses.Paid)}</p>
+            <p>Tong don hop le: {report.TotalOrders}</p>
+            <p>Doanh thu: {report.TotalRevenue:N0} VND</p>
+            <p>Gia tri trung binh: {report.AverageOrderValue:N0} VND</p>
+            <p>Da giam gia: {report.TotalDiscount:N0} VND</p>
+            <h3>Top san pham</h3>
+            <ul>
+                {string.Join("", report.TopProducts.Select(product => $"<li>{product.ProductName}: {product.Quantity} sp - {product.Revenue:N0} VND</li>"))}
+            </ul>
             """;
 
         await _emailSender.SendEmailAsync(recipient, subject, body);
         _logger.LogInformation("Daily revenue report sent. Date: {ReportDate}, Recipient: {Recipient}, Revenue: {Revenue}",
             reportDate,
             recipient,
-            revenue);
+            report.TotalRevenue);
     }
 
     public async Task DisableExpiredDiscountCodesAsync()

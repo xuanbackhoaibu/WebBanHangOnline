@@ -3,6 +3,11 @@
 @{
     ViewData["Title"] = "Báo cáo";
     var maxRevenue = Model.DailyRevenue.Any() ? Model.DailyRevenue.Max(item => item.Revenue) : 0;
+    var today = DateTime.Today;
+    var thisMonthStart = new DateTime(today.Year, today.Month, 1);
+    var lastMonthDate = today.AddMonths(-1);
+    var lastMonthStart = new DateTime(lastMonthDate.Year, lastMonthDate.Month, 1);
+    var lastMonthEnd = thisMonthStart.AddDays(-1);
 
     string StatusText(string status) => status switch
     {
@@ -20,13 +25,34 @@
         <h2><i class="bi bi-graph-up-arrow"></i> Báo cáo doanh thu</h2>
         <p>Tổng hợp doanh thu, thanh toán, giảm giá và sản phẩm bán chạy theo khoảng ngày.</p>
     </div>
-    <a asp-action="ExportExcel"
-       asp-route-from="@Model.From"
-       asp-route-to="@Model.To"
-       class="btn btn-primary">
-        <i class="bi bi-file-earmark-excel"></i> Xuất Excel
-    </a>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="ExportExcel"
+           asp-route-from="@Model.From"
+           asp-route-to="@Model.To"
+           class="btn btn-primary">
+            <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+        </a>
+        <a asp-action="ExportPdf"
+           asp-route-from="@Model.From"
+           asp-route-to="@Model.To"
+           class="btn btn-outline-danger">
+            <i class="bi bi-filetype-pdf"></i> Xuất PDF
+        </a>
+        <form asp-action="SendScheduledNow" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="bi bi-send-check"></i> Gửi report email
+            </button>
+        </form>
+    </div>
 </div>
+
+@if (TempData["ReportMessage"] != null)
+{
+    <div class="alert alert-success">
+        <i class="bi bi-check-circle"></i> @TempData["ReportMessage"]
+    </div>
+}
 
 <form method="get" class="admin-filter-card mb-3">
     <div class="row g-3 align-items-end">
@@ -47,6 +73,22 @@
             <a asp-action="Index" class="btn btn-outline-secondary w-100">
                 <i class="bi bi-arrow-counterclockwise"></i> Xóa lọc
             </a>
+        </div>
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-action="Index"
+                   asp-route-from="@today.AddDays(-6).ToString("yyyy-MM-dd")"
+                   asp-route-to="@today.ToString("yyyy-MM-dd")"
+                   class="btn btn-sm btn-outline-primary">7 ngày gần đây</a>
+                <a asp-action="Index"
+                   asp-route-from="@thisMonthStart.ToString("yyyy-MM-dd")"
+                   asp-route-to="@today.ToString("yyyy-MM-dd")"
+                   class="btn btn-sm btn-outline-primary">Tháng này</a>
+                <a asp-action="Index"
+                   asp-route-from="@lastMonthStart.ToString("yyyy-MM-dd")"
+                   asp-route-to="@lastMonthEnd.ToString("yyyy-MM-dd")"
+                   class="btn btn-sm btn-outline-primary">Tháng trước</a>
+            </div>
         </div>
     </div>
 </form>
@@ -85,13 +127,16 @@
                 @foreach (var item in Model.DailyRevenue)
                 {
                     var percent = maxRevenue > 0 ? Math.Max(6, (int)Math.Round(item.Revenue / maxRevenue * 100)) : 0;
-                    <div class="admin-bar-row">
+                    <a class="admin-bar-row text-decoration-none"
+                       asp-action="Details"
+                       asp-route-date="@item.Date.ToString("yyyy-MM-dd")"
+                       title="Xem các đơn ngày @item.Date.ToString("dd/MM/yyyy")">
                         <time>@item.Date.ToString("dd/MM")</time>
                         <div class="admin-bar-track">
                             <span style="width:@percent%"></span>
                         </div>
                         <strong>@item.Revenue.ToString("N0")</strong>
-                    </div>
+                    </a>
                 }
             </div>
         }
@@ -122,10 +167,14 @@
         <div class="admin-status-list">
             @foreach (var item in Model.Statuses)
             {
-                <div>
+                <a class="text-decoration-none"
+                   asp-action="Details"
+                   asp-route-status="@item.Status"
+                   asp-route-from="@Model.From"
+                   asp-route-to="@Model.To">
                     <span>@StatusText(item.Status)</span>
                     <strong>@item.Count</strong>
-                </div>
+                </a>
             }
         </div>
     </section>
@@ -137,7 +186,10 @@
             <h5>Top sản phẩm bán chạy</h5>
             <span>Xếp theo doanh thu trong khoảng lọc</span>
         </div>
-        <a asp-action="TopProducts" class="btn btn-outline-primary btn-sm">Xem đầy đủ</a>
+        <a asp-action="TopProducts"
+           asp-route-from="@Model.From"
+           asp-route-to="@Model.To"
+           class="btn btn-outline-primary btn-sm">Xem đầy đủ</a>
     </div>
 
     <div class="table-responsive">
@@ -154,7 +206,8 @@
             {
                 foreach (var item in Model.TopProducts)
                 {
-                    <tr>
+                    <tr role="button"
+                        onclick="window.location.href='@Url.Action("Details", new { productId = item.ProductId, from = Model.From, to = Model.To })'">
                         <td><strong>@item.ProductName</strong></td>
                         <td class="text-center">@item.Quantity</td>
                         <td class="text-end">@item.Revenue.ToString("N0") VND</td>

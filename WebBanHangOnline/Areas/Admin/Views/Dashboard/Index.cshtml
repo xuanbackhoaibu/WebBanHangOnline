@@ -12,6 +12,7 @@
 
     var recentOrdersList = ViewBag.RecentOrders as IEnumerable<dynamic>;
     var lowStockVariants = ViewBag.LowStockVariants as IEnumerable<dynamic>;
+    var topProductRanking = ViewBag.TopProductRanking as IEnumerable<dynamic>;
     var rfmSegments = ViewBag.RfmSegments as IEnumerable<dynamic>;
     dynamic cartAbandonment = ViewBag.CartAbandonment;
     var cohortRows = ViewBag.CohortRows as IEnumerable<dynamic>;
@@ -216,7 +217,19 @@
             </div>
         </div>
         <div class="chart-container">
-            <canvas id="revenueChart"></canvas>
+            <div id="revenueChart"></div>
+        </div>
+    </section>
+
+    <section class="chart-card chart-card-wide">
+        <div class="chart-header">
+            <div>
+                <h4>So sánh doanh thu</h4>
+                <span>7 ngày gần nhất so với 7 ngày trước</span>
+            </div>
+        </div>
+        <div class="chart-container">
+            <div id="revenueCompareChart"></div>
         </div>
     </section>
 
@@ -226,7 +239,7 @@
             <span>Theo số lượng</span>
         </div>
         <div class="chart-container">
-            <canvas id="orderDistributionChart"></canvas>
+            <div id="orderDistributionChart"></div>
         </div>
     </section>
 
@@ -236,7 +249,7 @@
             <span>Paid / unpaid / failed</span>
         </div>
         <div class="chart-container">
-            <canvas id="paymentStatusChart"></canvas>
+            <div id="paymentStatusChart"></div>
         </div>
     </section>
 
@@ -246,7 +259,7 @@
             <span>Top danh mục có doanh thu</span>
         </div>
         <div class="chart-container">
-            <canvas id="categorySalesChart"></canvas>
+            <div id="categorySalesChart"></div>
         </div>
     </section>
 </div>
@@ -258,9 +271,12 @@
                 <h4>Đơn hàng mới</h4>
                 <span>Chỉ hiện 5 đơn gần nhất</span>
             </div>
-            <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="view-all">
-                <i class="fas fa-arrow-right"></i>
-            </a>
+            <div class="order-filter-tools">
+                <input type="search" id="recentOrderFilter" placeholder="Lọc mã đơn, khách, trạng thái" />
+                <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="view-all">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
         </div>
 
         @if (recentOrdersList != null && recentOrdersList.Any())
@@ -286,7 +302,8 @@
                         var paymentStatus = order.PaymentStatus ?? "";
                         var orderDate = order.OrderDate is DateTime ? ((DateTime)order.OrderDate).ToString("dd/MM HH:mm") : "";
 
-                        <tr>
+                        <tr data-order-row
+                            data-filter-text="@($"{orderCode} {customerName} {status} {paymentStatus}".ToLowerInvariant())">
                             <td>
                                 <strong>#@orderCode</strong>
                                 <span>@orderDate</span>
@@ -310,6 +327,51 @@
             <div class="empty-state">
                 <i class="fas fa-receipt"></i>
                 <p>Chưa có đơn hàng nào</p>
+            </div>
+        }
+    </section>
+
+    <section class="recent-orders">
+        <div class="table-header">
+            <div>
+                <h4>Top sản phẩm</h4>
+                <span>Ranking theo doanh thu</span>
+            </div>
+            <a href="@Url.Action("TopProducts", "Report", new { area = "Admin" })" class="view-all">
+                <i class="fas fa-ranking-star"></i>
+            </a>
+        </div>
+
+        @if (topProductRanking != null && topProductRanking.Any())
+        {
+            <div class="ranking-list" id="topProductRanking">
+                @{
+                    var rank = 1;
+                }
+                @foreach (var item in topProductRanking)
+                {
+                    <a class="ranking-item"
+                       asp-area="Admin"
+                       asp-controller="Report"
+                       asp-action="Details"
+                       asp-route-productId="@item.ProductId">
+                        <span class="ranking-index">@rank</span>
+                        <img src="@(item.Thumbnail ?? "/images/no-image.png")" alt="@item.ProductName" loading="lazy" />
+                        <span>
+                            <strong>@item.ProductName</strong>
+                            <small>@item.Quantity sản phẩm</small>
+                        </span>
+                        <b>@String.Format("{0:N0}", item.Revenue)</b>
+                    </a>
+                    rank++;
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-ranking-star"></i>
+                <p>Chưa có dữ liệu ranking</p>
             </div>
         }
     </section>
@@ -351,7 +413,7 @@
 </div>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 
 <script>
@@ -367,8 +429,33 @@
     let distributionChart;
     let paymentStatusChart;
     let categorySalesChart;
+    let revenueCompareChart;
     let selectedRevenueMode = '7days';
     let audioContext;
+
+    function openReportDrillDown(filters) {
+        const url = new URL('@Url.Action("Details", "Report", new { area = "Admin" })', window.location.origin);
+        Object.entries(filters || {}).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                url.searchParams.set(key, value);
+            }
+        });
+        window.location.href = url.toString();
+    }
+
+    function labelToDate(label) {
+        const parts = String(label || '').split('/');
+        if (parts.length < 2) return '';
+
+        const monthInput = document.getElementById('revenueMonthInput');
+        const selectedMonth = selectedRevenueMode === 'month' && monthInput?.value
+            ? monthInput.value
+            : '@DateTime.Today.ToString("yyyy-MM")';
+        const [year] = selectedMonth.split('-');
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     @{
         var revenueLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.ChartLabels ?? new List<string>());
@@ -379,10 +466,17 @@
         var paymentDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.PaymentStatusData ?? new List<int>());
         var categoryLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.CategorySalesLabels ?? new List<string>());
         var categoryDataJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.CategorySalesData ?? new List<decimal>());
+        var revenueCompareLabelsJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueCompareLabels ?? new List<string>());
+        var revenueCompareCurrentJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueCompareCurrent ?? new List<decimal>());
+        var revenueComparePreviousJson = System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueComparePrevious ?? new List<decimal>());
     }
 
-    function buildEmptyState(canvas, message) {
-        const container = canvas.closest('.chart-container');
+    function compactMoney(value) {
+        return value >= 1000000 ? `${(value / 1000000).toFixed(1)}tr` : value.toLocaleString('vi-VN');
+    }
+
+    function buildEmptyState(element, message) {
+        const container = element.closest('.chart-container');
         if (!container || container.querySelector('.chart-empty')) return;
         const empty = document.createElement('div');
         empty.className = 'chart-empty';
@@ -390,160 +484,157 @@
         container.appendChild(empty);
     }
 
-    function clearEmptyState(canvas) {
-        const empty = canvas.closest('.chart-container')?.querySelector('.chart-empty');
+    function clearEmptyState(element) {
+        const empty = element.closest('.chart-container')?.querySelector('.chart-empty');
         if (empty) empty.remove();
     }
 
     function renderLineChart(labels, data) {
-        const canvas = document.getElementById('revenueChart');
-        if (!canvas) return;
+        const element = document.getElementById('revenueChart');
+        if (!element || !window.ApexCharts) return;
         revenueChart?.destroy();
 
         if (!labels?.length) {
-            buildEmptyState(canvas, 'Chưa có doanh thu');
+            buildEmptyState(element, 'Chưa có doanh thu');
             return;
         }
 
-        clearEmptyState(canvas);
-        revenueChart = new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                    data,
-                    borderColor: '#b94132',
-                    backgroundColor: 'rgba(185, 65, 50, 0.08)',
-                    borderWidth: 2,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#b94132',
-                    tension: 0.25,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: {
-                        bottom: 8
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: context => moneyFormatter.format(context.raw || 0) } }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-                            autoSkip: selectedRevenueMode === 'month',
-                            maxTicksLimit: selectedRevenueMode === 'month' ? 12 : 7,
-                            maxRotation: 0,
-                            minRotation: 0,
-                            padding: 8
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: mutedGrid },
-                        ticks: {
-                            callback: value => value >= 1000000 ? `${(value / 1000000).toFixed(1)}tr` : value
-                        }
+        clearEmptyState(element);
+        element.innerHTML = '';
+        revenueChart = new ApexCharts(element, {
+            chart: {
+                type: 'area',
+                height: 285,
+                toolbar: { show: false },
+                fontFamily: 'Inter, sans-serif',
+                animations: { enabled: true, easing: 'easeinout', speed: 520 },
+                events: {
+                    dataPointSelection: (event, chartContext, config) => {
+                        const label = labels[config.dataPointIndex];
+                        openReportDrillDown({ date: labelToDate(label) });
                     }
                 }
-            }
+            },
+            colors: ['#b94132'],
+            series: [{ name: 'Doanh thu', data }],
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            fill: {
+                type: 'gradient',
+                gradient: { shadeIntensity: 0.35, opacityFrom: 0.28, opacityTo: 0.04, stops: [0, 90, 100] }
+            },
+            markers: { size: 4, strokeWidth: 2, strokeColors: '#ffffff' },
+            grid: { borderColor: mutedGrid, strokeDashArray: 4 },
+            xaxis: { categories: labels, labels: { rotate: 0, trim: true } },
+            yaxis: { labels: { formatter: compactMoney } },
+            tooltip: { y: { formatter: value => moneyFormatter.format(value || 0) } }
         });
+        revenueChart.render();
     }
 
     function renderDoughnutChart(chartRef, canvasId, labels, data) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return null;
+        const element = document.getElementById(canvasId);
+        if (!element || !window.ApexCharts) return null;
         chartRef?.destroy();
 
         if (!labels?.length || !data?.length) {
-            buildEmptyState(canvas, 'Chưa có dữ liệu');
+            buildEmptyState(element, 'Chưa có dữ liệu');
             return null;
         }
 
-        clearEmptyState(canvas);
-        return new Chart(canvas, {
-            type: 'doughnut',
-            data: {
-                labels,
-                datasets: [{
-                    data,
-                    backgroundColor: palette.slice(0, labels.length),
-                    borderColor: '#ffffff',
-                    borderWidth: 2,
-                    hoverOffset: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '68%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { usePointStyle: true, boxWidth: 8, padding: 12, font: { size: 11 } }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: context => {
-                                const total = context.dataset.data.reduce((sum, value) => sum + value, 0);
-                                const percent = total > 0 ? Math.round((context.raw / total) * 100) : 0;
-                                return `${context.label}: ${context.raw} (${percent}%)`;
-                            }
-                        }
+        clearEmptyState(element);
+        element.innerHTML = '';
+        const chart = new ApexCharts(element, {
+            chart: {
+                type: 'donut',
+                height: 285,
+                fontFamily: 'Inter, sans-serif',
+                events: {
+                    dataPointSelection: (event, chartContext, config) => {
+                        const label = labels[config.dataPointIndex];
+                        const filterName = canvasId === 'paymentStatusChart' ? 'paymentStatus' : 'status';
+                        openReportDrillDown({ [filterName]: label });
                     }
                 }
-            }
+            },
+            colors: palette,
+            labels,
+            series: data,
+            stroke: { colors: ['#ffffff'], width: 2 },
+            legend: { position: 'bottom', fontSize: '12px', markers: { size: 8 } },
+            dataLabels: { enabled: false },
+            plotOptions: { pie: { donut: { size: '68%' } } },
+            tooltip: { y: { formatter: value => `${value} đơn` } }
         });
+        chart.render();
+        return chart;
     }
 
     function renderBarChart(labels, data) {
-        const canvas = document.getElementById('categorySalesChart');
-        if (!canvas) return;
+        const element = document.getElementById('categorySalesChart');
+        if (!element || !window.ApexCharts) return;
         categorySalesChart?.destroy();
 
         if (!labels?.length || !data?.length) {
-            buildEmptyState(canvas, 'Chưa có doanh thu theo danh mục');
+            buildEmptyState(element, 'Chưa có doanh thu theo danh mục');
             return;
         }
 
-        clearEmptyState(canvas);
-        categorySalesChart = new Chart(canvas, {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    data,
-                    backgroundColor: '#4b7f8c',
-                    borderRadius: 4,
-                    maxBarThickness: 34
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: context => moneyFormatter.format(context.raw || 0) } }
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: mutedGrid },
-                        ticks: {
-                            callback: value => value >= 1000000 ? `${(value / 1000000).toFixed(1)}tr` : value
-                        }
+        clearEmptyState(element);
+        element.innerHTML = '';
+        categorySalesChart = new ApexCharts(element, {
+            chart: {
+                type: 'bar',
+                height: 285,
+                toolbar: { show: false },
+                fontFamily: 'Inter, sans-serif',
+                events: {
+                    dataPointSelection: (event, chartContext, config) => {
+                        openReportDrillDown({ category: labels[config.dataPointIndex] });
                     }
                 }
-            }
+            },
+            colors: ['#4b7f8c'],
+            series: [{ name: 'Doanh thu', data }],
+            plotOptions: { bar: { borderRadius: 5, columnWidth: '46%' } },
+            dataLabels: { enabled: false },
+            grid: { borderColor: mutedGrid, strokeDashArray: 4 },
+            xaxis: { categories: labels },
+            yaxis: { labels: { formatter: compactMoney } },
+            tooltip: { y: { formatter: value => moneyFormatter.format(value || 0) } }
         });
+        categorySalesChart.render();
+    }
+
+    function renderCompareChart(labels, current, previous) {
+        const element = document.getElementById('revenueCompareChart');
+        if (!element || !window.ApexCharts) return;
+        revenueCompareChart?.destroy();
+
+        if (!labels?.length) {
+            buildEmptyState(element, 'Chưa có dữ liệu so sánh');
+            return;
+        }
+
+        clearEmptyState(element);
+        element.innerHTML = '';
+        revenueCompareChart = new ApexCharts(element, {
+            chart: { type: 'area', height: 285, toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+            colors: ['#b94132', '#74685d'],
+            series: [
+                { name: 'Kỳ hiện tại', data: current || [] },
+                { name: 'Kỳ trước', data: previous || [] }
+            ],
+            stroke: { curve: 'smooth', width: 2.5 },
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.22, opacityTo: 0.03 } },
+            dataLabels: { enabled: false },
+            grid: { borderColor: mutedGrid, strokeDashArray: 4 },
+            xaxis: { categories: labels },
+            yaxis: { labels: { formatter: compactMoney } },
+            tooltip: { y: { formatter: value => moneyFormatter.format(value || 0) } },
+            legend: { position: 'top', horizontalAlign: 'left' }
+        });
+        revenueCompareChart.render();
     }
 
     function renderAllCharts(data) {
@@ -551,6 +642,7 @@
         distributionChart = renderDoughnutChart(distributionChart, 'orderDistributionChart', data.statusLabels, data.statusData);
         paymentStatusChart = renderDoughnutChart(paymentStatusChart, 'paymentStatusChart', data.paymentLabels, data.paymentData);
         renderBarChart(data.categoryLabels, data.categoryData);
+        renderCompareChart(data.revenueCompareLabels, data.revenueCompareCurrent, data.revenueComparePrevious);
     }
 
     function renderBusinessIntelligence(data) {
@@ -592,6 +684,36 @@
                 `).join('')
                 : '<tr><td colspan="8">Chưa đủ dữ liệu cohort</td></tr>';
         }
+    }
+
+    function renderTopProductRanking(items) {
+        const list = document.getElementById('topProductRanking');
+        if (!list || !Array.isArray(items) || !items.length) return;
+
+        list.innerHTML = items.map((item, index) => `
+            <a class="ranking-item" href="@Url.Action("Details", "Report", new { area = "Admin" })?productId=${item.productId}">
+                <span class="ranking-index">${index + 1}</span>
+                <img src="${item.thumbnail || '/images/no-image.png'}" alt="">
+                <span>
+                    <strong>${item.productName}</strong>
+                    <small>${item.quantity} sản phẩm</small>
+                </span>
+                <b>${Number(item.revenue || 0).toLocaleString('vi-VN')}</b>
+            </a>
+        `).join('');
+    }
+
+    function setupRecentOrderFilter() {
+        const input = document.getElementById('recentOrderFilter');
+        const rows = [...document.querySelectorAll('[data-order-row]')];
+        if (!input || !rows.length) return;
+
+        input.addEventListener('input', () => {
+            const keyword = input.value.trim().toLowerCase();
+            rows.forEach(row => {
+                row.hidden = keyword && !(row.dataset.filterText || '').includes(keyword);
+            });
+        });
     }
 
     function playOrderBell() {
@@ -654,6 +776,7 @@
             document.getElementById('totalProducts').textContent = data.totalProducts.toLocaleString('vi-VN');
             renderAllCharts(data);
             renderBusinessIntelligence(data.businessIntelligence);
+            renderTopProductRanking(data.topProductRanking);
         } catch (error) {
             console.error('Lỗi khi tải dashboard:', error);
         } finally {
@@ -670,8 +793,12 @@
             paymentLabels: @Html.Raw(paymentLabelsJson),
             paymentData: @Html.Raw(paymentDataJson),
             categoryLabels: @Html.Raw(categoryLabelsJson),
-            categoryData: @Html.Raw(categoryDataJson)
+            categoryData: @Html.Raw(categoryDataJson),
+            revenueCompareLabels: @Html.Raw(revenueCompareLabelsJson),
+            revenueCompareCurrent: @Html.Raw(revenueCompareCurrentJson),
+            revenueComparePrevious: @Html.Raw(revenueComparePreviousJson)
         });
+        setupRecentOrderFilter();
 
         document.querySelectorAll('[data-revenue-mode]').forEach(button => {
             button.addEventListener('click', function() {

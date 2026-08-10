@@ -89,6 +89,10 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ViewBag.RevenueDetail = revenueDetail; // Thêm để debug
                 ViewBag.CurrentRevenueMonth = DateTime.Today.ToString("yyyy-MM");
 
+                ViewBag.RevenueCompareLabels = revenueLabels;
+                ViewBag.RevenueCompareCurrent = revenueData;
+                ViewBag.RevenueComparePrevious = await BuildRevenueSeriesAsync(DateTime.Today.AddDays(-13), 7);
+
                 // ==================== PHÂN BỐ TRẠNG THÁI ====================
                 var orderStatusStats = await _context.Orders
                     .GroupBy(o => o.Status)
@@ -139,6 +143,24 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
                 ViewBag.CategorySalesLabels = categorySales.Select(x => x.Category).ToList();
                 ViewBag.CategorySalesData = categorySales.Select(x => x.Revenue).ToList();
+                ViewBag.TopProductRanking = paidOrderDetails
+                    .GroupBy(od => new
+                    {
+                        od.ProductVariant.ProductId,
+                        od.ProductVariant.Product.Name,
+                        od.ProductVariant.Product.Thumbnail
+                    })
+                    .Select(g => new
+                    {
+                        ProductId = g.Key.ProductId,
+                        ProductName = g.Key.Name,
+                        Thumbnail = g.Key.Thumbnail,
+                        Quantity = g.Sum(od => od.Quantity),
+                        Revenue = g.Sum(od => od.Price * od.Quantity)
+                    })
+                    .OrderByDescending(x => x.Revenue)
+                    .Take(5)
+                    .ToList();
 
                 var lowStockVariants = await _context.ProductVariants
                     .Include(v => v.Product)
@@ -214,6 +236,10 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 ViewBag.PaymentStatusData = new List<int>();
                 ViewBag.CategorySalesLabels = new List<string>();
                 ViewBag.CategorySalesData = new List<decimal>();
+                ViewBag.RevenueCompareLabels = new List<string>();
+                ViewBag.RevenueCompareCurrent = new List<decimal>();
+                ViewBag.RevenueComparePrevious = new List<decimal>();
+                ViewBag.TopProductRanking = new List<object>();
                 ViewBag.LowStockVariants = new List<object>();
                 ViewBag.RecentOrders = new List<object>();
                 ViewBag.RfmSegments = new List<RfmSegmentViewModel>();
@@ -233,11 +259,14 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
             var revenueLabels = new List<string>();
             var revenueData = new List<decimal>();
+            var revenueComparePrevious = new List<decimal>();
 
             if (string.Equals(revenueMode, "month", StringComparison.OrdinalIgnoreCase))
             {
                 var selectedMonth = TryParseMonth(month) ?? new DateTime(today.Year, today.Month, 1);
                 var daysInMonth = DateTime.DaysInMonth(selectedMonth.Year, selectedMonth.Month);
+                var previousMonth = selectedMonth.AddMonths(-1);
+                var daysInPreviousMonth = DateTime.DaysInMonth(previousMonth.Year, previousMonth.Month);
 
                 for (int day = 1; day <= daysInMonth; day++)
                 {
@@ -251,6 +280,21 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
 
                     revenueLabels.Add(start.ToString("dd/MM"));
                     revenueData.Add(revenue);
+
+                    if (day <= daysInPreviousMonth)
+                    {
+                        var previousStart = new DateTime(previousMonth.Year, previousMonth.Month, day);
+                        var previousEnd = previousStart.AddDays(1);
+                        var previousRevenue = await _context.Orders
+                            .Where(o => o.OrderDate >= previousStart && o.OrderDate < previousEnd)
+                            .Where(o => validStatus.Contains(o.Status) || o.PaymentStatus == PaymentStatuses.Paid)
+                            .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+                        revenueComparePrevious.Add(previousRevenue);
+                    }
+                    else
+                    {
+                        revenueComparePrevious.Add(0);
+                    }
                 }
             }
             else
@@ -268,6 +312,8 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                     revenueLabels.Add(start.ToString("dd/MM"));
                     revenueData.Add(revenue);
                 }
+
+                revenueComparePrevious = await BuildRevenueSeriesAsync(DateTime.Today.AddDays(-13), 7);
             }
 
             var statusStats = await _context.Orders
@@ -315,14 +361,55 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
                 todayOrders = await _context.Orders.CountAsync(o => o.OrderDate >= today && o.OrderDate < tomorrow),
                 revenueLabels,
                 revenueData,
+                revenueCompareLabels = revenueLabels,
+                revenueCompareCurrent = revenueData,
+                revenueComparePrevious,
                 statusLabels = statusStats.Select(x => x.Label).ToList(),
                 statusData = statusStats.Select(x => x.Count).ToList(),
                 paymentLabels = paymentStats.Select(x => x.Label).ToList(),
                 paymentData = paymentStats.Select(x => x.Count).ToList(),
                 categoryLabels = categorySales.Select(x => x.Label).ToList(),
                 categoryData = categorySales.Select(x => x.Revenue).ToList(),
+                topProductRanking = paidOrderDetails
+                    .GroupBy(od => new
+                    {
+                        od.ProductVariant.ProductId,
+                        od.ProductVariant.Product.Name,
+                        od.ProductVariant.Product.Thumbnail
+                    })
+                    .Select(g => new
+                    {
+                        productId = g.Key.ProductId,
+                        productName = g.Key.Name,
+                        thumbnail = g.Key.Thumbnail,
+                        quantity = g.Sum(od => od.Quantity),
+                        revenue = g.Sum(od => od.Price * od.Quantity)
+                    })
+                    .OrderByDescending(x => x.revenue)
+                    .Take(5)
+                    .ToList(),
                 businessIntelligence = await BuildBusinessIntelligenceSnapshot()
             });
+        }
+
+        private async Task<List<decimal>> BuildRevenueSeriesAsync(DateTime startDate, int days)
+        {
+            var validStatus = OrderStatuses.RevenueStatuses;
+            var values = new List<decimal>();
+
+            for (var i = 0; i < days; i++)
+            {
+                var start = startDate.Date.AddDays(i);
+                var end = start.AddDays(1);
+                var revenue = await _context.Orders
+                    .Where(order => order.OrderDate >= start && order.OrderDate < end)
+                    .Where(order => validStatus.Contains(order.Status) || order.PaymentStatus == PaymentStatuses.Paid)
+                    .SumAsync(order => (decimal?)order.TotalAmount) ?? 0;
+
+                values.Add(revenue);
+            }
+
+            return values;
         }
 
         private async Task<BusinessIntelligenceSnapshot> BuildBusinessIntelligenceSnapshot()

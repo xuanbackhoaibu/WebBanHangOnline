@@ -54,17 +54,17 @@ var paymentMethods = new[]
     </header>
 
     <div class="checkout-steps" aria-label="Tiến trình thanh toán">
-        <div class="checkout-step is-done">
+        <div class="checkout-step is-done" data-checkout-step="cart">
             <span><i class="bi bi-check-lg"></i></span>
             <b>Giỏ hàng</b>
         </div>
         <i></i>
-        <div class="checkout-step is-active">
+        <div class="checkout-step is-active" data-checkout-step="payment">
             <span>2</span>
             <b>Thanh toán</b>
         </div>
         <i></i>
-        <div class="checkout-step">
+        <div class="checkout-step" data-checkout-step="confirm">
             <span>3</span>
             <b>Hoàn tất</b>
         </div>
@@ -92,7 +92,7 @@ var paymentMethods = new[]
             <div class="checkout-main">
 
                 <!-- ================= ĐỊA CHỈ ================= -->
-                <section class="checkout-card checkout-section checkout-address-card">
+                <section class="checkout-card checkout-section checkout-address-card" data-checkout-stage="address">
                     <div class="checkout-section-head">
                         <span class="checkout-head-num">1</span>
                         <h3>Thông tin giao hàng</h3>
@@ -190,7 +190,7 @@ var paymentMethods = new[]
                 </section>
 
                 <!-- ================= THANH TOÁN ================= -->
-                <section class="checkout-card checkout-section checkout-payment-panel">
+                <section class="checkout-card checkout-section checkout-payment-panel" data-checkout-stage="payment">
                     <div class="checkout-section-head">
                         <span class="checkout-head-num">2</span>
                         <h3>Phương thức thanh toán</h3>
@@ -211,6 +211,7 @@ var paymentMethods = new[]
                                 <span class="checkout-payment-icon">
                                     <i class="bi @method.Icon"></i>
                                 </span>
+                                <span class="checkout-payment-brand">@method.Value</span>
                                 <span class="checkout-payment-copy">
                                     <strong>
                                         @method.Title
@@ -237,7 +238,7 @@ var paymentMethods = new[]
                 </section>
 
                 <!-- ================= SẢN PHẨM ================= -->
-                <section class="checkout-card checkout-section checkout-products-card">
+                <section class="checkout-card checkout-section checkout-products-card" data-checkout-stage="confirm">
                     <div class="checkout-section-head">
                         <span class="checkout-head-num">3</span>
                         <h3>Sản phẩm trong đơn hàng</h3>
@@ -477,6 +478,39 @@ var paymentMethods = new[]
                     option.classList.add("is-selected");
                 });
             });
+        })();
+
+        (function setupCheckoutStepTracking() {
+            const stageToStep = {
+                address: "payment",
+                payment: "payment",
+                confirm: "confirm"
+            };
+            const steps = [...document.querySelectorAll("[data-checkout-step]")];
+            const stages = [...document.querySelectorAll("[data-checkout-stage]")];
+
+            if (!steps.length || !stages.length || !("IntersectionObserver" in window)) return;
+
+            const setActiveStep = stage => {
+                const activeStep = stageToStep[stage] || "payment";
+                steps.forEach(step => {
+                    const key = step.dataset.checkoutStep;
+                    step.classList.toggle("is-active", key === activeStep);
+                    step.classList.toggle("is-done", key === "cart" || (activeStep === "confirm" && key === "payment"));
+                });
+            };
+
+            const observer = new IntersectionObserver(entries => {
+                const visible = entries
+                    .filter(entry => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+                if (visible) {
+                    setActiveStep(visible.target.dataset.checkoutStage);
+                }
+            }, { threshold: [0.35, 0.55, 0.75] });
+
+            stages.forEach(stage => observer.observe(stage));
         })();
 
         (function setupVoucherPicker() {

@@ -581,7 +581,29 @@
 
         if (quantity > selectedStock) {
             e.preventDefault();
-            alert(text.outOfStock);
+            window.xbToast?.({
+                title: "@T("Không đủ tồn kho", "Not enough stock")",
+                message: text.outOfStock,
+                icon: "bi-exclamation-circle"
+            });
+            return;
+        }
+
+        if (this.dataset.submitted !== "true") {
+            e.preventDefault();
+            this.dataset.submitted = "true";
+            document.getElementById("addToCartBtn").classList.add("is-loading-submit");
+            window.xbToast?.({
+                title: "@T("Đang thêm vào giỏ", "Adding to cart")",
+                message: "@T("Sản phẩm đang được chuyển vào giỏ hàng.", "The item is moving into your cart.")",
+                icon: "bi-bag-plus"
+            });
+
+            const productImage = document.getElementById("mainImage");
+            const animation = window.xbAnimateToCart ? window.xbAnimateToCart(productImage) : Promise.resolve();
+            animation.finally(() => {
+                this.submit();
+            });
         }
     });
 
@@ -595,7 +617,11 @@
         }
 
         if (quantity > selectedStock) {
-            alert(text.outOfStock);
+            window.xbToast?.({
+                title: "@T("Không đủ tồn kho", "Not enough stock")",
+                message: text.outOfStock,
+                icon: "bi-exclamation-circle"
+            });
             return;
         }
 
@@ -631,6 +657,11 @@
     function showError() {
         const errorBox = document.getElementById("variantError");
         errorBox.style.display = "flex";
+        window.xbToast?.({
+            title: "@T("Chưa chọn phân loại", "Variant required")",
+            message: "@T("Vui lòng chọn size và màu trước khi tiếp tục.", "Please choose size and color before continuing.")",
+            icon: "bi-sliders"
+        });
         errorBox.scrollIntoView({ behavior: "smooth", block: "center" });
         document.getElementById("addToCartBtn").classList.add("shake");
         document.getElementById("buyNowBtn").classList.add("shake");

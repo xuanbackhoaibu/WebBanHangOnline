@@ -1,0 +1,107 @@
+@model IEnumerable<WebBanHangOnline.Models.ViewModels.ReportOrderRowViewModel>
+
+@{
+    ViewData["Title"] = "Chi tiết báo cáo";
+    var from = ViewBag.From as string;
+    var to = ViewBag.To as string;
+    var date = ViewBag.Date as string;
+    var status = ViewBag.Status as string;
+    var paymentStatus = ViewBag.PaymentStatus as string;
+    var productId = ViewBag.ProductId as int?;
+    var category = ViewBag.Category as string;
+    var total = Model.Sum(item => item.TotalAmount);
+}
+
+<div class="admin-page-head">
+    <div>
+        <h2><i class="bi bi-list-check"></i> Drill-down báo cáo</h2>
+        <p>
+            @if (!string.IsNullOrWhiteSpace(date))
+            {
+                <span>Ngày @date</span>
+            }
+            @if (!string.IsNullOrWhiteSpace(status))
+            {
+                <span> · Trạng thái @status</span>
+            }
+            @if (!string.IsNullOrWhiteSpace(paymentStatus))
+            {
+                <span> · Thanh toán @paymentStatus</span>
+            }
+            @if (productId.HasValue)
+            {
+                <span> · Sản phẩm #@productId</span>
+            }
+            @if (!string.IsNullOrWhiteSpace(category))
+            {
+                <span> · Danh mục @category</span>
+            }
+        </p>
+    </div>
+    <a asp-action="Index" asp-route-from="@from" asp-route-to="@to" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại báo cáo
+    </a>
+</div>
+
+<div class="admin-metric-grid mb-3">
+    <div class="admin-metric-card is-primary">
+        <span>Doanh thu nhóm này</span>
+        <strong>@total.ToString("N0") VND</strong>
+    </div>
+    <div class="admin-metric-card">
+        <span>Số đơn</span>
+        <strong>@Model.Count()</strong>
+    </div>
+</div>
+
+<section class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Mã đơn</th>
+                <th>Ngày</th>
+                <th>Khách hàng</th>
+                <th>Trạng thái</th>
+                <th>Thanh toán</th>
+                <th class="text-end">Tổng tiền</th>
+                <th class="text-end"></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td><strong>@order.OrderCode</strong></td>
+                    <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        <strong>@order.CustomerName</strong>
+                        @if (!string.IsNullOrWhiteSpace(order.CustomerEmail))
+                        {
+                            <div class="text-muted small">@order.CustomerEmail</div>
+                        }
+                    </td>
+                    <td>@order.Status</td>
+                    <td>@order.PaymentStatus</td>
+                    <td class="text-end">@order.TotalAmount.ToString("N0") VND</td>
+                    <td class="text-end">
+                        <a asp-area="Admin"
+                           asp-controller="Order"
+                           asp-action="Details"
+                           asp-route-id="@order.Id"
+                           class="btn btn-sm btn-outline-primary">
+                            Xem đơn
+                        </a>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">Không có đơn hàng phù hợp.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

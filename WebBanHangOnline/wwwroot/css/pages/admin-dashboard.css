@@ -462,10 +462,17 @@
     overflow: hidden;
 }
 
-.chart-container canvas {
+.chart-container canvas,
+.chart-container > div[id$="Chart"] {
     width: 100% !important;
     height: 100% !important;
     max-height: 280px !important;
+}
+
+.apexcharts-tooltip {
+    border-radius: 8px !important;
+    border-color: #e7ded6 !important;
+    box-shadow: 0 14px 28px rgba(28, 25, 23, 0.12) !important;
 }
 
 .chart-empty {
@@ -480,7 +487,7 @@
 
 .dashboard-lower-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.8fr);
+    grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.8fr) minmax(280px, 0.8fr);
     gap: 1rem;
 }
 
@@ -494,6 +501,30 @@
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 0.85rem;
+}
+
+.order-filter-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.order-filter-tools input {
+    width: min(260px, 32vw);
+    min-height: 34px;
+    padding: 0.35rem 0.7rem;
+    color: #38332f;
+    background: #ffffff;
+    border: 1px solid #e6ded6;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.order-filter-tools input:focus {
+    border-color: #e11d48;
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+    outline: 0;
 }
 
 .view-all {
@@ -609,6 +640,79 @@
 .stock-list {
     display: grid;
     gap: 0.55rem;
+}
+
+.ranking-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.ranking-item {
+    display: grid;
+    grid-template-columns: 32px 48px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.62rem;
+    color: #38332f;
+    border: 1px solid #f0ebe5;
+    border-radius: 10px;
+    background: #fffdfb;
+    text-decoration: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.ranking-item:hover {
+    color: #38332f;
+    border-color: rgba(225, 29, 72, 0.28);
+    box-shadow: 0 12px 24px rgba(28, 25, 23, 0.08);
+    transform: translateY(-2px);
+}
+
+.ranking-index {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    color: #be123c;
+    background: #fff1f2;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.ranking-item img {
+    width: 48px;
+    height: 56px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.ranking-item strong,
+.ranking-item small {
+    display: block;
+}
+
+.ranking-item strong {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #272320;
+    font-size: 0.88rem;
+    font-weight: 750;
+    line-height: 1.28;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.ranking-item small {
+    color: #817870;
+    font-size: 0.76rem;
+    margin-top: 0.15rem;
+}
+
+.ranking-item b {
+    color: #b94132;
+    font-size: 0.84rem;
+    white-space: nowrap;
 }
 
 .stock-item {
@@ -743,6 +847,16 @@
     .chart-container {
         height: 250px;
         max-height: 250px;
+    }
+
+    .table-header,
+    .order-filter-tools {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .order-filter-tools input {
+        width: 100%;
     }
 
     .chart-container canvas {

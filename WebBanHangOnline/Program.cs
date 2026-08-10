@@ -46,6 +46,8 @@ builder.Services.AddScoped<ChatBotController>();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ICatalogCacheService, CatalogCacheService>();
+builder.Services.AddScoped<AdminReportService>();
+builder.Services.AddSingleton<AdminReportPdfRenderer>();
 builder.Services.AddTransient<OrderMaintenanceJobs>();
 builder.Services.AddHealthChecks()
     .AddCheck<SqlServerHealthCheck>("sql-server")

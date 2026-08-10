@@ -443,6 +443,14 @@ body {
   grid-template-columns: 54px minmax(0, 1fr) 110px;
   align-items: center;
   gap: 10px;
+  border-radius: 10px;
+  padding: 4px 6px;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.admin-bar-row:hover {
+  background: #fff7f5;
+  transform: translateX(2px);
 }
 
 .admin-bar-row time,
@@ -505,13 +513,22 @@ body {
   gap: 8px;
 }
 
-.admin-status-list div {
+.admin-status-list div,
+.admin-status-list a {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
   border: 1px solid #f0e5df;
   border-radius: 10px;
+  color: inherit;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.admin-status-list a:hover {
+  background: #fff7f5;
+  border-color: rgba(185, 65, 50, 0.28);
+  transform: translateX(2px);
 }
 
 .admin-status-list span,

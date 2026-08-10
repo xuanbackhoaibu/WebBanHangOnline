@@ -138,8 +138,7 @@ body.coutura-body:not(:has(.muva-page)) .site-shell {
   background: var(--muva-terra);
 }
 
-.dropdown-menu,
-.mini-cart-menu {
+.dropdown-menu {
   border: 1px solid var(--muva-line) !important;
   border-radius: 4px !important;
   background: var(--muva-paper) !important;
@@ -184,7 +183,6 @@ body.coutura-body:not(:has(.muva-page)) .site-shell {
 }
 
 .newsletter button,
-.mini-cart-cta,
 .btn-primary,
 .btn-dark,
 .cart-checkout-btn,
@@ -205,7 +203,6 @@ body.coutura-body:not(:has(.muva-page)) .site-shell {
 }
 
 .newsletter button:hover,
-.mini-cart-cta:hover,
 .btn-primary:hover,
 .btn-dark:hover,
 .cart-checkout-btn:hover,
@@ -376,7 +373,6 @@ body.coutura-body:not(:has(.muva-page)) .site-shell {
 
 .cart-item-image,
 .wishlist-image,
-.mini-cart-item img,
 .orders-product img,
 .success-product img {
   border-color: var(--muva-ink) !important;

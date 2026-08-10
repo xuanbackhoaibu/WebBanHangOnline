@@ -8,7 +8,10 @@ WebBanHangOnline la website ban hang thoi trang xay dung bang **ASP.NET Core MVC
 
 - Full e-commerce flow: product catalog, variants, stock, cart, wishlist, review, checkout, order tracking.
 - Role-based access control with ASP.NET Core Identity: `Admin`, `Client`, `User`.
-- Admin dashboard: total orders, revenue, today revenue, status distribution, recent orders, top products.
+- Enterprise admin dashboard: colored KPI cards, ApexCharts revenue chart, weekly/month comparison, order filters, top product ranking, BI widgets.
+- Advanced reporting: custom date range filters, drill-down order detail, Excel export, formatted PDF export and scheduled report email job.
+- Checkout UX: 3-step checkout, payment method cards, sticky order summary, voucher validation and smooth step transitions.
+- Modern shopping UX: product hover CTA, sale/new badges, scroll fade-in, dark mode, toast notification, PWA manifest and cart drawer.
 - Payment flows: COD, VNPay, MoMo, VietQR and demo payment webhook for API testing.
 - Public API + admin analytics API with OpenAPI YAML and Postman collection.
 - Docker Compose demo with SQL Server, seeded accounts and seeded fashion products.
@@ -26,7 +29,7 @@ WebBanHangOnline la website ban hang thoi trang xay dung bang **ASP.NET Core MVC
 | AI/API | Google Gemini API for product consultation chatbot |
 | Frontend | Razor Views, Bootstrap, jQuery, CSS/JavaScript |
 | DevOps | Docker, Docker Compose |
-| Reporting | Admin dashboard, revenue report, Excel export with ClosedXML |
+| Reporting | BI dashboard, drill-down reports, Excel export, PDF export, scheduled email report |
 
 ## Core Features
 
@@ -45,8 +48,10 @@ WebBanHangOnline la website ban hang thoi trang xay dung bang **ASP.NET Core MVC
 - Manage users and roles.
 - Manage orders and update order status.
 - Manage notifications, support requests and FAQs.
-- View revenue dashboard and recent orders.
-- Export revenue report to Excel.
+- View KPI dashboard, smooth charts, filtered recent orders and top product ranking.
+- Analyze RFM customer segments, cart abandonment, cohort retention and revenue drill-down reports.
+- Export revenue reports to Excel/PDF and trigger scheduled report emails.
+- Review audit logs for important admin changes.
 - Test admin analytics API and demo payment webhook.
 
 ## Role Matrix
@@ -233,24 +238,35 @@ These documents show requirement analysis, scope control, business rules, role m
 ## Suggested Demo Script
 
 1. Start project with Docker.
-2. Open home page and browse fashion products.
-3. Login as customer, add products to cart and checkout.
-4. Login as admin and review dashboard/reports.
-5. Open Postman and test catalog API.
-6. Test admin analytics API with admin session.
-7. Show BRD/SRS/ERD/API test case documentation in `docs/`.
+2. Open the intro page, click the store discovery CTA, then browse the home page.
+3. Hover product cards, open the cart drawer and review dark mode/PWA polish.
+4. Login as customer, add products to cart and complete the 3-step checkout.
+5. Login as admin and review dashboard KPI cards, ApexCharts, order filter and product ranking.
+6. Open revenue reports, apply custom date ranges, drill into orders and export Excel/PDF.
+7. Show audit logs, health checks, background jobs and API testing endpoints.
+8. Show BRD/SRS/ERD/API test case documentation in `docs/`.
 
-## Screenshot Placeholders
+## Screenshots and Demo Video
 
-Put real screenshots here after running the project:
+Recommended assets for recruiter review:
 
 ```text
-docs/screenshots/home.png
-docs/screenshots/product-detail.png
-docs/screenshots/cart-checkout.png
-docs/screenshots/admin-dashboard.png
-docs/screenshots/postman-api.png
+docs/screenshots/home-modern-ui.png
+docs/screenshots/product-cards-hover.png
+docs/screenshots/checkout-stepper.png
+docs/screenshots/admin-dashboard-bi.png
+docs/screenshots/reports-pdf-drilldown.png
+docs/screenshots/audit-logs.png
+docs/videos/demo-3-minutes.mp4
 ```
+
+Suggested 3-minute video flow:
+
+1. Intro page to home page.
+2. Product browsing, hover CTA, cart drawer and dark mode.
+3. Checkout with payment method cards and order summary.
+4. Admin dashboard with KPI cards, comparison chart, filters and ranking.
+5. Report drill-down, PDF export, audit log and health endpoint.
 
 Current visual assets are available in:
 

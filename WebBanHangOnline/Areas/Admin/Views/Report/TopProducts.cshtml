@@ -1,23 +1,75 @@
-@model dynamic
+@model IEnumerable<WebBanHangOnline.Models.ViewModels.TopProductReportViewModel>
 
-<h2>🥇 Top 10 sản phẩm bán chạy</h2>
+@{
+    ViewData["Title"] = "Top sản phẩm bán chạy";
+    var from = ViewBag.From as string;
+    var to = ViewBag.To as string;
+}
 
-<table class="table table-bordered">
-    <thead>
-    <tr>
-        <th>Sản phẩm</th>
-        <th>Số lượng bán</th>
-        <th>Doanh thu</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.ProductName</td>
-            <td>@item.Quantity</td>
-            <td>@String.Format("{0:N0} VND", item.Revenue)</td>
-        </tr>
-    }
-    </tbody>
-</table>
+<div class="admin-page-head">
+    <div>
+        <h2><i class="bi bi-trophy"></i> Top sản phẩm bán chạy</h2>
+        <p>Xếp hạng theo doanh thu trong khoảng ngày đang chọn.</p>
+    </div>
+    <a asp-action="Index" asp-route-from="@from" asp-route-to="@to" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại báo cáo
+    </a>
+</div>
+
+<form method="get" class="admin-filter-card mb-3">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Từ ngày</label>
+            <input type="date" name="from" class="form-control" value="@from" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Đến ngày</label>
+            <input type="date" name="to" class="form-control" value="@to" />
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-funnel"></i> Lọc
+            </button>
+        </div>
+    </div>
+</form>
+
+<section class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th class="text-center">Số lượng bán</th>
+                <th class="text-end">Doanh thu</th>
+                <th class="text-end">Drill-down</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>@item.ProductName</strong></td>
+                    <td class="text-center">@item.Quantity</td>
+                    <td class="text-end">@item.Revenue.ToString("N0") VND</td>
+                    <td class="text-end">
+                        <a asp-action="Details"
+                           asp-route-productId="@item.ProductId"
+                           asp-route-from="@from"
+                           asp-route-to="@to"
+                           class="btn btn-sm btn-outline-primary">
+                            Xem đơn
+                        </a>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-5">Chưa có dữ liệu sản phẩm trong khoảng ngày này.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</section>

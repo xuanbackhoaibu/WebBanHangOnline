@@ -171,9 +171,6 @@
 </div>
 
 @section Scripts{
-
-<script src="~/js/site.js"></script>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -243,7 +240,11 @@
                 .forEach(cb => selected.push(cb.value));
 
             if (selected.length === 0) {
-                alert("Vui lòng chọn sản phẩm.");
+                window.xbToast?.({
+                    title: "Chưa chọn sản phẩm",
+                    message: "Vui lòng chọn ít nhất một sản phẩm để đặt hàng.",
+                    icon: "bi-bag-check"
+                });
                 return;
             }
 

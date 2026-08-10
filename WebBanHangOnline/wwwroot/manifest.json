@@ -1,0 +1,18 @@
+{
+  "name": "Web Ban Hang Online",
+  "short_name": "ShopOnline",
+  "description": "Cua hang thoi trang online XuanBac",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d94f3d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48 32x32 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
