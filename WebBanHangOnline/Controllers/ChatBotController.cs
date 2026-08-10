@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Text;
 using System.Text.Json;
 using WebBanHangOnline.Data;
 
 namespace WebBanHangOnline.Controllers
 {
+    [EnableRateLimiting("chatbot-policy")]
     public class ChatBotController : Controller
     {
         private readonly ApplicationDbContext _db;

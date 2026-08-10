@@ -5,4 +5,5 @@ obj/
 riderModule.iml
 appsettings.json
 appsettings.Development.json
+.env
 /_ReSharper.Caches/

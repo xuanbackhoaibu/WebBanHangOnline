@@ -11,21 +11,27 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Server=webthoitrang-db,1433;Database=WebThoiTrang;User Id=sa;Password=WebThoiTrang@12345;TrustServerCertificate=True;Encrypt=False
-      Gemini__ApiKey: ""
-      VNPay__TmnCode: ""
-      VNPay__HashSecret: ""
-      VNPay__Url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-      VNPay__ReturnUrl: http://localhost:8083/Payment/VNPayReturn
-      MomoAPI__MomoApiUrl: https://test-payment.momo.vn/v2/gateway/api/create
-      MomoAPI__PartnerCode: ""
-      MomoAPI__AccessKey: ""
-      MomoAPI__SecretKey: ""
-      MomoAPI__ReturnUrl: http://localhost:8083/Payment/MomoReturn
-      MomoAPI__NotifyUrl: http://localhost:8083/Payment/MomoIpn
-      MomoAPI__RequestType: payWithMethod
+      ConnectionStrings__DefaultConnection: Server=webthoitrang-db,1433;Database=WebThoiTrang;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=True;Encrypt=False
+      Gemini__ApiKey: ${GEMINI_API_KEY}
+      VNPay__TmnCode: ${VNPAY_TMN_CODE}
+      VNPay__HashSecret: ${VNPAY_HASH_SECRET}
+      VNPay__Url: ${VNPAY_URL}
+      VNPay__ReturnUrl: ${VNPAY_RETURN_URL}
+      MomoAPI__MomoApiUrl: ${MOMO_API_URL}
+      MomoAPI__PartnerCode: ${MOMO_PARTNER_CODE}
+      MomoAPI__AccessKey: ${MOMO_ACCESS_KEY}
+      MomoAPI__SecretKey: ${MOMO_SECRET_KEY}
+      MomoAPI__ReturnUrl: ${MOMO_RETURN_URL}
+      MomoAPI__NotifyUrl: ${MOMO_NOTIFY_URL}
+      MomoAPI__RequestType: ${MOMO_REQUEST_TYPE}
     depends_on:
       - webthoitrang-db
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
   webthoitrang-db:
@@ -36,7 +42,7 @@ services:
       - "14333:1433"
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: WebThoiTrang@12345
+      MSSQL_SA_PASSWORD: ${SQL_PASSWORD}
       MSSQL_PID: Developer
     volumes:
       - webthoitrang-sql-data:/var/opt/mssql

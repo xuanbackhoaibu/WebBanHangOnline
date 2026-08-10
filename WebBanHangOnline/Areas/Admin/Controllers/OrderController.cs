@@ -12,10 +12,14 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
     public class OrderController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IInventoryService _inventoryService;
 
-        public OrderController(ApplicationDbContext context)
+        public OrderController(
+            ApplicationDbContext context,
+            IInventoryService inventoryService)
         {
             _context = context;
+            _inventoryService = inventoryService;
         }
 
         // GET: Admin/Order
@@ -273,13 +277,13 @@ namespace WebBanHangOnline.Areas.Admin.Controllers
             return status == OrderStatuses.Pending || status == OrderStatuses.Confirmed;
         }
 
-        private static void RestoreOrderStock(Order order)
+        private void RestoreOrderStock(Order order)
         {
             foreach (var item in order.OrderDetails)
             {
                 if (item.ProductVariant != null)
                 {
-                    InventoryService.Release(item.ProductVariant, item.Quantity);
+                    _inventoryService.Release(item.ProductVariant, item.Quantity);
                 }
             }
         }

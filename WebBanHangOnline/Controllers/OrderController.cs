@@ -15,16 +15,19 @@ public class OrderController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<OrderController> _logger;
     private readonly IHubContext<AdminNotificationHub> _adminNotificationHub;
+    private readonly IInventoryService _inventoryService;
 
     public OrderController(ApplicationDbContext context,
                            UserManager<ApplicationUser> userManager,
                            ILogger<OrderController> logger,
-                           IHubContext<AdminNotificationHub> adminNotificationHub)
+                           IHubContext<AdminNotificationHub> adminNotificationHub,
+                           IInventoryService inventoryService)
     {
         _context = context;
         _userManager = userManager;
         _logger = logger;
         _adminNotificationHub = adminNotificationHub;
+        _inventoryService = inventoryService;
     }
 
     // =========================================================
@@ -221,7 +224,7 @@ public class OrderController : Controller
                 {
                     await _context.Entry(item.ProductVariant).ReloadAsync();
 
-                    if (!InventoryService.CanReserve(item.ProductVariant, item.Quantity))
+                    if (!_inventoryService.CanReserve(item.ProductVariant, item.Quantity))
                     {
                         await transaction.RollbackAsync();
                         return BadRequest(
@@ -290,7 +293,7 @@ public class OrderController : Controller
                         Price = GetItemPrice(item)
                     });
 
-                    InventoryService.Reserve(item.ProductVariant, item.Quantity);
+                    _inventoryService.Reserve(item.ProductVariant, item.Quantity);
                 }
 
                 if (!isBuyNow)
@@ -433,7 +436,7 @@ public class OrderController : Controller
         // 🔄 hoàn lại stock
         foreach (var item in order.OrderDetails)
         {
-            InventoryService.Release(item.ProductVariant, item.Quantity);
+            _inventoryService.Release(item.ProductVariant, item.Quantity);
         }
 
         order.Status = OrderStatuses.Cancelled;
@@ -498,9 +501,7 @@ public class OrderController : Controller
 
     private static decimal GetItemPrice(CartItem item)
     {
-        return item.ProductVariant.Price > 0
-            ? item.ProductVariant.Price
-            : item.ProductVariant.Product.FinalPrice;
+        return item.DisplayUnitPrice;
     }
 
     private async Task SetDiscountToViewBag(

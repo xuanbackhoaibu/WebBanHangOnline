@@ -233,9 +233,7 @@ var paymentMethods = new[]
                     <div class="checkout-products">
                             @foreach (var item in Model)
                             {
-                            var price = item.ProductVariant.Price > 0
-                                ? item.ProductVariant.Price
-                                : item.ProductVariant.Product.FinalPrice;
+                            var price = item.DisplayUnitPrice;
                             var sub = price * item.Quantity;
                             total += sub;
 
@@ -274,9 +272,7 @@ var paymentMethods = new[]
                     <div class="checkout-mini-products">
                         @foreach (var item in Model.Take(3))
                         {
-                            var price = item.ProductVariant.Price > 0
-                                ? item.ProductVariant.Price
-                                : item.ProductVariant.Product.FinalPrice;
+                            var price = item.DisplayUnitPrice;
                             <div class="checkout-mini-product">
                                 <img src="@item.ProductVariant.Product.Thumbnail"
                                      alt="@item.ProductVariant.Product.Name"

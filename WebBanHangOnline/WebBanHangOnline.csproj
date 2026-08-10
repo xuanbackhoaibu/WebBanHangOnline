@@ -35,29 +35,4 @@
         <PackageReference Include="System.Net.Http.Json" Version="10.0.2" />
     </ItemGroup>
 
-    <ItemGroup>
-      <AdditionalFiles Include="Areas\Admin\Views\Dashboard\Index.cshtml" />
-      <AdditionalFiles Include="Areas\Admin\Views\Product\Index.cshtml" />
-      <AdditionalFiles Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
-      <AdditionalFiles Include="Views\Order\Checkout.cshtml" />
-      <AdditionalFiles Include="Views\Order\MyOrders.cshtml" />
-      <AdditionalFiles Include="Views\Order\OrderSuccess.cshtml" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="Views\Product\Details.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Product\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Order\Checkout.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Order\MyOrders.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Order\OrderSuccess.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Report\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Report\TopProducts.cshtml" />
-      <_ContentIncludedByDefault Remove="Areas\Admin\Shared\_AdminLayout.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Dashboard\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="Areas\Admin\Views\Order\Checkout.cshtml" />
-      <_ContentIncludedByDefault Remove="Areas\Admin\Views\Order\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="Areas\Admin\Views\Order\MyOrders.cshtml" />
-      <_ContentIncludedByDefault Remove="Areas\Admin\Views\Order\OrderSuccess.cshtml" />
-    </ItemGroup>
-
 </Project>

@@ -14,6 +14,7 @@ public sealed class OrderMaintenanceJobs
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
     private readonly ILogger<OrderMaintenanceJobs> _logger;
+    private readonly IInventoryService _inventoryService;
 
     public OrderMaintenanceJobs(
         ApplicationDbContext context,
@@ -21,7 +22,8 @@ public sealed class OrderMaintenanceJobs
         IEmailSender emailSender,
         UserManager<ApplicationUser> userManager,
         IConfiguration configuration,
-        ILogger<OrderMaintenanceJobs> logger)
+        ILogger<OrderMaintenanceJobs> logger,
+        IInventoryService inventoryService)
     {
         _context = context;
         _reportService = reportService;
@@ -29,6 +31,7 @@ public sealed class OrderMaintenanceJobs
         _userManager = userManager;
         _configuration = configuration;
         _logger = logger;
+        _inventoryService = inventoryService;
     }
 
     public async Task CancelExpiredUnpaidOrdersAsync()
@@ -47,7 +50,7 @@ public sealed class OrderMaintenanceJobs
         {
             foreach (var detail in order.OrderDetails)
             {
-                InventoryService.Release(detail.ProductVariant, detail.Quantity);
+                _inventoryService.Release(detail.ProductVariant, detail.Quantity);
             }
 
             order.Status = OrderStatuses.Cancelled;
@@ -125,6 +128,20 @@ public sealed class OrderMaintenanceJobs
             _logger.LogWarning(exception, "Concurrency conflict while disabling expired discount codes. Hangfire will retry this job.");
             throw;
         }
+    }
+
+    public async Task PurgeOldAuditLogsAsync(int retentionDays)
+    {
+        var effectiveRetentionDays = Math.Max(30, retentionDays);
+        var cutoff = DateTime.Now.AddDays(-effectiveRetentionDays);
+
+        var deletedRows = await _context.AuditLogs
+            .Where(log => log.CreatedAt < cutoff)
+            .ExecuteDeleteAsync();
+
+        _logger.LogInformation("Old audit logs purged. RetentionDays: {RetentionDays}, DeletedRows: {DeletedRows}",
+            effectiveRetentionDays,
+            deletedRows);
     }
 
     public async Task SyncPaymentStatusAsync(

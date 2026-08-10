@@ -11,13 +11,16 @@ public class CartController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IInventoryService _inventoryService;
 
     public CartController(
         ApplicationDbContext context,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IInventoryService inventoryService)
     {
         _context = context;
         _userManager = userManager;
+        _inventoryService = inventoryService;
     }
 
     // =========================
@@ -65,7 +68,7 @@ public class CartController : Controller
                 c.ProductVariantId == variantId);
 
         var requestedQuantity = (cartItem?.Quantity ?? 0) + quantity;
-        if (!InventoryService.CanReserve(variant, requestedQuantity))
+        if (!_inventoryService.CanReserve(variant, requestedQuantity))
         {
             return BadRequest($"Sản phẩm {variant.Product?.Name ?? "này"} chỉ còn {variant.Stock} sản phẩm.");
         }
@@ -112,7 +115,7 @@ public class CartController : Controller
         if (item == null)
             return NotFound();
 
-        if (!InventoryService.CanReserve(item.ProductVariant, quantity))
+        if (!_inventoryService.CanReserve(item.ProductVariant, quantity))
         {
             return BadRequest($"Sản phẩm {item.ProductVariant.Product?.Name ?? "này"} chỉ còn {item.ProductVariant.Stock} sản phẩm.");
         }

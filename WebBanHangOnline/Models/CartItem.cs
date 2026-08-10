@@ -13,4 +13,11 @@ public class CartItem
     public int Quantity { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? UpdatedAt { get; set; }
+
+    public decimal DisplayUnitPrice =>
+        ProductVariant?.Price > 0
+            ? ProductVariant.Price
+            : ProductVariant?.Product?.FinalPrice ?? 0;
+
+    public decimal DisplayLineTotal => DisplayUnitPrice * Quantity;
 }

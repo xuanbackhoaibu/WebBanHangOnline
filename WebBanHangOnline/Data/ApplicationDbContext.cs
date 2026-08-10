@@ -13,18 +13,11 @@ namespace WebBanHangOnline.Data
     {
         private static readonly HashSet<Type> AuditedEntityTypes =
         [
-            typeof(Product),
-            typeof(ProductVariant),
-            typeof(Category),
             typeof(Order),
-            typeof(OrderDetail),
             typeof(DiscountCode),
-            typeof(Notification),
             typeof(ApplicationUser),
-            typeof(IdentityUserRole<string>),
-            typeof(SupportRequest),
-            typeof(SupportFaq),
-            typeof(Review)
+            typeof(IdentityRole),
+            typeof(IdentityUserRole<string>)
         ];
 
         private readonly IHttpContextAccessor? _httpContextAccessor;
@@ -99,8 +92,18 @@ namespace WebBanHangOnline.Data
                 .HasDefaultValue(PaymentStatuses.Unpaid);
 
             builder.Entity<Order>()
+                .Property(o => o.Status)
+                .HasMaxLength(32);
+
+            builder.Entity<Order>()
                 .Property(o => o.AdminNote)
                 .HasMaxLength(500);
+
+            builder.Entity<Order>()
+                .HasIndex(o => new { o.UserId, o.Status });
+
+            builder.Entity<Order>()
+                .HasIndex(o => o.OrderDate);
 
             builder.Entity<OrderStatusHistory>()
                 .Property(history => history.ChangeType)
@@ -153,6 +156,9 @@ namespace WebBanHangOnline.Data
             builder.Entity<CartItem>()
                 .Property(item => item.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
+
+            builder.Entity<CartItem>()
+                .HasIndex(item => item.UserId);
 
             builder.Entity<AuditLog>()
                 .Property(log => log.UserId)

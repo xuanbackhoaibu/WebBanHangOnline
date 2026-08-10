@@ -2,14 +2,21 @@ using WebBanHangOnline.Models;
 
 namespace WebBanHangOnline.Services;
 
-public static class InventoryService
+public interface IInventoryService
 {
-    public static bool CanReserve(ProductVariant variant, int quantity)
+    bool CanReserve(ProductVariant variant, int quantity);
+    void Reserve(ProductVariant variant, int quantity);
+    void Release(ProductVariant variant, int quantity);
+}
+
+public sealed class InventoryService : IInventoryService
+{
+    public bool CanReserve(ProductVariant variant, int quantity)
     {
         return quantity > 0 && variant.Stock >= quantity;
     }
 
-    public static void Reserve(ProductVariant variant, int quantity)
+    public void Reserve(ProductVariant variant, int quantity)
     {
         if (!CanReserve(variant, quantity))
         {
@@ -19,7 +26,7 @@ public static class InventoryService
         variant.Stock -= quantity;
     }
 
-    public static void Release(ProductVariant variant, int quantity)
+    public void Release(ProductVariant variant, int quantity)
     {
         if (quantity <= 0)
         {

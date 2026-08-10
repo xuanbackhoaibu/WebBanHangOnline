@@ -28,6 +28,15 @@
     var userReview = ViewBag.UserReview as WebBanHangOnline.Models.Review;
     var reviewGateMessage = ViewBag.ReviewGateMessage as string;
     var isWishlisted = ViewBag.IsWishlisted == true;
+
+    ViewData["SeoTitle"] = D(Model.Name);
+    ViewData["SeoDescription"] = !string.IsNullOrWhiteSpace(Model.Description)
+        ? D(Model.Description)
+        : T("Sản phẩm thời trang XuanBac với chất liệu chọn lọc và phom dáng dễ mặc.",
+            "XuanBac fashion item with selected material and an easy-to-style fit.");
+    ViewData["OgType"] = "product";
+    ViewData["OgImage"] = mainImage;
+    ViewData["OgPrice"] = Model.FinalPrice.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
 }
 
 @section Styles {

@@ -1172,7 +1172,7 @@ html[data-theme="dark"] .page-loader {
 
 .cart-flyer {
   position: fixed;
-  z-index: 2400;
+  z-index: 1200;
   width: 54px;
   height: 64px;
   border-radius: 10px;
@@ -1296,10 +1296,21 @@ html[data-theme="dark"] .page-loader {
 
 .cart-drawer {
   --bs-offcanvas-width: min(420px, 100vw);
+  z-index: 2450;
   border: 0;
   background: var(--xb-surface);
   color: var(--xb-ink);
   box-shadow: -24px 0 54px rgba(21, 21, 21, 0.16);
+}
+
+.offcanvas-backdrop {
+  z-index: 2440;
+}
+
+body:has(.cart-drawer.show) .cart-flyer,
+body:has(.cart-drawer.showing) .cart-flyer {
+  z-index: 1200;
+  opacity: 0.08 !important;
 }
 
 .cart-drawer-header,
@@ -1352,6 +1363,8 @@ html[data-theme="dark"] .page-loader {
 
 .cart-drawer-item,
 .cart-drawer-item:visited {
+  position: relative;
+  z-index: 0;
   display: grid;
   grid-template-columns: 68px minmax(0, 1fr) 22px;
   align-items: center;

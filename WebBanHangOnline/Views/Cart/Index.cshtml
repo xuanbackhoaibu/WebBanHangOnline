@@ -1,7 +1,7 @@
 @model List<CartItem>
 @{
     var cartItemCount = Model.Sum(item => item.Quantity);
-    var cartTotal = Model.Sum(item => item.ProductVariant.Product.Price * item.Quantity);
+    var cartTotal = Model.Sum(item => item.DisplayLineTotal);
 }
 
 @section Styles {
@@ -46,8 +46,8 @@
                 @foreach (var item in Model)
                 {
                     var product = item.ProductVariant.Product;
-                    var price = product.Price;
-                    var sub = price * item.Quantity;
+                    var price = item.DisplayUnitPrice;
+                    var sub = item.DisplayLineTotal;
 
                     <article class="cart-item-card">
                         <div class="cart-check">

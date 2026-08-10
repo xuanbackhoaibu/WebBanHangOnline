@@ -297,7 +297,8 @@ namespace WebBanHangOnline.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<decimal>("SubtotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -312,7 +313,9 @@ namespace WebBanHangOnline.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("OrderDate");
+
+                    b.HasIndex("UserId", "Status");
 
                     b.ToTable("Orders");
                 });

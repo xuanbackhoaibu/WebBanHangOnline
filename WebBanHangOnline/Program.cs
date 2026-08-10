@@ -46,6 +46,7 @@ builder.Services.AddScoped<ChatBotController>();
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<ICatalogCacheService, CatalogCacheService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<AdminReportService>();
 builder.Services.AddSingleton<AdminReportPdfRenderer>();
 builder.Services.AddTransient<OrderMaintenanceJobs>();
@@ -95,6 +96,13 @@ builder.Services.AddRateLimiter(options =>
         }
 
         return RateLimitPartition.GetNoLimiter("default");
+    });
+
+    options.AddFixedWindowLimiter("chatbot-policy", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
     });
 });
 
@@ -285,6 +293,12 @@ RecurringJob.AddOrUpdate<OrderMaintenanceJobs>(
     "discounts:disable-expired",
     job => job.DisableExpiredDiscountCodesAsync(),
     Cron.Daily(),
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
+
+RecurringJob.AddOrUpdate<OrderMaintenanceJobs>(
+    "audit:purge-old-logs",
+    job => job.PurgeOldAuditLogsAsync(90),
+    Cron.Daily(2),
     new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
 
 app.MapHealthChecks("/health");

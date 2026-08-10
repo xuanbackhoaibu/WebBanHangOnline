@@ -35,6 +35,24 @@
     }
 
     string T(string vi, string en) => isEnglish ? en : vi;
+    var siteTitle = ViewData["SeoTitle"]?.ToString() ?? ViewData["Title"]?.ToString() ?? "XuanBac";
+    var siteDescription = ViewData["SeoDescription"]?.ToString()
+        ?? T("Cửa hàng thời trang XuanBac: sản phẩm chọn lọc, thanh toán bảo mật và giao hàng toàn quốc.",
+            "XuanBac fashion store: curated products, secure checkout and nationwide delivery.");
+    if (siteDescription.Length > 180)
+    {
+        siteDescription = siteDescription[..180];
+    }
+
+    var requestRoot = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var ogImageValue = ViewData["OgImage"]?.ToString();
+    var ogImage = string.IsNullOrWhiteSpace(ogImageValue)
+        ? $"{requestRoot}{Url.Content("~/images/men-banner.jpg")}"
+        : ogImageValue.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? ogImageValue
+            : $"{requestRoot}{Url.Content(ogImageValue)}";
+    var ogType = ViewData["OgType"]?.ToString() ?? "website";
+    var ogPrice = ViewData["OgPrice"]?.ToString();
 }
 <!DOCTYPE html>
 <html lang="@currentCulture">
@@ -44,7 +62,18 @@
     <meta name="theme-color" content="#d94f3d" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="ShopOnline" />
-    <title>@ViewData["Title"] - WebBanHangOnline</title>
+    <title>@siteTitle - WebBanHangOnline</title>
+    <meta name="description" content="@siteDescription" />
+    <meta property="og:title" content="@siteTitle" />
+    <meta property="og:description" content="@siteDescription" />
+    <meta property="og:type" content="@ogType" />
+    <meta property="og:url" content="@requestRoot@(Context.Request.Path + Context.Request.QueryString)" />
+    <meta property="og:image" content="@ogImage" />
+    @if (!string.IsNullOrWhiteSpace(ogPrice))
+    {
+        <meta property="product:price:amount" content="@ogPrice" />
+        <meta property="product:price:currency" content="VND" />
+    }
     <link rel="manifest" href="~/manifest.json" />
     <script>
         (function () {
@@ -460,7 +489,7 @@
                     @foreach (var item in cartPreviewItems)
                     {
                         var product = item.ProductVariant?.Product;
-                        var unitPrice = item.ProductVariant?.Price ?? product?.FinalPrice ?? 0;
+                        var unitPrice = item.DisplayUnitPrice;
                         <a asp-area=""
                            asp-controller="Product"
                            asp-action="Details"

@@ -1,4 +1,4 @@
-const CACHE_NAME = "xuanbac-shop-v17";
+const CACHE_NAME = "xuanbac-shop-v19";
 const CORE_ASSETS = [
   "/",
   "/Home/About",
@@ -33,7 +33,30 @@ self.addEventListener("fetch", event => {
   const request = event.request;
   const url = new URL(request.url);
 
-  if (request.method !== "GET" || url.origin !== self.location.origin) {
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  const sensitivePrefixes = [
+    "/Admin",
+    "/Cart",
+    "/Order",
+    "/Payment",
+    "/Identity",
+    "/Wishlist",
+    "/Notification",
+    "/Support",
+    "/hangfire",
+    "/swagger"
+  ];
+
+  const path = url.pathname.toLowerCase();
+  if (sensitivePrefixes.some(prefix => path.startsWith(prefix.toLowerCase()))) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  if (request.method !== "GET") {
     return;
   }
 
