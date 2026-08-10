@@ -500,3 +500,613 @@ body.coutura-body:not(:has(.muva-page)) .site-shell {
     flex-direction: column;
   }
 }
+
+/* Keep guest auth buttons visible in the fixed dark topbar. */
+.coutura-topbar .nav .topbar-auth-link,
+.coutura-topbar .nav .topbar-auth-link:visited {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 28px;
+  border-radius: 999px !important;
+  font-family: var(--muva-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  opacity: 1 !important;
+  overflow: visible !important;
+  padding: 0 14px !important;
+  text-decoration: none !important;
+  text-transform: none;
+  visibility: visible !important;
+  white-space: nowrap;
+}
+
+.coutura-topbar .nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.coutura-topbar .nav .nav-item {
+  display: flex;
+  align-items: center;
+  margin-left: 0 !important;
+}
+
+.coutura-topbar .nav .topbar-auth-login,
+.coutura-topbar .nav .topbar-auth-login:visited {
+  min-width: 116px;
+  border: 1px solid rgba(255, 118, 95, 0.72) !important;
+  background: rgba(255, 118, 95, 0.14) !important;
+  color: #fff !important;
+}
+
+.coutura-topbar .nav .topbar-auth-register,
+.coutura-topbar .nav .topbar-auth-register:visited {
+  min-width: 122px;
+  border: 1px solid #ff765f !important;
+  background: #ff765f !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px rgba(255, 118, 95, 0.3);
+}
+
+.coutura-topbar .nav .topbar-auth-link i {
+  display: inline-block !important;
+  flex: none;
+  margin-right: 2px !important;
+  color: currentColor !important;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.coutura-topbar .nav .topbar-auth-login:hover,
+.coutura-topbar .nav .topbar-auth-login:focus,
+.coutura-topbar .nav .topbar-auth-register:hover,
+.coutura-topbar .nav .topbar-auth-register:focus {
+  border-color: #fff !important;
+  background: #fff !important;
+  color: var(--muva-ink) !important;
+}
+
+/* Dark mode must win after the MUVA sync layer. */
+html[data-theme="dark"] body.coutura-body {
+  background:
+    linear-gradient(180deg, #171411 0%, #100f0e 420px),
+    #100f0e !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .coutura-topbar {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: #100f0e !important;
+  color: rgba(246, 242, 237, 0.86) !important;
+}
+
+html[data-theme="dark"] .coutura-header,
+html[data-theme="dark"] .coutura-menu {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(19, 17, 15, 0.96) !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .coutura-topbar a,
+html[data-theme="dark"] .coutura-topbar a:visited,
+html[data-theme="dark"] .coutura-logo,
+html[data-theme="dark"] .coutura-logo:visited,
+html[data-theme="dark"] .coutura-menu .nav-link,
+html[data-theme="dark"] .coutura-menu .nav-link:visited,
+html[data-theme="dark"] .header-icons .icon-btn,
+html[data-theme="dark"] .header-icons .icon-btn:visited,
+html[data-theme="dark"] .mobile-shop-nav a,
+html[data-theme="dark"] .mobile-shop-nav a:visited {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .coutura-topbar i,
+html[data-theme="dark"] .coutura-header i,
+html[data-theme="dark"] .coutura-menu i,
+html[data-theme="dark"] .mobile-shop-nav i {
+  color: currentColor !important;
+}
+
+html[data-theme="dark"] .header-icons .icon-btn,
+html[data-theme="dark"] .coutura-search,
+html[data-theme="dark"] .mobile-shop-nav {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #1d1916 !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28) !important;
+}
+
+html[data-theme="dark"] .coutura-search input,
+html[data-theme="dark"] .coutura-search input::placeholder {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .coutura-search input::placeholder {
+  opacity: 0.58;
+}
+
+html[data-theme="dark"] .coutura-search .btn-search {
+  color: #ff765f !important;
+}
+
+html[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .coutura-topbar .dropdown-menu,
+html[data-theme="dark"] .coutura-menu .dropdown-menu {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #1b1816 !important;
+}
+
+html[data-theme="dark"] .dropdown-item,
+html[data-theme="dark"] .dropdown-item:visited,
+html[data-theme="dark"] .nav .dropdown-menu .dropdown-item,
+html[data-theme="dark"] .coutura-menu .dropdown-menu .dropdown-item,
+html[data-theme="dark"] .coutura-topbar .dropdown-menu .dropdown-item {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="dark"] .dropdown-item:focus {
+  background: #2a211d !important;
+  color: #ff8a78 !important;
+}
+
+html[data-theme="dark"] .coutura-topbar .nav .topbar-auth-login,
+html[data-theme="dark"] .coutura-topbar .nav .topbar-auth-login:visited {
+  border-color: rgba(255, 138, 120, 0.7) !important;
+  background: rgba(255, 118, 95, 0.18) !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] .coutura-topbar .nav .topbar-auth-register,
+html[data-theme="dark"] .coutura-topbar .nav .topbar-auth-register:visited {
+  border-color: #ff765f !important;
+  background: #ff765f !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] .home-page,
+html[data-theme="dark"] .catalog-page,
+html[data-theme="dark"] .product-detail-page {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .home-page .product-card,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .product-card,
+html[data-theme="dark"] .catalog-page .catalog-product-card,
+html[data-theme="dark"] .catalog-product-card,
+html[data-theme="dark"] .related-card,
+html[data-theme="dark"] .outfit-card,
+html[data-theme="dark"] .blog-card {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #1b1816 !important;
+  color: #f6f2ed !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.26) !important;
+}
+
+html[data-theme="dark"] .home-page .product-card:hover,
+html[data-theme="dark"] .catalog-page .catalog-product-card:hover,
+html[data-theme="dark"] .catalog-product-card:hover,
+html[data-theme="dark"] .related-card:hover,
+html[data-theme="dark"] .outfit-card:hover,
+html[data-theme="dark"] .blog-card:hover {
+  border-color: rgba(255, 118, 95, 0.44) !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34) !important;
+}
+
+html[data-theme="dark"] .home-page .product-card h6,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .product-card h6,
+html[data-theme="dark"] .home-page .product-link,
+html[data-theme="dark"] .home-page .product-link:visited,
+html[data-theme="dark"] .catalog-page .catalog-product-card h6,
+html[data-theme="dark"] .catalog-product-card h6,
+html[data-theme="dark"] .catalog-product-body h6,
+html[data-theme="dark"] .related-card h6,
+html[data-theme="dark"] .outfit-card h6,
+html[data-theme="dark"] .blog-body h6 {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .home-page .price,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .price,
+html[data-theme="dark"] .catalog-page .catalog-price,
+html[data-theme="dark"] .catalog-price {
+  color: #ff8a78 !important;
+}
+
+html[data-theme="dark"] .catalog-page .catalog-product-body small,
+html[data-theme="dark"] .catalog-product-body small,
+html[data-theme="dark"] .home-page .section-eyebrow,
+html[data-theme="dark"] .home-page .hero-kicker,
+html[data-theme="dark"] .home-page .blog-body span,
+html[data-theme="dark"] .catalog-old-price {
+  color: rgba(246, 242, 237, 0.62) !important;
+}
+
+html[data-theme="dark"] .catalog-page .catalog-product-image,
+html[data-theme="dark"] .catalog-product-image,
+html[data-theme="dark"] .home-page .product-card img,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .product-card img,
+html[data-theme="dark"] .blog-img {
+  background: #241f1b !important;
+}
+
+html[data-theme="dark"] .catalog-page .catalog-promo-label,
+html[data-theme="dark"] .catalog-promo-label,
+html[data-theme="dark"] .home-page .badge,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .badge {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: #ff765f !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] .catalog-page .catalog-wishlist-btn,
+html[data-theme="dark"] .catalog-wishlist-btn {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: #241f1b !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .catalog-page .catalog-wishlist-btn:hover,
+html[data-theme="dark"] .catalog-page .catalog-wishlist-btn:focus,
+html[data-theme="dark"] .catalog-page .catalog-wishlist-btn.is-saved,
+html[data-theme="dark"] .catalog-wishlist-btn:hover,
+html[data-theme="dark"] .catalog-wishlist-btn:focus,
+html[data-theme="dark"] .catalog-wishlist-btn.is-saved {
+  background: #ff765f !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] .home-page .tab-head,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .tab-head {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #1b1816 !important;
+}
+
+html[data-theme="dark"] .home-page .tab-head button,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .tab-btn {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .home-page .tab-head .active,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .tab-head .active {
+  background: #ff765f !important;
+  color: #fff !important;
+}
+
+/* Global dark-mode safety net for customer-facing pages. */
+html[data-theme="dark"] .site-shell,
+html[data-theme="dark"] main,
+html[data-theme="dark"] .cart-page,
+html[data-theme="dark"] .checkout-premium-page,
+html[data-theme="dark"] .orders-page,
+html[data-theme="dark"] .wishlist-page,
+html[data-theme="dark"] .notification-page,
+html[data-theme="dark"] .content-page,
+html[data-theme="dark"] .payment-page,
+html[data-theme="dark"] .success-page,
+html[data-theme="dark"] .auth-shell,
+html[data-theme="dark"] .account-page {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .offcanvas,
+html[data-theme="dark"] .cart-heading,
+html[data-theme="dark"] .checkout-heading,
+html[data-theme="dark"] .content-hero,
+html[data-theme="dark"] .orders-heading,
+html[data-theme="dark"] .wishlist-heading,
+html[data-theme="dark"] .notification-hero,
+html[data-theme="dark"] .success-hero,
+html[data-theme="dark"] .payment-hero,
+html[data-theme="dark"] .auth-card,
+html[data-theme="dark"] .account-card,
+html[data-theme="dark"] .account-hero,
+html[data-theme="dark"] .cart-items-panel,
+html[data-theme="dark"] .cart-summary,
+html[data-theme="dark"] .cart-item-card,
+html[data-theme="dark"] .orders-card,
+html[data-theme="dark"] .wishlist-card,
+html[data-theme="dark"] .notification-card,
+html[data-theme="dark"] .content-form-card,
+html[data-theme="dark"] .content-table-card,
+html[data-theme="dark"] .payment-card,
+html[data-theme="dark"] .success-card,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .checkout-card,
+html[data-theme="dark"] .checkout-premium-page .checkout-card,
+html[data-theme="dark"] .checkout-premium-page .checkout-section,
+html[data-theme="dark"] .checkout-total,
+html[data-theme="dark"] .checkout-payment-option,
+html[data-theme="dark"] .checkout-product-item,
+html[data-theme="dark"] .checkout-mini-product,
+html[data-theme="dark"] .checkout-voucher-box,
+html[data-theme="dark"] .checkout-voucher-option,
+html[data-theme="dark"] .checkout-address-preview,
+html[data-theme="dark"] .detail-card,
+html[data-theme="dark"] .detail-buy-panel,
+html[data-theme="dark"] .review-summary,
+html[data-theme="dark"] .policy-card {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #1b1816 !important;
+  color: #f6f2ed !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26) !important;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6,
+html[data-theme="dark"] strong,
+html[data-theme="dark"] label,
+html[data-theme="dark"] .cart-item-name,
+html[data-theme="dark"] .orders-title,
+html[data-theme="dark"] .orders-id,
+html[data-theme="dark"] .orders-product-name,
+html[data-theme="dark"] .wishlist-title,
+html[data-theme="dark"] .notification-title,
+html[data-theme="dark"] .checkout-brand,
+html[data-theme="dark"] .checkout-section-head h3,
+html[data-theme="dark"] .checkout-payment-copy strong,
+html[data-theme="dark"] .checkout-total-head,
+html[data-theme="dark"] .checkout-mini-product b,
+html[data-theme="dark"] .checkout-voucher-title span,
+html[data-theme="dark"] .detail-title,
+html[data-theme="dark"] .policy-card strong {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] p,
+html[data-theme="dark"] small,
+html[data-theme="dark"] span,
+html[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .cart-heading p,
+html[data-theme="dark"] .checkout-heading p,
+html[data-theme="dark"] .orders-hero p,
+html[data-theme="dark"] .orders-date,
+html[data-theme="dark"] .orders-product-meta,
+html[data-theme="dark"] .orders-total span,
+html[data-theme="dark"] .summary-row,
+html[data-theme="dark"] .cart-meta-label,
+html[data-theme="dark"] .cart-variant,
+html[data-theme="dark"] .empty-state p,
+html[data-theme="dark"] .checkout-section-head small,
+html[data-theme="dark"] .checkout-payment-copy small,
+html[data-theme="dark"] .checkout-total-row,
+html[data-theme="dark"] .checkout-mini-product small,
+html[data-theme="dark"] .checkout-more-items,
+html[data-theme="dark"] .checkout-trust-row,
+html[data-theme="dark"] .checkout-pay-note,
+html[data-theme="dark"] .policy-card span {
+  color: rgba(246, 242, 237, 0.68) !important;
+}
+
+html[data-theme="dark"] a,
+html[data-theme="dark"] a:visited {
+  color: #f6f2ed;
+}
+
+html[data-theme="dark"] a:hover,
+html[data-theme="dark"] a:focus {
+  color: #ff8a78;
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] .checkout-field .form-control,
+html[data-theme="dark"] .checkout-voucher-box .form-control,
+html[data-theme="dark"] .cart-qty-control input {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: #12100f !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .form-control::placeholder,
+html[data-theme="dark"] textarea::placeholder,
+html[data-theme="dark"] input::placeholder {
+  color: rgba(246, 242, 237, 0.46) !important;
+}
+
+html[data-theme="dark"] .table,
+html[data-theme="dark"] table,
+html[data-theme="dark"] .table td,
+html[data-theme="dark"] .table th,
+html[data-theme="dark"] table td,
+html[data-theme="dark"] table th {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .table thead,
+html[data-theme="dark"] table thead,
+html[data-theme="dark"] .content-table-card thead {
+  background: #241f1b !important;
+}
+
+html[data-theme="dark"] .alert,
+html[data-theme="dark"] .toast,
+html[data-theme="dark"] .status-message {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #241f1b !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .cart-qty-control,
+html[data-theme="dark"] .cart-qty-control button,
+html[data-theme="dark"] .orders-filter,
+html[data-theme="dark"] .orders-filter-btn,
+html[data-theme="dark"] .checkout-ship-progress,
+html[data-theme="dark"] .checkout-payment-icon,
+html[data-theme="dark"] .checkout-payment-brand,
+html[data-theme="dark"] .checkout-head-num {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #241f1b !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .btn-outline-danger,
+html[data-theme="dark"] .btn-outline-dark,
+html[data-theme="dark"] .btn-outline-secondary,
+html[data-theme="dark"] .cart-continue-link,
+html[data-theme="dark"] .orders-shop-link,
+html[data-theme="dark"] .checkout-back-link,
+html[data-theme="dark"] .checkout-back-shop,
+html[data-theme="dark"] .checkout-text-btn {
+  border-color: rgba(255, 118, 95, 0.42) !important;
+  background: rgba(255, 118, 95, 0.12) !important;
+  color: #ffb1a5 !important;
+}
+
+html[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .btn-success,
+html[data-theme="dark"] .cart-checkout-btn,
+html[data-theme="dark"] .checkout-submit,
+html[data-theme="dark"] .checkout-submit-btn,
+html[data-theme="dark"] .checkout-apply-voucher-btn,
+html[data-theme="dark"] .orders-btn-main,
+html[data-theme="dark"] .orders-btn-buy,
+html[data-theme="dark"] .auth-submit,
+html[data-theme="dark"] .account-save-btn {
+  border-color: #ff765f !important;
+  background: #ff765f !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] img {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Home and intro pages have their own strong page CSS, so dark mode needs explicit page-level control. */
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .section,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .tabs,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .blog {
+  background: #100f0e !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(255, 118, 95, 0.2), transparent 34%),
+    linear-gradient(135deg, #1b1816 0%, #100f0e 100%) !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero::before {
+  background: rgba(255, 118, 95, 0.18) !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero::after {
+  color: rgba(246, 242, 237, 0.06) !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero-content h1,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .section-title,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .blog h4 {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero-copy,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero-proof span {
+  color: rgba(246, 242, 237, 0.72) !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero-proof span,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .hero-product,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .sale-box {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: rgba(27, 24, 22, 0.88) !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .sale-box {
+  background:
+    linear-gradient(135deg, rgba(255, 118, 95, 0.18), rgba(27, 24, 22, 0.92)),
+    #1b1816 !important;
+}
+
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .sale-center h2,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .sale-center h3,
+html[data-theme="dark"] body.coutura-body:not(:has(.muva-page)) .home-page .sale-left p {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] body:has(.muva-page),
+html[data-theme="dark"] body:has(.muva-page).coutura-body,
+html[data-theme="dark"] body:has(.muva-page) .site-shell,
+html[data-theme="dark"] .muva-page,
+html[data-theme="dark"] .muva-intro-page {
+  background: #100f0e !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .muva-nav {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: rgba(16, 15, 14, 0.94) !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .muva-page a,
+html[data-theme="dark"] .muva-page a:visited,
+html[data-theme="dark"] .muva-logo,
+html[data-theme="dark"] .muva-logo:visited,
+html[data-theme="dark"] .muva-title,
+html[data-theme="dark"] .muva-section-head h2,
+html[data-theme="dark"] .muva-story-text p,
+html[data-theme="dark"] .muva-value-grid article h3,
+html[data-theme="dark"] .muva-collection-card b,
+html[data-theme="dark"] .muva-cta h2 {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .muva-sub,
+html[data-theme="dark"] .muva-meta span,
+html[data-theme="dark"] .muva-story-text blockquote,
+html[data-theme="dark"] .muva-value-grid article p,
+html[data-theme="dark"] .muva-value-grid article small,
+html[data-theme="dark"] .muva-collection-card small,
+html[data-theme="dark"] .muva-cta p {
+  color: rgba(246, 242, 237, 0.7) !important;
+}
+
+html[data-theme="dark"] .muva-hero,
+html[data-theme="dark"] .muva-section,
+html[data-theme="dark"] .muva-values,
+html[data-theme="dark"] .muva-cta {
+  background: #100f0e !important;
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] .muva-frame,
+html[data-theme="dark"] .muva-caption,
+html[data-theme="dark"] .muva-story-image,
+html[data-theme="dark"] .muva-value-grid article,
+html[data-theme="dark"] .muva-collection-card,
+html[data-theme="dark"] .muva-meta div,
+html[data-theme="dark"] .muva-icon-link {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #1b1816 !important;
+  color: #f6f2ed !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28) !important;
+}
+
+html[data-theme="dark"] .muva-marquee {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  background: #1b1816 !important;
+  color: rgba(246, 242, 237, 0.76) !important;
+}

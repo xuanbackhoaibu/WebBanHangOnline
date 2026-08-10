@@ -107,6 +107,51 @@ html[data-theme="dark"] body.coutura-body {
   color: rgba(255, 255, 255, 0.82);
 }
 
+.coutura-topbar .topbar-auth-link,
+.coutura-topbar .topbar-auth-link:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border-radius: 999px !important;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+  opacity: 1;
+  text-transform: none;
+  visibility: visible;
+}
+
+.coutura-topbar .topbar-auth-login,
+.coutura-topbar .topbar-auth-login:visited {
+  border: 1px solid rgba(250, 247, 240, 0.42) !important;
+  background: transparent !important;
+  color: #fff !important;
+}
+
+.coutura-topbar .topbar-auth-register,
+.coutura-topbar .topbar-auth-register:visited {
+  border: 1px solid var(--xb-accent, #d94f3d) !important;
+  background: var(--xb-accent, #d94f3d) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(217, 79, 61, 0.24);
+}
+
+.coutura-topbar .topbar-auth-login:hover,
+.coutura-topbar .topbar-auth-login:focus {
+  border-color: #fff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.coutura-topbar .topbar-auth-register:hover,
+.coutura-topbar .topbar-auth-register:focus {
+  border-color: var(--xb-accent-dark, #a9362a) !important;
+  background: var(--xb-accent-dark, #a9362a) !important;
+  color: #fff !important;
+}
+
 .language-flag {
   display: inline-flex;
   align-items: center;

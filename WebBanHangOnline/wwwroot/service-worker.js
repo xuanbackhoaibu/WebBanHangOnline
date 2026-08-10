@@ -1,4 +1,4 @@
-const CACHE_NAME = "xuanbac-shop-v1";
+const CACHE_NAME = "xuanbac-shop-v6";
 const CORE_ASSETS = [
   "/",
   "/Home/About",
@@ -46,6 +46,20 @@ self.addEventListener("fetch", event => {
           return response;
         })
         .catch(() => caches.match(request).then(response => response || caches.match("/Home/About")))
+    );
+    return;
+  }
+
+  if (request.destination === "style" || request.destination === "script") {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (!response || response.status !== 200) return response;
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }
