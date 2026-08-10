@@ -328,7 +328,6 @@ body:has(.muva-page) .shop-footer a:focus {
 
 .muva-title em,
 .muva-section-head em,
-.muva-cta em,
 .muva-shop-hero em {
   color: var(--muva-terra);
   font-style: italic;
@@ -511,7 +510,6 @@ body:has(.muva-page) .shop-footer a:focus {
 }
 
 .muva-section-head h2,
-.muva-cta h2,
 .muva-shop-hero h1 {
   margin: 0;
   color: var(--muva-ink);
@@ -715,24 +713,6 @@ body:has(.muva-page) .shop-footer a:focus {
   background: var(--muva-terra);
   color: var(--muva-paper);
   transform: rotate(-35deg);
-}
-
-.muva-cta {
-  position: relative;
-  overflow: hidden;
-  background: var(--muva-ink);
-  color: var(--muva-paper);
-  padding: 110px 0;
-}
-
-.muva-cta h2 {
-  color: var(--muva-paper);
-}
-
-.muva-cta p {
-  max-width: 480px;
-  margin: 18px 0 28px;
-  color: rgba(244, 239, 230, 0.68);
 }
 
 .muva-shop-hero {
@@ -2112,8 +2092,7 @@ body:has(.muva-page) .shop-footer a:focus {
   margin-bottom: 34px;
 }
 
-.muva-intro-page .muva-section-head h2,
-.muva-intro-page .muva-cta h2 {
+.muva-intro-page .muva-section-head h2 {
   max-width: 760px;
   font-size: clamp(28px, 3.2vw, 42px);
   line-height: 1.12;
@@ -2181,15 +2160,6 @@ body:has(.muva-page) .shop-footer a:focus {
   height: 38px;
 }
 
-.muva-intro-page .muva-cta {
-  padding: 72px 0;
-}
-
-.muva-intro-page .muva-cta p {
-  margin: 14px 0 22px;
-  font-size: 14px;
-}
-
 @media (max-width: 1024px) {
   .muva-intro-page .muva-frame img,
   .muva-intro-page .muva-story-image img {
@@ -2228,8 +2198,7 @@ body:has(.muva-page) .shop-footer a:focus {
     height: 300px;
   }
 
-  .muva-intro-page .muva-section-head h2,
-  .muva-intro-page .muva-cta h2 {
+  .muva-intro-page .muva-section-head h2 {
     font-size: 27px;
   }
 }

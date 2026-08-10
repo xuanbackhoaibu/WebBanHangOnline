@@ -1,0 +1,322 @@
+html[data-theme="dark"] body.admin-body {
+  --admin-ink: #f6f2ed;
+  --admin-muted: rgba(246, 242, 237, 0.68);
+  --admin-line: rgba(255, 255, 255, 0.13);
+  --admin-paper: #141210;
+  --admin-soft: #1b1816;
+  --admin-accent: #d86a44;
+  --admin-accent-dark: #f08a63;
+  background:
+    radial-gradient(circle at 88% 70px, rgba(216, 106, 68, 0.16), transparent 300px),
+    linear-gradient(180deg, #100f0e 0%, #161311 420px, #100f0e 100%) !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-header {
+  border-bottom-color: var(--admin-line) !important;
+  background: linear-gradient(135deg, #0f0e0d 0%, #1b1816 58%, #2a1712 100%) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42) !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-header,
+html[data-theme="dark"] body.admin-body .admin-header .navbar-brand,
+html[data-theme="dark"] body.admin-body .admin-header .navbar-brand span {
+  color: #f6f2ed !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-sidebar {
+  border-right-color: var(--admin-line) !important;
+  background: rgba(16, 15, 14, 0.94) !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-sidebar .nav-link {
+  color: rgba(246, 242, 237, 0.72) !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-sidebar .nav-link i {
+  color: rgba(246, 242, 237, 0.52) !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-sidebar .nav-link:hover,
+html[data-theme="dark"] body.admin-body .admin-sidebar .nav-link.active {
+  border-color: rgba(216, 106, 68, 0.34) !important;
+  background: rgba(216, 106, 68, 0.14) !important;
+  color: #ffb493 !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-sidebar .nav-link:hover i,
+html[data-theme="dark"] body.admin-body .admin-sidebar .nav-link.active i {
+  color: #ffb493 !important;
+}
+
+html[data-theme="dark"] body.admin-body .content-wrapper,
+html[data-theme="dark"] body.admin-body .dashboard-header,
+html[data-theme="dark"] body.admin-body .stat-card,
+html[data-theme="dark"] body.admin-body .chart-card,
+html[data-theme="dark"] body.admin-body .recent-orders,
+html[data-theme="dark"] body.admin-body .admin-metric-card,
+html[data-theme="dark"] body.admin-body .admin-filter-card,
+html[data-theme="dark"] body.admin-body .admin-table-card,
+html[data-theme="dark"] body.admin-body .admin-report-card,
+html[data-theme="dark"] body.admin-body .card,
+html[data-theme="dark"] body.admin-body .modal-content,
+html[data-theme="dark"] body.admin-body .dropdown-menu,
+html[data-theme="dark"] body.admin-body .list-group-item {
+  border-color: var(--admin-line) !important;
+  background: rgba(27, 24, 22, 0.94) !important;
+  color: var(--admin-ink) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.32) !important;
+}
+
+body.admin-body .content-wrapper {
+  animation: none !important;
+}
+
+html[data-theme="dark"] body.admin-body .dashboard-header {
+  background:
+    linear-gradient(135deg, rgba(216, 106, 68, 0.16), rgba(27, 24, 22, 0.96)) !important;
+}
+
+html[data-theme="dark"] body.admin-body h1,
+html[data-theme="dark"] body.admin-body h2,
+html[data-theme="dark"] body.admin-body h3,
+html[data-theme="dark"] body.admin-body h4,
+html[data-theme="dark"] body.admin-body h5,
+html[data-theme="dark"] body.admin-body h6,
+html[data-theme="dark"] body.admin-body strong,
+html[data-theme="dark"] body.admin-body label,
+html[data-theme="dark"] body.admin-body .dashboard-header h2,
+html[data-theme="dark"] body.admin-body .chart-header h4,
+html[data-theme="dark"] body.admin-body .table-header h4,
+html[data-theme="dark"] body.admin-body .stat-value,
+html[data-theme="dark"] body.admin-body .admin-card-head h5,
+html[data-theme="dark"] body.admin-body .admin-metric-card strong,
+html[data-theme="dark"] body.admin-body .admin-product-cell strong,
+html[data-theme="dark"] body.admin-body .admin-user-cell strong,
+html[data-theme="dark"] body.admin-body .rfm-item strong,
+html[data-theme="dark"] body.admin-body .rfm-item b,
+html[data-theme="dark"] body.admin-body .abandonment-bars b,
+html[data-theme="dark"] body.admin-body .ranking-item strong,
+html[data-theme="dark"] body.admin-body .ranking-item b,
+html[data-theme="dark"] body.admin-body .stock-item strong {
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body p,
+html[data-theme="dark"] body.admin-body small,
+html[data-theme="dark"] body.admin-body span,
+html[data-theme="dark"] body.admin-body .text-muted,
+html[data-theme="dark"] body.admin-body .admin-page-head p,
+html[data-theme="dark"] body.admin-body .admin-card-head span,
+html[data-theme="dark"] body.admin-body .chart-header span,
+html[data-theme="dark"] body.admin-body .table-header span,
+html[data-theme="dark"] body.admin-body .stat-trend,
+html[data-theme="dark"] body.admin-body .stat-content h5,
+html[data-theme="dark"] body.admin-body .rfm-item span,
+html[data-theme="dark"] body.admin-body .order-table td:first-child span,
+html[data-theme="dark"] body.admin-body .admin-user-cell small,
+html[data-theme="dark"] body.admin-body .admin-product-cell small,
+html[data-theme="dark"] body.admin-body .ranking-item small,
+html[data-theme="dark"] body.admin-body .stock-item span:not(.stock-count) {
+  color: var(--admin-muted) !important;
+}
+
+html[data-theme="dark"] body.admin-body a,
+html[data-theme="dark"] body.admin-body a:visited {
+  color: #ffb493;
+}
+
+html[data-theme="dark"] body.admin-body a:hover,
+html[data-theme="dark"] body.admin-body a:focus {
+  color: #ffd0bc;
+}
+
+html[data-theme="dark"] body.admin-body .form-control,
+html[data-theme="dark"] body.admin-body .form-select,
+html[data-theme="dark"] body.admin-body textarea,
+html[data-theme="dark"] body.admin-body input[type="text"],
+html[data-theme="dark"] body.admin-body input[type="email"],
+html[data-theme="dark"] body.admin-body input[type="password"],
+html[data-theme="dark"] body.admin-body input[type="number"],
+html[data-theme="dark"] body.admin-body input[type="date"],
+html[data-theme="dark"] body.admin-body input[type="month"],
+html[data-theme="dark"] body.admin-body .month-input,
+html[data-theme="dark"] body.admin-body .order-filter-tools input {
+  border-color: var(--admin-line) !important;
+  background: #12100f !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .form-control::placeholder,
+html[data-theme="dark"] body.admin-body textarea::placeholder,
+html[data-theme="dark"] body.admin-body input::placeholder {
+  color: rgba(246, 242, 237, 0.44) !important;
+}
+
+html[data-theme="dark"] body.admin-body .form-control:focus,
+html[data-theme="dark"] body.admin-body .form-select:focus,
+html[data-theme="dark"] body.admin-body textarea:focus,
+html[data-theme="dark"] body.admin-body input:focus {
+  border-color: rgba(216, 106, 68, 0.72) !important;
+  box-shadow: 0 0 0 0.2rem rgba(216, 106, 68, 0.18) !important;
+}
+
+html[data-theme="dark"] body.admin-body .table,
+html[data-theme="dark"] body.admin-body table,
+html[data-theme="dark"] body.admin-body .table td,
+html[data-theme="dark"] body.admin-body .table th,
+html[data-theme="dark"] body.admin-body table td,
+html[data-theme="dark"] body.admin-body table th,
+html[data-theme="dark"] body.admin-body .order-table td,
+html[data-theme="dark"] body.admin-body .order-table th,
+html[data-theme="dark"] body.admin-body .cohort-table td,
+html[data-theme="dark"] body.admin-body .cohort-table th {
+  border-color: var(--admin-line) !important;
+  background-color: transparent !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .table thead,
+html[data-theme="dark"] body.admin-body .table thead th,
+html[data-theme="dark"] body.admin-body table thead,
+html[data-theme="dark"] body.admin-body .order-table th,
+html[data-theme="dark"] body.admin-body .cohort-table th {
+  background: rgba(216, 106, 68, 0.12) !important;
+  color: rgba(246, 242, 237, 0.78) !important;
+}
+
+html[data-theme="dark"] body.admin-body .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(255, 255, 255, 0.035) !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .table-hover > tbody > tr:hover > *,
+html[data-theme="dark"] body.admin-body .admin-bar-row:hover,
+html[data-theme="dark"] body.admin-body .admin-status-list a:hover {
+  background: rgba(216, 106, 68, 0.12) !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .date-picker,
+html[data-theme="dark"] body.admin-body .admin-storefront-btn,
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-primary,
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-success,
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-danger,
+html[data-theme="dark"] body.admin-body .segmented-control button.active {
+  border-color: var(--admin-accent) !important;
+  background: var(--admin-accent) !important;
+  color: #100f0e !important;
+}
+
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-outline-primary,
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-outline-secondary,
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-outline-dark,
+html[data-theme="dark"] body.admin-body .view-all,
+html[data-theme="dark"] body.admin-body .btn-icon,
+html[data-theme="dark"] body.admin-body .segmented-control,
+html[data-theme="dark"] body.admin-body .ranking-item {
+  border-color: var(--admin-line) !important;
+  background: #12100f !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-outline-primary:hover,
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-outline-secondary:hover,
+html[data-theme="dark"] body.admin-body .content-wrapper .btn-outline-dark:hover,
+html[data-theme="dark"] body.admin-body .view-all:hover,
+html[data-theme="dark"] body.admin-body .btn-icon:hover,
+html[data-theme="dark"] body.admin-body .segmented-control button:hover,
+html[data-theme="dark"] body.admin-body .ranking-item:hover {
+  border-color: var(--admin-accent) !important;
+  background: rgba(216, 106, 68, 0.18) !important;
+  color: #ffb493 !important;
+}
+
+html[data-theme="dark"] body.admin-body .admin-head-meta,
+html[data-theme="dark"] body.admin-body .admin-user-cell > span,
+html[data-theme="dark"] body.admin-body .cohort-cell,
+html[data-theme="dark"] body.admin-body .abandonment-bars div,
+html[data-theme="dark"] body.admin-body .admin-payment-split div,
+html[data-theme="dark"] body.admin-body .admin-status-list div,
+html[data-theme="dark"] body.admin-body .admin-status-list a,
+html[data-theme="dark"] body.admin-body .order-history-item,
+html[data-theme="dark"] body.admin-body .admin-bar-track,
+html[data-theme="dark"] body.admin-body .chart-empty,
+html[data-theme="dark"] body.admin-body .empty-state,
+html[data-theme="dark"] body.admin-body .admin-empty-state,
+html[data-theme="dark"] body.admin-body .ranking-index,
+html[data-theme="dark"] body.admin-body .stock-count {
+  border-color: var(--admin-line) !important;
+  background: #12100f !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body .ranking-index,
+html[data-theme="dark"] body.admin-body .stock-count {
+  color: #ffb493 !important;
+  background: rgba(216, 106, 68, 0.16) !important;
+}
+
+html[data-theme="dark"] body.admin-body .stat-icon,
+html[data-theme="dark"] body.admin-body .status-badge {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] body.admin-body .badge,
+html[data-theme="dark"] body.admin-body .text-bg-success,
+html[data-theme="dark"] body.admin-body .text-bg-warning,
+html[data-theme="dark"] body.admin-body .text-bg-danger,
+html[data-theme="dark"] body.admin-body .text-bg-secondary,
+html[data-theme="dark"] body.admin-body .text-bg-info,
+html[data-theme="dark"] body.admin-body .text-bg-dark,
+html[data-theme="dark"] body.admin-body .text-bg-light {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] body.admin-body .text-bg-warning,
+html[data-theme="dark"] body.admin-body .text-bg-light {
+  background-color: #9a6a13 !important;
+}
+
+html[data-theme="dark"] body.admin-body .status-completed,
+html[data-theme="dark"] body.admin-body .status-paid {
+  color: #8ff0ba !important;
+  background: rgba(32, 148, 92, 0.18) !important;
+}
+
+html[data-theme="dark"] body.admin-body .status-pending,
+html[data-theme="dark"] body.admin-body .status-waiting {
+  color: #ffd27a !important;
+  background: rgba(181, 130, 24, 0.2) !important;
+}
+
+html[data-theme="dark"] body.admin-body .status-cancelled {
+  color: #ffaaa2 !important;
+  background: rgba(194, 60, 52, 0.2) !important;
+}
+
+html[data-theme="dark"] body.admin-body .status-processing {
+  color: #9ed8ff !important;
+  background: rgba(56, 139, 200, 0.2) !important;
+}
+
+html[data-theme="dark"] body.admin-body .alert,
+html[data-theme="dark"] body.admin-body .admin-live-toast,
+html[data-theme="dark"] body.admin-body .apexcharts-tooltip {
+  border-color: var(--admin-line) !important;
+  background: #1b1816 !important;
+  color: var(--admin-ink) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.36) !important;
+}
+
+html[data-theme="dark"] body.admin-body .apexcharts-tooltip-title {
+  border-color: var(--admin-line) !important;
+  background: #12100f !important;
+  color: var(--admin-ink) !important;
+}
+
+html[data-theme="dark"] body.admin-body hr {
+  border-color: var(--admin-line) !important;
+  opacity: 1;
+}

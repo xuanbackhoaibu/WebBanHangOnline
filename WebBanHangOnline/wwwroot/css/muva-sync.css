@@ -178,6 +178,54 @@ body.coutura-body:not(:has(.muva-page)) .site-shell {
   color: var(--muva-terra);
 }
 
+.footer-store-cta {
+  display: grid;
+  gap: 12px;
+}
+
+.footer-store-cta h6 {
+  max-width: 260px;
+  margin: 0;
+  color: var(--muva-paper);
+  font-family: var(--muva-serif);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.18;
+  text-transform: none;
+}
+
+.footer-store-cta p {
+  max-width: 280px;
+  margin: 0;
+  color: rgba(244, 239, 230, 0.72);
+}
+
+.footer-store-cta a,
+.footer-store-cta a:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 40px;
+  border: 1px solid var(--muva-terra);
+  border-radius: 4px;
+  background: var(--muva-terra);
+  color: var(--muva-paper) !important;
+  font-family: var(--muva-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 0 18px;
+  text-transform: uppercase;
+}
+
+.footer-store-cta a:hover,
+.footer-store-cta a:focus {
+  border-color: var(--muva-terra-dark);
+  background: var(--muva-terra-dark);
+  color: var(--muva-paper) !important;
+}
+
 .newsletter input {
   border-radius: 4px;
 }
@@ -1069,8 +1117,7 @@ html[data-theme="dark"] .muva-title,
 html[data-theme="dark"] .muva-section-head h2,
 html[data-theme="dark"] .muva-story-text p,
 html[data-theme="dark"] .muva-value-grid article h3,
-html[data-theme="dark"] .muva-collection-card b,
-html[data-theme="dark"] .muva-cta h2 {
+html[data-theme="dark"] .muva-collection-card b {
   color: #f6f2ed !important;
 }
 
@@ -1079,15 +1126,13 @@ html[data-theme="dark"] .muva-meta span,
 html[data-theme="dark"] .muva-story-text blockquote,
 html[data-theme="dark"] .muva-value-grid article p,
 html[data-theme="dark"] .muva-value-grid article small,
-html[data-theme="dark"] .muva-collection-card small,
-html[data-theme="dark"] .muva-cta p {
+html[data-theme="dark"] .muva-collection-card small {
   color: rgba(246, 242, 237, 0.7) !important;
 }
 
 html[data-theme="dark"] .muva-hero,
 html[data-theme="dark"] .muva-section,
-html[data-theme="dark"] .muva-values,
-html[data-theme="dark"] .muva-cta {
+html[data-theme="dark"] .muva-values {
   background: #100f0e !important;
   color: #f6f2ed !important;
 }

@@ -1,8 +1,15 @@
 .product-detail-page {
   color: #27231f;
-  max-width: 1180px;
-  margin: 0 auto;
   padding-bottom: 36px;
+}
+
+.product-detail-page .detail-shell,
+.product-detail-page .detail-info-grid,
+.product-detail-page .review-panel,
+.product-detail-page .related-products {
+  max-width: 1180px;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .product-detail-page .detail-shell,

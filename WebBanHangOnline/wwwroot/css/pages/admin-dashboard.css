@@ -171,18 +171,38 @@
 
 .bi-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.7fr) minmax(0, 1.3fr);
+    grid-template-columns: minmax(280px, 0.95fr) minmax(280px, 0.85fr) minmax(420px, 1.25fr);
+    align-items: stretch;
     gap: 1rem;
     margin-bottom: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.1rem;
 }
 
 .bi-card {
     height: auto;
     min-height: 280px;
+    min-width: 0;
 }
 
 .bi-card-wide {
     min-width: 0;
+}
+
+.bi-grid > .bi-card:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.bi-grid > .bi-card:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.bi-grid > .bi-card:nth-child(3) {
+    grid-column: 3;
+    grid-row: 1;
 }
 
 .rfm-list {
@@ -270,7 +290,7 @@
 
 .cohort-table {
     width: 100%;
-    min-width: 560px;
+    min-width: 480px;
     border-collapse: collapse;
 }
 
@@ -822,10 +842,23 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .bi-grid,
     .dashboard-grid,
     .dashboard-lower-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .bi-grid {
+        grid-template-columns: 1fr;
+        overflow-x: visible;
+    }
+
+    .bi-grid > .bi-card:nth-child(1),
+    .bi-grid > .bi-card:nth-child(2),
+    .bi-grid > .bi-card:nth-child(3) {
+        grid-column: 1;
+        grid-row: auto;
     }
 }
 

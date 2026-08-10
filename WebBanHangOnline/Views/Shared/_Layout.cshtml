@@ -8,6 +8,10 @@
     var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
     var isEnglish = currentCulture == "en";
     var returnUrl = Context.Request.PathBase + Context.Request.Path + Context.Request.QueryString;
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var isIntroPage = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "About", StringComparison.OrdinalIgnoreCase);
     var cartCount = 0;
     var wishlistCount = 0;
     var cartPreviewItems = new List<CartItem>();
@@ -374,15 +378,28 @@
                 </ul>
             </div>
 
-            <!-- NEWSLETTER -->
+            <!-- FOOTER ACTION -->
             <div class="footer-col">
-                <h6>@T("Đăng ký nhận tin", "Newsletter")</h6>
-                <p>@T("Nhận thông tin khuyến mãi mới nhất.", "Get the latest promotions.")</p>
+                @if (isIntroPage)
+                {
+                    <div class="footer-store-cta">
+                        <h6>@T("Sẵn sàng chạm vào chất liệu thật?", "Ready to feel the real fabric?")</h6>
+                        <p>@T("Toàn bộ bộ sưu tập mới đã lên kệ cửa hàng trực tuyến.", "The full new collection is now available in the online store.")</p>
+                        <a asp-area="" asp-controller="Home" asp-action="Index" asp-route-enterShop="true">
+                            @T("Vào cửa hàng", "Enter store")
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <h6>@T("Đăng ký nhận tin", "Newsletter")</h6>
+                    <p>@T("Nhận thông tin khuyến mãi mới nhất.", "Get the latest promotions.")</p>
 
-                <div class="newsletter">
-                    <input type="email" placeholder="@T("Nhập email của bạn", "Enter your email")">
-                    <button>@T("Đăng ký", "Subscribe")</button>
-                </div>
+                    <div class="newsletter">
+                        <input type="email" placeholder="@T("Nhập email của bạn", "Enter your email")">
+                        <button>@T("Đăng ký", "Subscribe")</button>
+                    </div>
+                }
 
                 <p class="contact">
                     Hotline: 0123 456 789<br>

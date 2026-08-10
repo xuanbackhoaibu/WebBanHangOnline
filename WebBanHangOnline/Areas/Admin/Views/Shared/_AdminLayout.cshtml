@@ -4,6 +4,14 @@
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#100f0e" />
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem("xb-theme");
+            const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+            document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
+        })();
+    </script>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
@@ -22,8 +30,9 @@
     <link rel="stylesheet" href="~/css/muva-admin-sync.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/css/admin-dark.css" asp-append-version="true" />
 </head>
-<body>
+<body class="admin-body">
 
 <!-- HEADER -->
 <nav class="navbar admin-header">
