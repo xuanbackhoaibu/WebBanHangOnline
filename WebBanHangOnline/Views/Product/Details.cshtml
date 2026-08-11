@@ -1,3 +1,9 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using WebBanHangOnline.Data
+@using WebBanHangOnline.Models
+@inject ApplicationDbContext DetailDbContext
+@inject UserManager<ApplicationUser> DetailUserManager
 @model WebBanHangOnline.Models.Product
 
 @{
@@ -28,6 +34,47 @@
     var userReview = ViewBag.UserReview as WebBanHangOnline.Models.Review;
     var reviewGateMessage = ViewBag.ReviewGateMessage as string;
     var isWishlisted = ViewBag.IsWishlisted == true;
+    var cartCount = 0;
+    var wishlistCount = 0;
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var detailUserId = DetailUserManager.GetUserId(User);
+        cartCount = await DetailDbContext.CartItems
+            .Where(item => item.UserId == detailUserId)
+            .SumAsync(item => (int?)item.Quantity) ?? 0;
+        wishlistCount = await DetailDbContext.WishlistItems
+            .Where(item => item.UserId == detailUserId)
+            .CountAsync();
+    }
+    var displayPrice = Model.FinalPrice;
+    var freeShipGoal = 999000m;
+    var freeShipRemaining = Math.Max(0, freeShipGoal - displayPrice);
+    var freeShipProgress = Math.Min(100, (int)Math.Round(displayPrice / freeShipGoal * 100));
+    var deliveryDate = DateTime.Now.Hour < 16
+        ? DateTime.Now.AddDays(3)
+        : DateTime.Now.AddDays(4);
+    var viewerCount = 8 + (Model.ProductId % 11);
+    var lowestStockVariant = variants
+        .Where(variant => variant.Stock > 0)
+        .OrderBy(variant => variant.Stock)
+        .FirstOrDefault();
+    var ratingRows = Enumerable.Range(1, 5)
+        .Reverse()
+        .Select(star =>
+        {
+            var count = Model.Reviews?.Count(review => review.Rating == star) ?? 0;
+            var percent = reviewCount > 0 ? (int)Math.Round(count * 100.0 / reviewCount) : 0;
+            return new { Star = star, Count = count, Percent = percent };
+        })
+        .ToList();
+    string SizeHint(string? size) => (size ?? string.Empty).ToUpperInvariant() switch
+    {
+        "S" => T("Gợi ý 45-52kg, cao 1m50-1m60", "Suggested for 45-52kg, 1.50m-1.60m"),
+        "M" => T("Gợi ý 53-60kg, cao 1m60-1m68", "Suggested for 53-60kg, 1.60m-1.68m"),
+        "L" => T("Gợi ý 61-68kg, cao 1m68-1m75", "Suggested for 61-68kg, 1.68m-1.75m"),
+        "XL" => T("Gợi ý 69-78kg, cao 1m72-1m82", "Suggested for 69-78kg, 1.72m-1.82m"),
+        _ => T("Xem bảng size hoặc nhắn shop để được tư vấn", "Check size guide or message us for advice")
+    };
 
     ViewData["SeoTitle"] = D(Model.Name);
     ViewData["SeoDescription"] = !string.IsNullOrWhiteSpace(Model.Description)
@@ -54,11 +101,13 @@
                 <a asp-controller="Home" asp-action="About">@T("Giới thiệu", "About")</a>
             </nav>
             <div class="muva-nav-actions">
-                <a class="muva-icon-link" asp-controller="Wishlist" asp-action="Index" aria-label="@T("Yêu thích", "Wishlist")" title="@T("Yêu thích", "Wishlist")">
+                <a class="muva-icon-link" asp-controller="Wishlist" asp-action="Index" aria-label="@T("Yêu thích", "Wishlist")" title="@T($"Yêu thích: {wishlistCount} sản phẩm", $"Wishlist: {wishlistCount} items")">
                     <i class="bi bi-heart"></i>
+                    <span class="cart-badge wishlist-badge">@wishlistCount</span>
                 </a>
-                <a class="muva-icon-link" asp-controller="Cart" asp-action="Index" aria-label="@T("Giỏ hàng", "Cart")" title="@T("Giỏ hàng", "Cart")">
+                <a class="muva-icon-link" asp-controller="Cart" asp-action="Index" aria-label="@T("Giỏ hàng", "Cart")" title="@T($"Giỏ hàng: {cartCount} sản phẩm", $"Cart: {cartCount} items")">
                     <i class="bi bi-bag"></i>
+                    <span class="cart-badge">@cartCount</span>
                 </a>
             </div>
         </div>
@@ -85,7 +134,12 @@
                         <i class="bi @(isWishlisted ? "bi-heart-fill" : "bi-heart")"></i>
                     </button>
                 </form>
+                <button type="button" class="detail-lightbox-trigger" id="openLightbox" aria-label="@T("Xem ảnh toàn màn hình", "View fullscreen image")">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+                <span class="zoom-hint"><i class="bi bi-search"></i> @T("Rê chuột để soi chất liệu", "Hover to inspect fabric")</span>
                 <img id="mainImage" src="@mainImage" alt="@D(Model.Name)" />
+                <div class="zoom-lens" id="zoomLens" aria-hidden="true"></div>
             </div>
 
             <div class="detail-thumbs">
@@ -101,11 +155,6 @@
             <div class="detail-summary">
                 <div class="detail-category">@D(Model.Category?.Name)</div>
                 <h1>@D(Model.Name)</h1>
-
-                <div class="detail-editor-note">
-                    @T("Thiết kế được chọn để dễ phối, giữ dáng gọn và phù hợp nhiều nhịp mặc hằng ngày.",
-                        "Selected for easy styling, a clean fit and everyday versatility.")
-                </div>
 
                 <div class="detail-rating-row">
                 <div class="detail-stars">
@@ -154,7 +203,14 @@
                     <div class="option-list">
                         @foreach (var size in variants.Select(variant => variant.Size).Where(size => !string.IsNullOrWhiteSpace(size)).Distinct())
                         {
-                            <button type="button" class="variant-btn size-btn" data-size="@size">@size</button>
+                            var sizeStock = variants.Where(variant => variant.Size == size).Sum(variant => variant.Stock);
+                            <button type="button"
+                                    class="variant-btn size-btn @(sizeStock <= 0 ? "is-sold-out" : "")"
+                                    data-size="@size"
+                                    data-hint="@SizeHint(size)">
+                                @size
+                                <span>@SizeHint(size)</span>
+                            </button>
                         }
                     </div>
                 </div>
@@ -177,10 +233,20 @@
                     <i class="bi bi-box-seam"></i>
                 </div>
 
-                <div class="fit-note">
-                    <i class="bi bi-rulers"></i>
-                    <span>@T("Gợi ý: nếu bạn ở giữa hai size, hãy chọn size lớn hơn để mặc thoải mái.",
-                        "Tip: if you are between sizes, choose the larger size for comfort.")</span>
+                <div id="urgencyPanel" class="urgency-panel">
+                    <i class="bi bi-fire"></i>
+                    <span id="urgencyText"></span>
+                </div>
+
+                <div id="notifyPanel" class="notify-panel">
+                    <div>
+                        <strong>@T("Phân loại này tạm hết hàng", "This variant is temporarily out of stock")</strong>
+                        <span>@T("Để lại email, shop sẽ báo khi hàng về.", "Leave your email and we will notify you when it is back.")</span>
+                    </div>
+                    <div class="notify-row">
+                        <input type="email" id="stockNotifyEmail" placeholder="email@example.com" />
+                        <button type="button" id="stockNotifyBtn">@T("Báo tôi", "Notify me")</button>
+                    </div>
                 </div>
 
                 <div id="variantError" class="variant-error">
@@ -206,6 +272,37 @@
                         <i class="bi bi-bag-check"></i>
                         @T("Mua ngay", "Buy now")
                     </button>
+                </div>
+
+                <div class="commerce-insights">
+                    <div class="freeship-card">
+                        <i class="bi bi-truck"></i>
+                        <div>
+                            <span>@T("Vận chuyển", "Shipping")</span>
+                            @if (freeShipRemaining <= 0)
+                            {
+                                <strong>@T("Đã đủ freeship", "Free shipping applied")</strong>
+                            }
+                            else
+                            {
+                                <strong>@T($"+{freeShipRemaining:N0} VND để freeship", $"+{freeShipRemaining:N0} VND for freeship")</strong>
+                            }
+                        </div>
+                    </div>
+                    <div class="delivery-card">
+                        <i class="bi bi-calendar2-check"></i>
+                        <div>
+                            <span>@T("Nhận hàng", "Delivery")</span>
+                            <strong>@deliveryDate.ToString("dd/MM")</strong>
+                        </div>
+                    </div>
+                    <div class="viewer-card">
+                        <i class="bi bi-eye"></i>
+                        <div>
+                            <span>@T("Đang xem", "Viewing")</span>
+                            <strong>@viewerCount @T("người", "people")</strong>
+                        </div>
+                    </div>
                 </div>
             </form>
 
@@ -239,7 +336,50 @@
                     </div>
                 </div>
             </div>
+
+            <div class="product-accordions">
+                <details open>
+                    <summary><span>@T("Chất liệu & form dáng", "Material & fit")</span><i class="bi bi-chevron-down"></i></summary>
+                    <p>@T("Chất liệu thoáng, dễ phối và giữ phom tốt. Nếu bạn ở giữa hai size, hãy chọn size lớn hơn để mặc thoải mái.",
+                        "Breathable, easy to style and holds its fit. If you are between sizes, choose the larger size for comfort.")</p>
+                </details>
+                <details>
+                    <summary><span>@T("Hướng dẫn bảo quản", "Care guide")</span><i class="bi bi-chevron-down"></i></summary>
+                    <p>@T("Giặt mặt trái với nước lạnh, tránh sấy nhiệt cao và phơi nơi thoáng mát để giữ màu lâu hơn.",
+                        "Wash inside out with cold water, avoid high heat drying and air dry to preserve color.")</p>
+                </details>
+                <details>
+                    <summary><span>@T("Đổi trả & bảo hành", "Returns & support")</span><i class="bi bi-chevron-down"></i></summary>
+                    <p>@T("Hỗ trợ đổi size trong 7 ngày khi sản phẩm còn nguyên tem mác và chưa qua sử dụng.",
+                        "Size exchange is supported within 7 days when tags are intact and the item is unused.")</p>
+                </details>
+            </div>
         </div>
+    </div>
+
+    <div class="sticky-pdp-bar" id="stickyPdpBar">
+        <img src="@mainImage" alt="@D(Model.Name)" />
+        <div>
+            <strong>@D(Model.Name)</strong>
+            <span>@displayPrice.ToString("N0") VND</span>
+        </div>
+        <button type="button" id="stickyBuyNow" class="btn-disabled">
+            <i class="bi bi-bag-check"></i>
+            @T("Mua ngay", "Buy now")
+        </button>
+    </div>
+
+    <div class="detail-lightbox" id="detailLightbox" aria-hidden="true">
+        <button type="button" class="lightbox-close" id="closeLightbox" aria-label="@T("Đóng", "Close")">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <button type="button" class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="@T("Ảnh trước", "Previous image")">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <img id="lightboxImage" src="@mainImage" alt="@D(Model.Name)" />
+        <button type="button" class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="@T("Ảnh tiếp theo", "Next image")">
+            <i class="bi bi-chevron-right"></i>
+        </button>
     </div>
 
     <div class="detail-info-grid">
@@ -401,6 +541,17 @@
                 <small>@reviewCount @T("đánh giá", "reviews")</small>
             </div>
 
+            <div class="review-histogram" aria-label="@T("Phân bố đánh giá", "Rating distribution")">
+                @foreach (var row in ratingRows)
+                {
+                    <div class="histogram-row">
+                        <span>@row.Star <i class="bi bi-star-fill"></i></span>
+                        <div><b style="width: @row.Percent%"></b></div>
+                        <em>@row.Count</em>
+                    </div>
+                }
+            </div>
+
             @if (Model.Reviews != null && Model.Reviews.Any())
             {
                 <div class="review-list">
@@ -473,27 +624,74 @@
     const variants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
         variants.Select(v => new { v.Id, v.Size, v.Color, ColorText = WebBanHangOnline.Helpers.CatalogTextHelper.Display(v.Color), v.Stock })
     ));
+    const galleryImages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(galleryImages));
     const text = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
     {
         inStock = T("sản phẩm có sẵn", "items available"),
         outOfStock = T("Số lượng vượt quá tồn kho!", "Quantity exceeds available stock!"),
         ended = T("Đã kết thúc", "Ended"),
-        selectSizeFirst = T("Chọn size trước để xem màu còn hàng", "Choose a size first to see available colors")
+        selectSizeFirst = T("Chọn size trước để xem màu còn hàng", "Choose a size first to see available colors"),
+        lowStock = T("Chỉ còn {0} chiếc cuối cùng cho phân loại này.", "Only {0} pieces left for this option."),
+        outOfStockVariant = T("Phân loại này đang hết hàng.", "This option is out of stock."),
+        notifySuccess = T("Đã ghi nhận email, shop sẽ báo khi hàng về.", "Email saved. We will notify you when it is back."),
+        invalidEmail = T("Vui lòng nhập email hợp lệ.", "Please enter a valid email.")
     }));
 
     let selectedSize = null;
     let selectedColor = null;
     let selectedStock = 0;
+    let currentGalleryIndex = 0;
+
+    const colorMap = {
+        "den": "#151515",
+        "black": "#151515",
+        "trang": "#f7f4ef",
+        "white": "#f7f4ef",
+        "xam": "#8b8f98",
+        "gray": "#8b8f98",
+        "grey": "#8b8f98",
+        "xanh": "#2f6f9f",
+        "blue": "#2f6f9f",
+        "navy": "#17233f",
+        "do": "#b63835",
+        "red": "#b63835",
+        "hong": "#e7a1ad",
+        "pink": "#e7a1ad",
+        "be": "#c6aa84",
+        "nau": "#7a5338",
+        "brown": "#7a5338",
+        "tim": "#7f5fb2",
+        "purple": "#7f5fb2"
+    };
+
+    function normalizeColorName(value) {
+        return (value || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+    }
+
+    function getSwatchColor(value) {
+        const normalized = normalizeColorName(value);
+        return colorMap[normalized] || "#d7cdc4";
+    }
+
+    function setMainImage(src) {
+        const mainImg = document.getElementById("mainImage");
+        mainImg.style.opacity = 0;
+        setTimeout(() => {
+            mainImg.src = src;
+            mainImg.style.opacity = 1;
+        }, 150);
+    }
 
     document.querySelectorAll(".thumb-button").forEach(button => {
         button.addEventListener("click", function () {
             const image = this.querySelector("img");
-            const mainImg = document.getElementById("mainImage");
-            mainImg.style.opacity = 0;
-            setTimeout(() => {
-                mainImg.src = image.src;
-                mainImg.style.opacity = 1;
-            }, 150);
+            currentGalleryIndex = galleryImages.findIndex(item => image.src.endsWith(item));
+            if (currentGalleryIndex < 0) currentGalleryIndex = 0;
+            setMainImage(image.src);
             document.querySelectorAll(".thumb-button").forEach(thumb => thumb.classList.remove("active-thumb"));
             this.classList.add("active-thumb");
         });
@@ -509,6 +707,7 @@
             document.getElementById("variantId").value = "";
             document.getElementById("stockText").innerText = text.selectSizeFirst;
             renderColors();
+            renderUrgency();
             updateButtons();
         });
     });
@@ -534,9 +733,14 @@
             btn.className = "variant-btn color-btn";
             btn.dataset.color = color;
             const variant = variants.find(item => item.Size === selectedSize && item.Color === color);
+            if (variant && variant.Stock <= 0) {
+                btn.classList.add("is-sold-out");
+            }
+            const swatch = document.createElement("i");
+            swatch.style.background = getSwatchColor(variant?.ColorText || color);
             const label = document.createElement("span");
             label.innerText = variant?.ColorText || color;
-            btn.append(label);
+            btn.append(swatch, label);
             btn.onclick = function () {
                 document.querySelectorAll("#colorContainer .variant-btn").forEach(button => button.classList.remove("active"));
                 this.classList.add("active");
@@ -553,18 +757,38 @@
 
         selectedStock = variant.Stock;
         document.getElementById("variantId").value = variant.Id;
-        document.getElementById("stockText").innerText = variant.Stock + " " + text.inStock;
+        document.getElementById("stockText").innerText = variant.Stock > 0
+            ? variant.Stock + " " + text.inStock
+            : text.outOfStockVariant;
         document.getElementById("quantityInput").max = variant.Stock;
+        renderUrgency();
         updateButtons();
     }
 
     function updateButtons() {
         const addBtn = document.getElementById("addToCartBtn");
         const buyBtn = document.getElementById("buyNowBtn");
+        const stickyBuyNow = document.getElementById("stickyBuyNow");
         const ready = selectedSize && selectedColor && selectedStock > 0;
 
         addBtn.classList.toggle("btn-disabled", !ready);
         buyBtn.classList.toggle("btn-disabled", !ready);
+        stickyBuyNow?.classList.toggle("btn-disabled", !ready);
+        document.getElementById("notifyPanel")?.classList.toggle("is-visible", selectedSize && selectedColor && selectedStock <= 0);
+    }
+
+    function renderUrgency() {
+        const panel = document.getElementById("urgencyPanel");
+        const message = document.getElementById("urgencyText");
+        if (!panel || !message) return;
+
+        if (selectedStock > 0 && selectedStock <= 5) {
+            message.innerText = text.lowStock.replace("{0}", selectedStock);
+            panel.classList.add("is-visible");
+            return;
+        }
+
+        panel.classList.remove("is-visible");
     }
 
     document.getElementById("decreaseQty").addEventListener("click", function () {
@@ -661,6 +885,95 @@
 
         document.body.appendChild(form);
         form.submit();
+    }
+
+    document.getElementById("stickyBuyNow")?.addEventListener("click", buyNow);
+
+    document.getElementById("stockNotifyBtn")?.addEventListener("click", function () {
+        const input = document.getElementById("stockNotifyEmail");
+        const email = input?.value?.trim() || "";
+        const isValid = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email);
+        window.xbToast?.({
+            title: isValid ? "@T("Đã lưu yêu cầu", "Request saved")" : "@T("Email chưa hợp lệ", "Invalid email")",
+            message: isValid ? text.notifySuccess : text.invalidEmail,
+            icon: isValid ? "bi-envelope-check" : "bi-exclamation-circle"
+        });
+        if (isValid && input) input.value = "";
+    });
+
+    const mainImageFrame = document.querySelector(".detail-main-image");
+    const mainImage = document.getElementById("mainImage");
+    const zoomLens = document.getElementById("zoomLens");
+    if (mainImageFrame && mainImage && zoomLens && window.matchMedia("(hover: hover)").matches) {
+        mainImageFrame.addEventListener("mousemove", function (event) {
+            const rect = mainImageFrame.getBoundingClientRect();
+            const x = Math.max(0, Math.min(event.clientX - rect.left, rect.width));
+            const y = Math.max(0, Math.min(event.clientY - rect.top, rect.height));
+            const xPercent = (x / rect.width) * 100;
+            const yPercent = (y / rect.height) * 100;
+
+            zoomLens.style.left = `${x}px`;
+            zoomLens.style.top = `${y}px`;
+            zoomLens.style.backgroundImage = `url("${mainImage.src}")`;
+            zoomLens.style.backgroundSize = `${rect.width * 2.2}px ${rect.height * 2.2}px`;
+            zoomLens.style.backgroundPosition = `${xPercent}% ${yPercent}%`;
+            zoomLens.classList.add("is-visible");
+        });
+
+        mainImageFrame.addEventListener("mouseleave", function () {
+            zoomLens.classList.remove("is-visible");
+        });
+    }
+
+    const lightbox = document.getElementById("detailLightbox");
+    const lightboxImage = document.getElementById("lightboxImage");
+    function openLightbox() {
+        if (!lightbox || !lightboxImage) return;
+        lightboxImage.src = galleryImages[currentGalleryIndex] || mainImage.src;
+        lightbox.classList.add("is-open");
+        lightbox.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeLightbox() {
+        if (!lightbox) return;
+        lightbox.classList.remove("is-open");
+        lightbox.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+    }
+
+    function moveLightbox(step) {
+        if (!galleryImages.length || !lightboxImage) return;
+        currentGalleryIndex = (currentGalleryIndex + step + galleryImages.length) % galleryImages.length;
+        lightboxImage.src = galleryImages[currentGalleryIndex];
+        setMainImage(galleryImages[currentGalleryIndex]);
+        document.querySelectorAll(".thumb-button").forEach((thumb, index) => {
+            thumb.classList.toggle("active-thumb", index === currentGalleryIndex);
+        });
+    }
+
+    document.getElementById("openLightbox")?.addEventListener("click", openLightbox);
+    document.getElementById("closeLightbox")?.addEventListener("click", closeLightbox);
+    document.getElementById("lightboxPrev")?.addEventListener("click", () => moveLightbox(-1));
+    document.getElementById("lightboxNext")?.addEventListener("click", () => moveLightbox(1));
+    lightbox?.addEventListener("click", event => {
+        if (event.target === lightbox) closeLightbox();
+    });
+    document.addEventListener("keydown", event => {
+        if (!lightbox?.classList.contains("is-open")) return;
+        if (event.key === "Escape") closeLightbox();
+        if (event.key === "ArrowLeft") moveLightbox(-1);
+        if (event.key === "ArrowRight") moveLightbox(1);
+    });
+
+    const stickyBar = document.getElementById("stickyPdpBar");
+    const actions = document.querySelector(".detail-actions");
+    if (stickyBar && actions && "IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(entries => {
+            const entry = entries[0];
+            stickyBar.classList.toggle("is-visible", !entry.isIntersecting && window.scrollY > 360);
+        }, { threshold: 0.2 });
+        observer.observe(actions);
     }
 
     function showError() {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "xuanbac-shop-v19";
+const CACHE_NAME = "xuanbac-shop-v23";
 const CORE_ASSETS = [
   "/",
   "/Home/About",
